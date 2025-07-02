@@ -19,6 +19,8 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useChallengeSettings } from '@/hooks/useChallengeSettings';
 import { useUserRole } from '@/hooks/useUserRole';
 
+import { TestFlagActivity } from '@/components/TestFlagActivity';
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -182,7 +184,10 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
+        <div className="mt-8">
+          <TestFlagActivity />
+        </div>
+      </div>
         </aside>
 
         {/* Main Content - Offset for sidebar on desktop */}
