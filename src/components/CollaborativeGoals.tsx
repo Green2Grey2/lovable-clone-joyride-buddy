@@ -76,10 +76,10 @@ export const CollaborativeGoals = () => {
         // Get current progress
         const { data: progressData } = await supabase
           .from('goal_progress')
-          .select('value')
+          .select('progress_value')
           .eq('goal_id', goal.id);
 
-        const currentValue = progressData?.reduce((sum, p) => sum + p.value, 0) || 0;
+        const currentValue = progressData?.reduce((sum, p) => sum + p.progress_value, 0) || 0;
 
         // Get participant count
         const { count } = await supabase
