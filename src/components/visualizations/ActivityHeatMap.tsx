@@ -664,64 +664,9 @@ export const ActivityHeatMap: React.FC = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <Card className="card-modern glass dark:glass-dark">
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent>
-          {!isExpanded ? (
-            // Compact week view skeleton - match exact structure
-            <div className="space-y-4">
-              {/* Navigation skeleton */}
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <div className="text-center">
-                  <Skeleton className="h-4 w-32 mb-1" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </div>
-              {/* Stats skeleton */}
-              <div className="grid grid-cols-3 gap-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="p-3 glass dark:glass-dark rounded-xl">
-                    <Skeleton className="h-5 w-6 mb-1" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
-                ))}
-              </div>
-              {/* Instruction text skeleton */}
-              <div className="text-center">
-                <Skeleton className="h-3 w-48 mx-auto" />
-              </div>
-              {/* Week row skeleton */}
-              <div className="grid grid-cols-7 gap-2">
-                {[1, 2, 3, 4, 5, 6, 7].map(j => (
-                  <Skeleton key={j} className="aspect-square rounded-xl" />
-                ))}
-              </div>
-            </div>
-          ) : (
-            // Full month view skeleton
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="grid grid-cols-7 gap-1">
-                  {[1, 2, 3, 4, 5, 6, 7].map(j => (
-                    <Skeleton key={j} className="aspect-square rounded-lg" />
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="card-modern glass dark:glass-dark overflow-hidden">
+      {/* Header - Always Static */}
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
@@ -763,6 +708,7 @@ export const ActivityHeatMap: React.FC = () => {
         </div>
       </CardHeader>
       
+      {/* Content Area - Only data visualization shows loading */}
       <CardContent className="pt-0">
         {/* Content with smooth height transitions */}
         <div 
@@ -776,51 +722,117 @@ export const ActivityHeatMap: React.FC = () => {
           }}
         >
           {!isExpanded ? (
-            /* Compact Week View */
-            renderCompactWeekView()
-          ) : (
-            /* Full View */
-            <div className="space-y-6">
-              {viewMode === 'month' ? renderMonthView() : renderYearView()}
-              
-              {/* Legend - Only in expanded view */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Less</span>
-                <div className="flex gap-1">
-                  {[0, 1, 2, 3, 4].map(level => (
-                    <div
-                      key={level}
-                      className={cn(
-                        "w-4 h-4 rounded transition-all duration-300 hover:scale-110",
-                        getActivityColor(level)
-                      )}
-                    />
+            /* Compact Week View with inline loading */
+            loading ? (
+              <div className="space-y-4">
+                {/* Navigation skeleton - matches actual navigation */}
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <div className="flex flex-col items-center gap-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </div>
+                {/* Stats skeleton */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="p-3 glass dark:glass-dark rounded-xl">
+                      <Skeleton className="h-5 w-6 mb-1" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
                   ))}
                 </div>
-                <span>More</span>
-              </div>
-              
-              {/* Stats summary - Only in expanded view */}
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
+                {/* Instruction text skeleton */}
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground">
-                    {Object.values(activityData).filter(a => a.intensity > 0).length}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Active Days</div>
+                  <Skeleton className="h-3 w-48 mx-auto" />
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">
-                    {Math.round(Object.values(activityData).reduce((sum, a) => sum + a.intensity, 0) / Object.values(activityData).length) || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Avg Intensity</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground">
-                    {Math.max(...Object.values(activityData).map(a => a.intensity), 0)}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Best Day</div>
+                {/* Week row skeleton */}
+                <div className="grid grid-cols-7 gap-2">
+                  {[1, 2, 3, 4, 5, 6, 7].map(j => (
+                    <Skeleton key={j} className="aspect-square rounded-xl" />
+                  ))}
                 </div>
               </div>
+            ) : (
+              renderCompactWeekView()
+            )
+          ) : (
+            /* Full View with inline loading */
+            <div className="space-y-6">
+              {loading ? (
+                // Expanded view skeleton
+                <div className="space-y-4">
+                  {/* Navigation skeleton */}
+                  <div className="flex items-center justify-between mb-4">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="flex flex-col items-center gap-1">
+                      <Skeleton className="h-6 w-32" />
+                      <Skeleton className="h-3 w-48" />
+                    </div>
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                  </div>
+                  {/* Day labels skeleton */}
+                  <div className="grid grid-cols-7 gap-1 mb-3">
+                    {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                      <Skeleton key={i} className="h-6 w-full" />
+                    ))}
+                  </div>
+                  {/* Calendar grid skeleton */}
+                  <div className="space-y-1">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <div key={i} className="grid grid-cols-7 gap-1">
+                        {[1, 2, 3, 4, 5, 6, 7].map(j => (
+                          <Skeleton key={j} className="aspect-square rounded-xl" />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {viewMode === 'month' ? renderMonthView() : renderYearView()}
+                  
+                  {/* Legend - Only in expanded view */}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Less</span>
+                    <div className="flex gap-1">
+                      {[0, 1, 2, 3, 4].map(level => (
+                        <div
+                          key={level}
+                          className={cn(
+                            "w-4 h-4 rounded transition-all duration-300 hover:scale-110",
+                            getActivityColor(level)
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <span>More</span>
+                  </div>
+                  
+                  {/* Stats summary - Only in expanded view */}
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-foreground">
+                        {Object.values(activityData).filter(a => a.intensity > 0).length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Active Days</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">
+                        {Math.round(Object.values(activityData).reduce((sum, a) => sum + a.intensity, 0) / Object.values(activityData).length) || 0}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Avg Intensity</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-foreground">
+                        {Math.max(...Object.values(activityData).map(a => a.intensity), 0)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Best Day</div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
