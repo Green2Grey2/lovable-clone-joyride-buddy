@@ -61,93 +61,94 @@ const Manager = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pb-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Mobile-optimized header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 pt-6 space-y-4 sm:space-y-0">
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Manager Dashboard
-            </h1>
-            <p className="text-gray-600 text-sm sm:text-lg">Manage your department team</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate('/dashboard')}
-              className="bg-white/80 backdrop-blur-sm border-white/30 hover:bg-white/90 shadow-lg w-full sm:w-auto"
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              User View
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleLogout}
-              className="bg-white/80 backdrop-blur-sm border-white/30 hover:bg-white/90 shadow-lg w-full sm:w-auto"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+    <div className="min-h-screen bg-background pb-32">
+      {/* Header */}
+      <div className="glass dark:glass-dark backdrop-blur-xl sticky top-0 z-30 border-b border-border/50">
+        <div className="px-6 py-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground mb-1">Manager Dashboard</h1>
+              <p className="text-muted-foreground text-sm">Manage your department team</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate('/dashboard')}
+              >
+                <Activity className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">User View</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Mobile-optimized stats grid */}
+      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+
+        {/* Stats grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md border border-white/30 shadow-xl">
+          <Card className="card-modern glass dark:glass-dark">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 text-gray-700">
-                <Users className="h-5 w-5 text-blue-500" />
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <Users className="h-5 w-5 text-primary" />
                 Team Members
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">
                 {users.length}
               </div>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {users.filter(u => u.status === 'active').length} active
               </p>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md border border-white/30 shadow-xl">
+          <Card className="card-modern glass dark:glass-dark">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 text-gray-700">
-                <TrendingUp className="h-5 w-5 text-green-500" />
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <TrendingUp className="h-5 w-5 text-primary" />
                 Total Steps
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">
                 {users.reduce((sum, user) => sum + user.totalSteps, 0).toLocaleString()}
               </div>
-              <p className="text-sm text-gray-600 mt-1">Department total</p>
+              <p className="text-sm text-muted-foreground mt-1">Department total</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md border border-white/30 shadow-xl sm:col-span-2 lg:col-span-1">
+          <Card className="card-modern glass dark:glass-dark sm:col-span-2 lg:col-span-1">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 text-gray-700">
-                <UserCog className="h-5 w-5 text-purple-500" />
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+                <UserCog className="h-5 w-5 text-primary" />
                 Average Steps
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">
                 {Math.round(users.reduce((sum, user) => sum + user.totalSteps, 0) / users.length).toLocaleString()}
               </div>
-              <p className="text-sm text-gray-600 mt-1">Per team member</p>
+              <p className="text-sm text-muted-foreground mt-1">Per team member</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Mobile-optimized team management */}
-        <Card className="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md border border-white/30 shadow-xl">
+        {/* Team management */}
+        <Card className="card-modern glass dark:glass-dark">
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Users className="h-5 sm:h-6 w-5 sm:w-6 text-blue-500" />
+            <CardTitle className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+              <Users className="h-5 sm:h-6 w-5 sm:w-6 text-primary" />
               Team Management
             </CardTitle>
           </CardHeader>
