@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Trophy, Target, Footprints, Flame } from "lucide-react";
+import { Heart, Trophy, Target, Footprints, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
@@ -19,7 +19,6 @@ interface ActivityItem {
   data: any;
   created_at: string;
   likes: number;
-  comments: number;
   user: {
     name: string;
     avatar_url?: string;
@@ -60,7 +59,6 @@ export const ActivityFeed = () => {
         data: item.data,
         created_at: item.created_at,
         likes: Number(item.like_count || 0),
-        comments: 0, // Comments feature not implemented yet
         user: {
           name: item.user_name || 'Unknown User',
           avatar_url: undefined,
@@ -288,8 +286,8 @@ export const ActivityFeed = () => {
               </div>
             )}
             
-            {/* Interaction buttons */}
-            <div className="flex items-center gap-4 pt-2 border-t">
+            {/* Heart interaction */}
+            <div className="flex items-center pt-2 border-t">
               <Button
                 variant="ghost"
                 size="sm"
@@ -297,20 +295,13 @@ export const ActivityFeed = () => {
                 onClick={() => handleLike(activity.id, activity.liked_by_me || false)}
               >
                 <Heart
-                  className={`h-4 w-4 mr-1 ${
-                    activity.liked_by_me ? 'fill-red-500 text-red-500' : ''
+                  className={`h-4 w-4 mr-1 transition-colors ${
+                    activity.liked_by_me ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-400'
                   }`}
                 />
-                {activity.likes}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-3 hover:bg-accent/10 transition-smooth"
-                disabled
-              >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                {activity.comments}
+                <span className={activity.liked_by_me ? 'text-red-500' : 'text-muted-foreground'}>
+                  {activity.likes}
+                </span>
               </Button>
             </div>
           </CardContent>
