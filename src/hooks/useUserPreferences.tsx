@@ -189,7 +189,12 @@ export const UserPreferencesProvider = ({ children }: { children: ReactNode }) =
           .from('user_preferences')
           .upsert({
             user_id: user.id,
-            preferences: newPreferences,
+            theme: newPreferences.theme,
+            language: newPreferences.language,
+            sound_enabled: newPreferences.soundEnabled,
+            haptic_enabled: newPreferences.hapticEnabled,
+            notifications_enabled: newPreferences.notifications.push,
+            privacy_mode: !newPreferences.privacy.shareActivity,
             updated_at: new Date().toISOString(),
           });
       }
