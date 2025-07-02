@@ -352,7 +352,7 @@ export const ActivityHeatMap: React.FC = () => {
         ref={compactSwipeRef as React.RefObject<HTMLDivElement>}
         className="space-y-4 select-none"
       >
-        {/* Navigation Header with Week Info */}
+        {/* Navigation Header with Week Info and Today Button */}
         <div className="flex items-center justify-between">
           <button
             onClick={navigatePrevious}
@@ -362,13 +362,23 @@ export const ActivityHeatMap: React.FC = () => {
             <ChevronLeft className="h-4 w-4" />
           </button>
           
-          <div className="text-center">
+          <div className="flex flex-col items-center gap-1">
             <div className="text-sm font-medium text-foreground">
               {format(getWeekData()[0].date, 'MMM d')} - {format(getWeekData()[6].date, 'MMM d')}
             </div>
             <div className="text-xs text-muted-foreground">
               {weekOffset === 0 ? 'This Week' : `${Math.ceil(weekOffset / 7)} week${weekOffset > 7 ? 's' : ''} ago`}
             </div>
+            {/* Today button integrated into navigation */}
+            {weekOffset > 0 && (
+              <button
+                onClick={handleGoToToday}
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors mt-1"
+              >
+                <Calendar className="h-3 w-3" />
+                <span>Today</span>
+              </button>
+            )}
           </div>
           
           <button
@@ -493,13 +503,23 @@ export const ActivityHeatMap: React.FC = () => {
             <ChevronLeft className="h-5 w-5" />
           </button>
           
-          <div className="text-center">
+          <div className="flex flex-col items-center gap-1">
             <h3 className="text-lg font-semibold text-foreground">
               {format(currentDate, 'MMMM yyyy')}
             </h3>
             <p className="text-xs text-muted-foreground">
               Swipe to navigate months • {isMobile ? 'Tap' : 'Double-click'} for details
             </p>
+            {/* Today button for expanded view */}
+            {!isSameMonth(currentDate, new Date()) && (
+              <button
+                onClick={handleGoToToday}
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors mt-1"
+              >
+                <Calendar className="h-3 w-3" />
+                <span>Today</span>
+              </button>
+            )}
           </div>
           
           <button
@@ -710,36 +730,22 @@ export const ActivityHeatMap: React.FC = () => {
               <div className="w-3 h-3 rounded-full bg-primary/60 animate-pulse" />
             )}
           </CardTitle>
+          
           <div className="flex items-center gap-2">
-            {/* Today Button - Always visible */}
-            <button
-              onClick={handleGoToToday}
-              disabled={weekOffset === 0 && isSameMonth(currentDate, new Date())}
-              className={cn(
-                "flex items-center gap-1 text-xs px-2 py-1.5 rounded-full transition-all duration-200 hover-scale",
-                (weekOffset === 0 && isSameMonth(currentDate, new Date()))
-                  ? "bg-muted/30 opacity-50 cursor-not-allowed"
-                  : "bg-secondary/80 hover:bg-secondary"
-              )}
-            >
-              <Calendar className="h-3 w-3" />
-              <span>Today</span>
-            </button>
-
-            {/* Year View Toggle - Only show when expanded */}
+            {/* View Mode Toggle - Only show when expanded, positioned first */}
             {isExpanded && (
               <button
                 onClick={() => setViewMode(viewMode === 'month' ? 'year' : 'month')}
-                className="text-xs px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-full bg-secondary/80 hover:bg-secondary transition-colors"
               >
-                {viewMode === 'month' ? 'Year View' : 'Month View'}
+                {viewMode === 'month' ? 'Year' : 'Month'}
               </button>
             )}
             
             {/* Expand/Collapse Toggle - Always in the same position */}
             <button
               onClick={handleToggleExpand}
-              className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-200 hover-scale"
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-200 hover-scale"
             >
               {isExpanded ? (
                 <>
