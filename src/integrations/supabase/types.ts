@@ -116,18 +116,21 @@ export type Database = {
       event_attendances: {
         Row: {
           attended_at: string
+          check_in_time: string | null
           event_id: string
           id: string
           user_id: string
         }
         Insert: {
           attended_at?: string
+          check_in_time?: string | null
           event_id: string
           id?: string
           user_id: string
         }
         Update: {
           attended_at?: string
+          check_in_time?: string | null
           event_id?: string
           id?: string
           user_id?: string
@@ -180,6 +183,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          is_read: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -264,7 +308,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -380,7 +424,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "manager"],
     },
   },
 } as const
