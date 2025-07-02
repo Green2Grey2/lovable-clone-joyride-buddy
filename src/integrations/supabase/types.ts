@@ -181,6 +181,48 @@ export type Database = {
         }
         Relationships: []
       }
+      collaborative_goals: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          department: string
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean | null
+          start_date: string
+          target_value: number
+          title: string
+          unit: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          department: string
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          start_date: string
+          target_value: number
+          title: string
+          unit: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          department?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          start_date?: string
+          target_value?: number
+          title?: string
+          unit?: string
+        }
+        Relationships: []
+      }
       editorial_media: {
         Row: {
           author: string
@@ -311,6 +353,70 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      goal_participants: {
+        Row: {
+          goal_id: string
+          id: string
+          joined_at: string | null
+          user_id: string
+        }
+        Insert: {
+          goal_id: string
+          id?: string
+          joined_at?: string | null
+          user_id: string
+        }
+        Update: {
+          goal_id?: string
+          id?: string
+          joined_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_participants_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "collaborative_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goal_progress: {
+        Row: {
+          created_at: string | null
+          department: string
+          goal_id: string
+          id: string
+          progress_value: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          department: string
+          goal_id: string
+          id?: string
+          progress_value: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          department?: string
+          goal_id?: string
+          id?: string
+          progress_value?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_progress_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "collaborative_goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
