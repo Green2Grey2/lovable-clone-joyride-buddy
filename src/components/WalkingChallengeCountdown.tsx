@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -21,7 +21,7 @@ export const WalkingChallengeCountdown = () => {
   const [isSignedUp, setIsSignedUp] = useState(false);
   const { challengeSettings } = useChallengeSettings();
 
-  const challengeStartDate = new Date(challengeSettings.startDate + 'T00:00:00');
+  const challengeStartDate = useMemo(() => new Date(challengeSettings.startDate + 'T00:00:00'), [challengeSettings.startDate]);
   const now = new Date();
   const challengeHasStarted = now >= challengeStartDate;
 
