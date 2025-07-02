@@ -34,12 +34,19 @@ export const ActivityHeatMap: React.FC = () => {
   const [clickCount, setClickCount] = useState(0);
   const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     if (user) {
       loadActivityData();
     }
   }, [user, currentDate, viewMode]);
+
+  useEffect(() => {
+    // Initialize after first render to prevent flash
+    const timer = setTimeout(() => setIsInitialized(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const loadActivityData = async () => {
     try {
@@ -496,17 +503,21 @@ export const ActivityHeatMap: React.FC = () => {
       
       <CardContent className="pt-0">
         {/* Content with accordion animation */}
-        <div className={cn(
-          "transition-all duration-300 ease-out",
-          isExpanded ? "animate-accordion-down" : "animate-accordion-up"
-        )}>
-          {!isExpanded ? (
-            /* Compact Week View */
-            renderCompactWeekView()
-          ) : (
-            /* Full View */
-            <div className="space-y-6">
-              {viewMode === 'month' ? renderMonthView() : renderYearView()}
+        {!isInitialized ? (
+          /* Prevent flash by showing compact view immediately */
+          renderCompactWeekView()
+        ) : (
+          <div className={cn(
+            "transition-all duration-300 ease-out overflow-hidden",
+            isExpanded ? "animate-accordion-down" : "animate-accordion-up"
+          )}>
+            {!isExpanded ? (
+              /* Compact Week View */
+              renderCompactWeekView()
+            ) : (
+              /* Full View */
+              <div className="space-y-6">
+                {viewMode === 'month' ? renderMonthView() : renderYearView()}
               
               {/* Legend - Only in expanded view */}
               <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -546,9 +557,10 @@ export const ActivityHeatMap: React.FC = () => {
                   <div className="text-xs text-muted-foreground">Best Day</div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
 
       {/* Detailed Activity Modal */}
