@@ -70,7 +70,7 @@ export const AdminRoleManager = () => {
         .from('user_roles')
         .upsert({ 
           user_id: userId, 
-          role: newRole 
+          role: newRole as any // Temporary type assertion until types update
         });
 
       if (error) throw error;
