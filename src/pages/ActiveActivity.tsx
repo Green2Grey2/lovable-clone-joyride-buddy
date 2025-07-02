@@ -113,7 +113,7 @@ const ActiveActivity = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9F9F9] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header with Minimize Button */}
       <div className="bg-gradient-to-br from-[#735CF7] to-[#00A3FF] text-white p-8 text-center relative">
         <Button
@@ -132,44 +132,44 @@ const ActiveActivity = () => {
 
       {/* Timer */}
       <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-8">
-        <Card className="w-full max-w-md bg-white border-0 rounded-3xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+        <Card className="w-full max-w-md card-modern glass dark:glass-dark">
           <CardContent className="p-8 text-center">
-            <div className="text-6xl font-bold text-[#1D244D] mb-4">
+            <div className="text-6xl font-bold text-foreground mb-4">
               {formatTime(elapsedTime)}
             </div>
-            <p className="text-[#8A94A6]">Active Time</p>
+            <p className="text-muted-foreground">Active Time</p>
           </CardContent>
         </Card>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-4 w-full max-w-md">
-          <Card className="bg-white border-0 rounded-2xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+          <Card className="card-modern glass dark:glass-dark">
             <CardContent className="p-4 text-center">
               <div className="w-10 h-10 bg-gradient-to-br from-[#FF7B5A] to-[#FF6B4A] rounded-xl flex items-center justify-center mx-auto mb-2">
                 <Zap className="h-5 w-5 text-white" />
               </div>
-              <p className="text-xl font-bold text-[#1D244D]">{sessionStats.calories}</p>
-              <p className="text-xs text-[#8A94A6]">calories</p>
+              <p className="text-xl font-bold text-foreground">{sessionStats.calories}</p>
+              <p className="text-xs text-muted-foreground">calories</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-white border-0 rounded-2xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+          <Card className="card-modern glass dark:glass-dark">
             <CardContent className="p-4 text-center">
               <div className="w-10 h-10 bg-gradient-to-br from-[#735CF7] to-[#00A3FF] rounded-xl flex items-center justify-center mx-auto mb-2">
                 <Target className="h-5 w-5 text-white" />
               </div>
-              <p className="text-xl font-bold text-[#1D244D]">{sessionStats.steps}</p>
-              <p className="text-xs text-[#8A94A6]">steps</p>
+              <p className="text-xl font-bold text-foreground">{sessionStats.steps}</p>
+              <p className="text-xs text-muted-foreground">steps</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-white border-0 rounded-2xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+          <Card className="card-modern glass dark:glass-dark">
             <CardContent className="p-4 text-center">
               <div className="w-10 h-10 bg-gradient-to-br from-[#00A3FF] to-[#0088CC] rounded-xl flex items-center justify-center mx-auto mb-2">
                 <Timer className="h-5 w-5 text-white" />
               </div>
-              <p className="text-xl font-bold text-[#1D244D]">{sessionStats.distance}</p>
-              <p className="text-xs text-[#8A94A6]">km</p>
+              <p className="text-xl font-bold text-foreground">{sessionStats.distance}</p>
+              <p className="text-xs text-muted-foreground">km</p>
             </CardContent>
           </Card>
         </div>
@@ -179,7 +179,7 @@ const ActiveActivity = () => {
           <Button
             variant="outline"
             size="lg"
-            className="flex-1 rounded-2xl border-2"
+            className="flex-1"
             onClick={() => setIsPaused(!isPaused)}
           >
             {isPaused ? <Play className="h-6 w-6 mr-2" /> : <Pause className="h-6 w-6 mr-2" />}
@@ -188,7 +188,7 @@ const ActiveActivity = () => {
           
           <Button
             size="lg"
-            className="flex-1 bg-gradient-to-r from-[#FF7B5A] to-[#FF6B4A] text-white rounded-2xl"
+            className="flex-1 bg-gradient-to-r from-[#FF7B5A] to-[#FF6B4A] text-white"
             onClick={handleStopActivity}
           >
             <Square className="h-6 w-6 mr-2" />
