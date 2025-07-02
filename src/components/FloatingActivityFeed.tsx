@@ -86,7 +86,7 @@ export const FloatingActivityFeed = () => {
   }
 
   return (
-    <Card className={`fixed right-4 z-40 w-[calc(100vw-2rem)] max-w-md transition-all duration-300 shadow-xl ${
+    <Card className={`fixed right-4 z-40 w-[calc(100vw-2rem)] max-w-md transition-all duration-300 shadow-xl rounded-2xl ${
       isMinimized 
         ? 'bottom-32 h-14' 
         : 'bottom-32 top-20 md:top-auto h-[calc(100vh-12rem)] md:h-[600px]'
