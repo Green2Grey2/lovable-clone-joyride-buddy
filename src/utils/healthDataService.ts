@@ -180,41 +180,135 @@ class HealthDataService {
           });
       }
 
-      // Get the latest data point for today's stats
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const todayData = dataPoints.filter(dp => 
-        dp.timestamp >= today
-      );
+      // Calculate aggregated stats from ALL activities for comprehensive tracking
+      await this.updateUserStatsFromActivities();
 
-      if (todayData.length > 0) {
-        // Calculate totals for today
-        const totalSteps = todayData.reduce((sum, dp) => sum + dp.steps, 0);
-        const avgHeartRate = todayData
-          .filter(dp => dp.heartRate)
-          .reduce((sum, dp, _, arr) => sum + (dp.heartRate || 0) / arr.length, 0);
-        const totalCalories = todayData.reduce((sum, dp) => sum + (dp.calories || 0), 0);
-
-        // Update user stats
-        const { error } = await supabase
-          .from('user_stats')
-          .update({
-            today_steps: totalSteps,
-            heart_rate: Math.round(avgHeartRate),
-            calories_burned: Math.round(totalCalories),
-            water_intake: todayData[todayData.length - 1]?.waterIntake || 0,
-            last_updated: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        toast.success('Health data synced successfully');
-      }
+      toast.success('Health data synced successfully');
     } catch (error) {
       console.error('Error saving health data:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Updates user stats by aggregating data from all activities
+   */
+  async updateUserStatsFromActivities() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      const monthStart = new Date();
+      monthStart.setDate(1);
+
+      // Calculate today's totals
+      const { data: todayActivities } = await supabase
+        .from('activities')
+        .select('steps, calories_burned, heart_rate_avg, distance')
+        .eq('user_id', user.id)
+        .eq('date', today);
+
+      // Calculate weekly totals
+      const { data: weeklyActivities } = await supabase
+        .from('activities')
+        .select('steps, calories_burned')
+        .eq('user_id', user.id)
+        .gte('date', weekStart.toISOString().split('T')[0]);
+
+      // Calculate monthly totals
+      const { data: monthlyActivities } = await supabase
+        .from('activities')
+        .select('steps, calories_burned')
+        .eq('user_id', user.id)
+        .gte('date', monthStart.toISOString().split('T')[0]);
+
+      // Calculate lifetime totals
+      const { data: lifetimeActivities } = await supabase
+        .from('activities')
+        .select('steps, calories_burned')
+        .eq('user_id', user.id);
+
+      // Calculate streak
+      const streak = await this.calculateCurrentStreak(user.id);
+
+      // Aggregate totals
+      const todayStats = {
+        steps: todayActivities?.reduce((sum, a) => sum + (a.steps || 0), 0) || 0,
+        calories: todayActivities?.reduce((sum, a) => sum + (a.calories_burned || 0), 0) || 0,
+        heartRate: todayActivities?.filter(a => a.heart_rate_avg)
+          .reduce((sum, a, _, arr) => sum + (a.heart_rate_avg || 0) / arr.length, 0) || 0
+      };
+
+      const weeklySteps = weeklyActivities?.reduce((sum, a) => sum + (a.steps || 0), 0) || 0;
+      const monthlySteps = monthlyActivities?.reduce((sum, a) => sum + (a.steps || 0), 0) || 0;
+      const lifetimeSteps = lifetimeActivities?.reduce((sum, a) => sum + (a.steps || 0), 0) || 0;
+
+      // Update user stats
+      const { error } = await supabase
+        .from('user_stats')
+        .update({
+          today_steps: todayStats.steps,
+          weekly_steps: weeklySteps,
+          monthly_steps: monthlySteps,
+          lifetime_steps: lifetimeSteps,
+          heart_rate: Math.round(todayStats.heartRate),
+          calories_burned: Math.round(todayStats.calories),
+          current_streak: streak,
+          last_updated: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating user stats from activities:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculates current activity streak
+   */
+  async calculateCurrentStreak(userId: string): Promise<number> {
+    try {
+      const { data: activities } = await supabase
+        .from('activities')
+        .select('date')
+        .eq('user_id', userId)
+        .order('date', { ascending: false });
+
+      if (!activities || activities.length === 0) return 0;
+
+      let streak = 0;
+      const today = new Date();
+      let checkDate = new Date(today);
+      
+      // Check if today has activity
+      const todayString = today.toISOString().split('T')[0];
+      const hasToday = activities.some(a => a.date === todayString);
+      
+      if (!hasToday) {
+        // If no activity today, start from yesterday
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+
+      // Count consecutive days with activities
+      for (let i = 0; i < activities.length; i++) {
+        const activityDate = checkDate.toISOString().split('T')[0];
+        if (activities.some(a => a.date === activityDate)) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    } catch (error) {
+      console.error('Error calculating streak:', error);
+      return 0;
     }
   }
 
