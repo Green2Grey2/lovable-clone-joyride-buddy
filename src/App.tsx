@@ -28,6 +28,7 @@ const Manager = lazy(() => import("./pages/Manager"));
 const Media = lazy(() => import("./pages/Media"));
 const Editorial = lazy(() => import("./pages/Editorial"));
 const SocialAdmin = lazy(() => import("./pages/SocialAdmin"));
+const Analytics = lazy(() => import("./pages/Analytics"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -142,6 +143,14 @@ const App = () => {
                           element={
                             <ProtectedRoute>
                               <SocialAdmin />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/analytics"
+                          element={
+                            <ProtectedRoute>
+                              <Analytics />
                             </ProtectedRoute>
                           }
                         />
