@@ -113,6 +113,66 @@ export type Database = {
         }
         Relationships: []
       }
+      editorial_media: {
+        Row: {
+          author: string
+          category: string
+          content: string | null
+          content_type: string
+          created_at: string | null
+          created_by: string
+          description: string | null
+          duration: number | null
+          featured_image: string | null
+          id: string
+          is_published: boolean | null
+          published_at: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          video_url: string | null
+          view_count: number | null
+        }
+        Insert: {
+          author: string
+          category: string
+          content?: string | null
+          content_type: string
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          duration?: number | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          video_url?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          author?: string
+          category?: string
+          content?: string | null
+          content_type?: string
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          duration?: number | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       event_attendances: {
         Row: {
           attended_at: string
@@ -422,7 +482,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      media_feed: {
+        Row: {
+          author: string | null
+          category: string | null
+          content_type: string | null
+          description: string | null
+          display_type: string | null
+          featured_image: string | null
+          hours_ago: number | null
+          id: string | null
+          published_at: string | null
+          tags: string[] | null
+          title: string | null
+          video_url: string | null
+          view_count: number | null
+        }
+        Insert: {
+          author?: string | null
+          category?: string | null
+          content_type?: string | null
+          description?: string | null
+          display_type?: never
+          featured_image?: string | null
+          hours_ago?: never
+          id?: string | null
+          published_at?: string | null
+          tags?: string[] | null
+          title?: string | null
+          video_url?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          author?: string | null
+          category?: string | null
+          content_type?: string | null
+          description?: string | null
+          display_type?: never
+          featured_image?: string | null
+          hours_ago?: never
+          id?: string | null
+          published_at?: string | null
+          tags?: string[] | null
+          title?: string | null
+          video_url?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
@@ -431,6 +538,14 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      increment_media_view: {
+        Args: { media_id: string }
+        Returns: undefined
+      }
+      publish_media: {
+        Args: { media_id: string }
+        Returns: undefined
       }
       update_user_session: {
         Args: {
