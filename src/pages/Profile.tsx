@@ -5,6 +5,8 @@ import { ProfileStatsGrid } from '@/components/ProfileStatsGrid';
 import { FloatingBottomNav } from '@/components/FloatingBottomNav';
 import { UserQRCode } from '@/components/UserQRCode';
 import { HealthSyncButton } from '@/components/HealthSyncButton';
+import { NotificationSettings } from '@/components/NotificationSettings';
+import { FeedbackButton } from '@/components/FeedbackButton';
 
 const Profile = () => {
   
@@ -26,13 +28,23 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gray-50 pb-32">
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-          <ProfileHeader onGoalsEditorOpen={handleGoalsEditorOpen} />
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <ProfileHeader onGoalsEditorOpen={handleGoalsEditorOpen} />
+            </div>
+            <div className="ml-4">
+              <FeedbackButton />
+            </div>
+          </div>
           
           {/* Health Sync Section */}
           <div className="bg-white rounded-3xl p-6 shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
             <h3 className="text-lg font-semibold text-[#1D244D] mb-4">Health Data Sync</h3>
             <HealthSyncButton />
           </div>
+
+          {/* Notification Settings */}
+          <NotificationSettings />
           
           <ProfileStatsGrid userStats={userStats} />
           <UserQRCode />

@@ -8,11 +8,17 @@
 /* Support for safe areas on mobile devices */
 html {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv11", "ss01", "ss03";
 }
 
 /* Ensure content respects safe areas */
 body {
   padding-bottom: env(safe-area-inset-bottom);
+  font-family: var(--font-sans);
+  line-height: 1.5;
 }
 
 .logo {

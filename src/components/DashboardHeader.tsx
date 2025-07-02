@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Bell } from 'lucide-react';
 import { ProfileDropdown } from './ProfileDropdown';
 import { NotificationBell } from './NotificationBell';
+import { GlobalSearch } from './GlobalSearch';
 
 interface DashboardHeaderProps {
   userName: string;
@@ -43,6 +44,7 @@ export const DashboardHeader = ({ userName, currentStreak, weeklyGoal, currentSt
         </div>
         
         <div className="flex items-center space-x-2">
+          <GlobalSearch />
           <NotificationBell />
           <ProfileDropdown />
         </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SocialActivityFeed } from '@/components/SocialActivityFeed';
+import { ActivityFeed } from '@/components/ActivityFeed';
+import { CollaborativeGoals } from '@/components/CollaborativeGoals';
 import { ModernHealthSummary } from '@/components/ModernHealthSummary';
 import { AppleNewsVideoLibrary } from '@/components/AppleNewsVideoLibrary';
 import { FloatingBottomNav } from '@/components/FloatingBottomNav';
@@ -10,7 +11,7 @@ import { DashboardHeader } from '@/components/DashboardHeader';
 import { EnhancedHeroActionCard } from '@/components/EnhancedHeroActionCard';
 import { ActivitySelector } from '@/components/ActivitySelector';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { FloatingSocialFeed } from '@/components/FloatingSocialFeed';
+import { FloatingActivityFeed } from '@/components/FloatingActivityFeed';
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveStack } from '@/components/layout/ResponsiveContainer';
 import { useApp } from '@/contexts/AppContext';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
@@ -115,6 +116,9 @@ const Dashboard = () => {
                   onViewMore={handleViewMoreActivity}
                 />
 
+                {/* Collaborative Goals */}
+                <CollaborativeGoals />
+
                 {/* Video Library - Hidden on mobile, shown on tablet+ */}
                 <div className="hidden md:block">
                   <AppleNewsVideoLibrary />
@@ -125,7 +129,7 @@ const Dashboard = () => {
               <div className="space-y-6">
                 {/* Social Feed - Static on desktop */}
                 <div className="hidden lg:block">
-                  <SocialActivityFeed />
+                  <ActivityFeed />
                 </div>
                 
                 {/* Quick Actions for desktop */}
@@ -168,7 +172,7 @@ const Dashboard = () => {
 
         {/* Mobile Navigation - Hidden on desktop */}
         <div className="lg:hidden">
-          <FloatingSocialFeed />
+          <FloatingActivityFeed />
           <FloatingBottomNav />
         </div>
 

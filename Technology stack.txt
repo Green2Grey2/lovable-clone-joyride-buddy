@@ -1,915 +1,206 @@
-# Stride Fitness App - Technical Architecture & Design Overview
-
-## 🏗️ **Technology Stack**
-
-### Frontend Framework
-- **React 18.3.1** with TypeScript for type safety
-- **Vite** as build tool for fast development and optimized production builds
-- **React Router DOM 6.26.2** for client-side routing
-
-### UI Framework & Design System
-- **Tailwind CSS** with custom design tokens and semantic color system
-- **Shadcn/ui** components library for consistent, accessible UI primitives
-- **Radix UI** primitives underneath for accessibility compliance
-- **Lucide React** for iconography (462+ icons)
-
-### State Management & Data Fetching
-- **React Context API** for global state (Auth, App, UserStats contexts)
-- **TanStack React Query 5.56.2** for server state management and caching
-- **Custom hooks** for reusable business logic
-
-### Backend & Database
-- **Supabase** as Backend-as-a-Service
-  - PostgreSQL database with Row Level Security (RLS)
-  - Real-time subscriptions
-  - Built-in authentication
-  - Edge Functions for serverless computing
-
----
-
-## 🎨 **Design System Architecture**
-
-### Color System (HSL-based semantic tokens)
-
-css
-/* src/index.css - Custom semantic color palette */
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --primary: 258 100% 67%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --muted: 210 40% 96%;
-  --accent: 210 40% 96%;
-  --destructive: 0 84.2% 60.2%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 258 100% 67%;
-}
-
-
-
-### Component Design Patterns
-
-tsx
-// Example: Enhanced Button with sound effects and consistent styling
-const Button = React.forwardRef(
-  ({ className, variant, size, asChild = false, soundEnabled = true, onClick, ...props }, ref) => {
-    const { playClick, playSoftClick } = useSoundEffects()
-
-    const handleClick = (event: React.MouseEvent) => {
-      if (soundEnabled) {
-        if (variant === 'ghost' || variant === 'outline') {
-          playSoftClick()
-        } else {
-          playClick()
-        }
-      }
-      if (onClick) {
-        onClick(event)
-      }
-    }
-    // Consistent styling with hover effects and accessibility
-    return (
-
-    )
-  }
-)
-
-
-
-### Animation System
-
-css
-/* src/styles/animations.css - Micro-interactions */
-@keyframes fade-in {
-  "0%": { opacity: "0", transform: "translateY(10px)" },
-  "100%": { opacity: "1", transform: "translateY(0)" }
-}
-
-.hover-scale {
-  @apply transition-transform duration-200 hover:scale-105;
-}
-
-
-
----
-
-## 🏢 **Backend Architecture (Supabase)**
-
-### Database Schema
-
-sql
--- Core user management with profiles
-CREATE TABLE public.profiles (
-  id uuid PRIMARY KEY REFERENCES auth.users,
-  name text,
-  email text,
-  department text DEFAULT 'Fitness',
-  height numeric,
-  weight numeric,
-  weekly_goal integer DEFAULT 10000,
-  created_at timestamptz DEFAULT now()
-);
-
--- Role-based access control
-CREATE TYPE public.app_role AS ENUM ('admin', 'manager', 'user');
-
-CREATE TABLE public.user_roles (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES auth.users NOT NULL,
-  role app_role DEFAULT 'user',
-  created_at timestamptz DEFAULT now()
-);
-
--- Activity tracking
-CREATE TABLE public.user_stats (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES auth.users NOT NULL,
-  today_steps integer DEFAULT 0,
-  weekly_steps integer DEFAULT 0,
-  calories_burned integer DEFAULT 0,
-  heart_rate integer DEFAULT 0,
-  water_intake integer DEFAULT 0,
-  current_streak integer DEFAULT 0,
-  last_updated timestamptz DEFAULT now()
-);
-
-
-
-### Row Level Security (RLS) Policies
-
-sql
--- Users can only see their own data
-CREATE POLICY "Users can view their own profile" 
-ON public.profiles FOR SELECT 
-USING (auth.uid() = id);
-
--- Role-based admin access
-CREATE POLICY "Admins can view all profiles" 
-ON public.profiles FOR SELECT 
-USING (EXISTS (
-  SELECT 1 FROM user_roles 
-  WHERE user_id = auth.uid() AND role = 'admin'
-));
-
-
-
-### Database Functions
-
-sql
--- Automatic user setup on registration
-CREATE FUNCTION public.handle_new_user()
-RETURNS trigger AS $$
-BEGIN
-  INSERT INTO public.profiles (id, name, email, department)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
-    NEW.email,
-    'Fitness'
-  );
-
-  INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.id, 'user');
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-
-
----
-
-## 🧭 **Frontend Architecture**
-
-### Context-Based State Management
-
-tsx
-// src/contexts/AuthContext.tsx - Authentication state
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  return (
-
-      {children}
-
-  );
-};
-
-
-
-### Custom Hooks for Business Logic
-
-tsx
-// src/hooks/useUserRole.ts - Role management
-export const useUserRole = () => {
-  const { user } = useAuth();
-  const [role, setRole] = useState(null);
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      setRole(data?.role || 'user');
-    };
-    fetchUserRole();
-  }, [user]);
-
-  const isAdmin = () => role === 'admin';
-  const isManager = () => role === 'manager' || role === 'admin';
-
-  return { role, isAdmin, isManager };
-};
-
-
-
-### Routing Architecture
-
-tsx
-// src/App.tsx - Protected route structure
-function App() {
-  return (
-
-                } />
-                } />
-                } />
-
-                {/* Protected routes */}
-
-                } />
-
-                } />
-
-                {/* Role-based protected routes */}
-
-                } />
-
-  );
-}
-
-
-
----
-
-## 📱 **Mobile-First Navigation System**
-
-### Bottom Navigation with Smart Behavior
-
-tsx
-// src/components/FloatingBottomNav.tsx
-export const FloatingBottomNav = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [showActivitySelector, setShowActivitySelector] = useState(false);
-
-  // Core navigation items (following UX best practices: 4 main tabs)
-  const navItems = [
-    { icon: Home, label: 'Home', path: '/dashboard' },
-    { icon: Activity, label: 'Activity', path: '/activity' },
-    { icon: BookOpen, label: 'Media', path: '/media' },
-    { icon: Award, label: 'Awards', path: '/awards' },
-  ];
-
-  return (
-    <>
-      {/* Contextual back button - top-left positioning */}
-      {shouldShowBack() && (
-
-            Back
-
-      )}
-
-          {/* Fixed 5-column grid: 2 + center action + 2 */}
-
-            {/* Centered plus button for primary action */}
-
-               setShowActivitySelector(true)}
-                className="h-12 w-12 rounded-full bg-gradient-to-r from-[#735CF7] to-[#8B5FE6] hover:scale-105"
-                size="icon"
-              >
-
-  );
-};
-
-
-
-### Role-Based Profile Menu
-
-tsx
-// src/components/ProfileDropdown.tsx - Integrated admin/manager access
-export const ProfileDropdown = () => {
-  const { isManager, isAdmin } = useUserRole();
-
-  return (
-
-         navigate('/profile')}>
-
-          Profile
-
-        {/* Role-based menu items - clean separation */}
-        {(isManager() || isAdmin()) && }
-
-        {isManager() && (
-           navigate('/manager')}>
-
-            Manager Dashboard
-
-        )}
-
-        {isAdmin() && (
-           navigate('/admin')}>
-
-            Admin Dashboard
-
-        )}
-
-  );
-};
-
-
-
----
-
-## 📊 **Key Features & Components**
-
-### Real-time User Activity Tracking
-
-tsx
-// src/hooks/useActiveUsers.ts - Real-time monitoring
-export const useActiveUsers = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchActiveUsers = async () => {
-      const { data, error } = await supabase
-        .from('user_sessions')
-        .select(`
-          user_id,
-          last_seen,
-          page_path,
-          user_agent,
-          profiles!inner(name, email, department)
-        `)
-        .gte('last_seen', fiveMinutesAgo.toISOString())
-        .order('last_seen', { ascending: false });
-
-      if (!error) setUsers(data || []);
-      setLoading(false);
-    };
-
-    // Real-time updates every 30 seconds
-    fetchActiveUsers();
-    const interval = setInterval(fetchActiveUsers, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return { users, loading, count: users.length };
-};
-
-
-
-### Comprehensive Activity Dashboard
-
-tsx
-// src/components/ComprehensiveActivityView.tsx - Health metrics
-export const ComprehensiveActivityView = () => {
-  const { userStats, updateStats } = useUserStats();
-
-  return (
-
-      }
-        gradient="from-blue-500 to-blue-600"
-        onClick={() => setIsStepsModalOpen(true)}
-      />
-
-      }
-        gradient="from-red-500 to-red-600"
-        onClick={() => setIsHeartRateModalOpen(true)}
-      />
-
-  );
-};
-
-
-
-### Achievement System
-
-tsx
-// src/components/ExpandedAchievementSystem.tsx - Gamification
-const achievements = [
-  {
-    id: 'first-workout',
-    title: 'First Steps',
-    description: 'Complete your first workout',
-    icon: '🎯',
-    category: 'milestone',
-    progress: 100,
-    unlocked: true,
-    unlockedDate: '2024-01-15'
-  },
-  // ... more achievements
-];
-
-export const ExpandedAchievementSystem = () => {
-  return (
-
-      {categories.map(category => (
-
-            {category.icon}
-
-              {category.name}
-              {category.description}
-
-            {categoryAchievements.map(achievement => (
-
-            ))}
-
-      ))}
-
-  );
-};
-
-
-
----
-
-## 🔐 **Security & Authentication**
-
-### Row Level Security Implementation
-- **User isolation**: Users can only access their own data
-- **Role-based access**: Hierarchical permissions (user < manager < admin)
-- **Secure functions**: Database functions use SECURITY DEFINER for controlled privilege escalation
-
-### Authentication Flow
-
-tsx
-// src/contexts/AuthContext.tsx - Secure session management
-const signIn = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) throw error;
-  return data;
-};
-
-// Automatic profile creation on signup
-const signUp = async (email: string, password: string, userData: any) => {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: userData // Passed to trigger function
-    }
-  });
-
-  if (error) throw error;
-  return data;
-};
-
-
-
----
-
-## 📈 **Performance Optimizations**
-
-### Code Splitting & Lazy Loading
-- **Route-based splitting**: Each page loads independently
-- **Component lazy loading**: Heavy components load on demand
-- **Image optimization**: WebP format with fallbacks
-
-### Caching Strategy
-- **React Query**: Server state caching with automatic background updates
-- **Local storage**: User preferences and temporary data
-- **Supabase real-time**: Efficient WebSocket connections for live updates
-
-### Bundle Optimization
-
-typescript
-// vite.config.ts - Production optimizations
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          supabase: ['@supabase/supabase-js'],
-          ui: ['@radix-ui/react-dropdown-menu', '@radix-ui/react-dialog']
-        }
-      }
-    }
-  }
-});
-
-
-
----
-
-## 🎯 **UX/UI Design Principles**
-
-### Mobile-First Approach
-- **Touch-friendly targets**: Minimum 44px tap areas
-- **Thumb-zone optimization**: Primary actions in easy reach
-- **Progressive enhancement**: Desktop features that enhance mobile experience
-
-### Accessibility Standards
-- **WCAG 2.1 AA compliance**: Color contrast, keyboard navigation
-- **Screen reader support**: Semantic HTML, ARIA labels
-- **Focus management**: Visible focus indicators, logical tab order
-
-### Visual Hierarchy
-
-tsx
-// Consistent spacing and typography scale
-const typography = {
-  h1: "text-3xl font-bold tracking-tight",
-  h2: "text-2xl font-semibold",
-  body: "text-base leading-relaxed",
-  caption: "text-sm text-muted-foreground"
-};
-
-
-
-# Minor Clarifications & Additional Technical Details
-
-## 🔊 **Sound Effects System**
-Your app features a comprehensive audio feedback system that enhances user interaction:
-
-tsx
-// src/hooks/useSoundEffects.ts - Audio UX enhancement
-export const useSoundEffects = () => {
-  const playClick = useCallback(() => {
-    const audio = new Audio('/sounds/click.mp3');
-    audio.volume = 0.3;
-    audio.play().catch(() => {});
-  }, []);
-
-  const playSoftClick = useCallback(() => {
-    const audio = new Audio('/sounds/soft-click.mp3');
-    audio.volume = 0.2;
-    audio.play().catch(() => {});
-  }, []);
-
-  return { playClick, playSoftClick, playSelect };
-};
-
-// Implementation in Button component
-const Button = React.forwardRef(
-  ({ soundEnabled = true, variant, onClick, ...props }, ref) => {
-    const { playClick, playSoftClick } = useSoundEffects();
-
-    const handleClick = (event: React.MouseEvent) => {
-      if (soundEnabled) {
-        if (variant === 'ghost' || variant === 'outline') {
-          playSoftClick(); // Subtle feedback for secondary actions
-        } else {
-          playClick(); // Pronounced feedback for primary actions
-        }
-      }
-      onClick?.(event);
-    };
-    // ...
-  }
-);
-
-
-
-## 📦 **Additional Key Dependencies**
-
-### Data Visualization & Utilities
-
-json
-{
-  "date-fns": "^3.6.0",           // Date manipulation and formatting
-  "recharts": "^2.12.7",         // Charts for activity visualization
-  "sonner": "^1.5.0",            // Toast notifications system
-  "qrcode": "^1.5.4",            // QR code generation for user identification
-  "@types/qrcode": "^1.5.5"      // TypeScript definitions
-}
-
-
-
-### Implementation Examples
-
-tsx
-// QR Code generation for user check-ins
-import QRCode from 'qrcode';
-
-export const UserQRCode = () => {
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
-
-  useEffect(() => {
-    const generateQR = async () => {
-      try {
-        const url = await QRCode.toDataURL(userProfile.id, {
-          errorCorrectionLevel: 'M',
-          type: 'image/jpeg',
-          quality: 0.92,
-          margin: 1,
-          color: {
-            dark: '#1D244D',
-            light: '#FFFFFF'
-          }
-        });
-        setQrCodeUrl(url);
-      } catch (err) {
-        console.error('QR generation failed:', err);
-      }
-    };
-    generateQR();
-  }, [userProfile.id]);
-};
-
-// Toast notifications with Sonner
-import { toast } from 'sonner';
-
-const handleSuccess = () => {
-  toast.success('Activity recorded successfully!', {
-    description: 'Your progress has been updated.',
-    duration: 3000,
-  });
-};
-
-
-
-## 📱 **Advanced Media Tab Navigation**
-Your Media tab features sophisticated navigation behavior that adapts to user context:
-
-tsx
-// src/pages/Media.tsx - Context-aware navigation
-export const Media = () => {
-  const [navVisible, setNavVisible] = useState(true);
-  const [selectedArticle, setSelectedArticle] = useState(null);
-
-  // Smart scroll behavior for immersive reading
-  useEffect(() => {
-    if (!selectedArticle) {
-      setNavVisible(true); // Always visible in main feed
-      return;
-    }
-
-    const handleScroll = () => {
-      const currentScrollY = scrollContainer.scrollTop;
-      const scrollDifference = currentScrollY - lastScrollY;
-
-      // Progressive disclosure: Show nav when scrolling up, hide when scrolling down
-      if (scrollDifference < -20 && !navVisible) {
-        setNavVisible(true);
-      } else if (scrollDifference > 20 && navVisible && currentScrollY > 200) {
-        setNavVisible(false);
-      }
-    };
-
-    // Debounced scroll listener for performance
-    scrollContainer?.addEventListener('scroll', handleScroll, { passive: true });
-    return () => scrollContainer?.removeEventListener('scroll', handleScroll);
-  }, [selectedArticle, lastScrollY, navVisible]);
-
-  return (
-
-      {/* Main feed: Fixed navigation */}
-      {!selectedArticle && (
-        <>
-
-           {/* Always visible */}
-
-      )}
-
-      {/* Article view: Context-sensitive navigation */}
-      {selectedArticle && (
-        <>
-
-      )}
-
-  );
-};
-
-
-
-## 📊 **Real-time Activity Monitoring System**
-Your user session tracking provides enterprise-level activity insights:
-
-tsx
-// src/hooks/useActiveUsers.ts - Advanced activity tracking
-export const useActiveUsers = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchActiveUsers = async () => {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-
-      const { data, error } = await supabase
-        .from('user_sessions')
-        .select(`
-          user_id,
-          last_seen,
-          page_path,
-          user_agent,
-          ip_address,
-          profiles!inner(name, email, department)
-        `)
-        .gte('last_seen', fiveMinutesAgo.toISOString())
-        .order('last_seen', { ascending: false });
-
-      if (!error) {
-        const transformedUsers = data.map(session => ({
-          user_id: session.user_id,
-          name: session.profiles.name,
-          email: session.profiles.email,
-          department: session.profiles.department,
-          last_seen: session.last_seen,
-          page_path: session.page_path || '/',
-          user_agent: session.user_agent || 'Unknown'
-        }));
-        setUsers(transformedUsers);
-      }
-      setLoading(false);
-    };
-
-    // Initial fetch + real-time updates every 30 seconds
-    fetchActiveUsers();
-    const interval = setInterval(fetchActiveUsers, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return { 
-    users, 
-    loading, 
-    count: users.length,
-    // Helper functions for analytics
-    getActiveByDepartment: () => groupBy(users, 'department'),
-    getRecentActivity: () => users.filter(u => 
-      new Date(u.last_seen) > new Date(Date.now() - 2 * 60 * 1000)
-    )
-  };
-};
-
-
-
-## 🎨 **Enhanced Design System Features**
-
-### Micro-interactions & Animations
-
-css
-/* src/styles/animations.css - Sophisticated animation system */
-@keyframes slide-up {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px) scale(0.98); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1); 
-  }
-}
-
-.interactive-card {
-  @apply hover-lift hover-scale cursor-pointer focus-ring rounded-3xl transition-all duration-300;
-}
-
-.story-link {
-  @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
-}
-
-
-
-### Advanced Component Variants
-
-tsx
-// Enhanced button system with gradient variants
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 hover:shadow-md",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105",
-        gradient: "bg-gradient-to-r from-[#735CF7] to-[#8B5FE6] hover:from-[#6B4FF5] hover:to-[#7A4FE3] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105",
-        // ... other variants
-      }
-    }
-  }
-);
-
-
-
-## 🔄 **State Management Architecture**
-Your app uses a sophisticated multi-layered state approach:
-
-tsx
-// Hierarchical context structure
-          // Authentication state
-           // Global app state & user profile
-     // Health metrics & activity data
-                // Navigation state
-
-// Example: UserStatsContext with error handling
-export const UserStatsProvider = ({ children }: { children: ReactNode }) => {
-  const [userStats, setUserStats] = useState({
-    todaySteps: 0,
-    weeklySteps: 0,
-    calories: 0,
-    heartRate: 0,
-    waterIntake: 0,
-    currentStreak: 0
-  });
-
-  const updateStats = async (newStats: Partial) => {
-    try {
-      const { error } = await supabase
-        .from('user_stats')
-        .upsert({
-          user_id: user?.id,
-          ...newStats,
-          last_updated: new Date().toISOString()
-        });
-
-      if (error) throw error;
-
-      setUserStats(prev => ({ ...prev, ...newStats }));
-      toast.success('Stats updated successfully!');
-    } catch (error) {
-      console.error('Failed to update stats:', error);
-      toast.error('Failed to update stats');
-    }
-  };
-};
-|
-
-## Mobile Architecture: Hybrid Native App with Capacitor
-
-**Primary Approach: Hybrid Mobile Application**
-
-Your app uses **Capacitor** as a hybrid mobile framework, which means it's built with web technologies (React + TypeScript + Vite) but deployed as native iOS and Android applications. This is neither pure React Native nor just a responsive web app—it's a **native-wrapped web application**.
-
-### Technical Architecture:
-
-**Core Stack:**
-- **Frontend**: React 18 + TypeScript + Vite
-- **Mobile Bridge**: Capacitor 7.4.0 
-- **UI Framework**: Tailwind CSS + Shadcn UI components
-- **Native Platforms**: iOS and Android through Capacitor CLI
-
-**Capacitor Configuration:**
-
-typescript
-// capacitor.config.ts
-appId: 'com.olivevieducla.wellness'
-appName: 'Olive View UCLA Medical Center Wellness'
-
-
-
-### Capabilities & Features:
-
-**Native Access:**
-- Camera integration for QR code scanning
-- Device notifications
-- Health data integration potential
-- File system access
-- Native app store distribution
-
-**Performance Characteristics:**
-- Single codebase for iOS/Android/Web
-- Native container provides near-native performance
-- Web-based UI ensures consistent cross-platform experience
-- Hot reload capability during development
-
-**Deployment Strategy:**
-- Web version: Progressive Web App capabilities
-- Mobile: Native apps distributed through App Store/Google Play
-- Development: Live preview via sandbox URL integration
-
-### Key Advantages:
-
-1. **Development Efficiency**: One codebase serves web, iOS, and Android
-2. **Native Integration**: Access to device APIs while maintaining web development workflow  
-3. **Performance**: Better than pure PWA, more maintainable than separate React Native
-4. **Team Scalability**: Web developers can build mobile apps without learning separate frameworks
-
-
+I'll provide you with a comprehensive breakdown of your fitness tracking application. Let me examine the codebase in detail to give you a thorough analysis.
+
+Let me also examine some key UI components to understand the styling patterns:
+
+Now let me examine one more key file to understand the routing and overall structure:
+
+# Comprehensive Tech Stack Breakdown
+
+## **Frontend Architecture**
+
+### **Core Technologies**
+- **React 18.3.1** - Modern React with hooks and functional components
+- **TypeScript 5.5.3** - Full type safety throughout the application
+- **Vite 5.4.1** - Fast build tool and development server
+- **React Router DOM 6.26.2** - Client-side routing with protected routes
+
+### **Build System & Configuration**
+- **Vite Configuration**: 
+  - Uses SWC for fast React compilation
+  - Path aliases configured (`@/` points to `src/`)
+  - Development server on port 8080
+  - Component tagging for development mode
+- **TypeScript Configuration**: Strict mode enabled with modern ES modules
+- **ESLint**: Code quality and consistency enforcement
+
+### **UI Framework & Styling**
+
+#### **Design System**
+- **Tailwind CSS 3.4.11** - Utility-first CSS framework
+- **Shadcn/UI** - Pre-built accessible components using Radix UI primitives
+- **Radix UI Primitives** - Comprehensive set of accessible, unstyled UI components:
+  - Accordion, Alert Dialog, Avatar, Button, Card, Dialog
+  - Dropdown Menu, Form, Input, Select, Tabs, Toast, Tooltip
+  - All with built-in accessibility features
+
+#### **Styling Architecture**
+- **CSS Custom Properties** - HSL-based color system with light/dark mode support
+- **Responsive Design** - Mobile-first approach with custom breakpoints:
+  - Standard: xs(475px), sm(640px), md(768px), lg(1024px), xl(1280px), 2xl(1536px)  
+  - Custom: tablet, laptop, desktop, wide
+  - Orientation: landscape, portrait
+  - Interaction: touch, mouse
+- **Safe Area Support** - iOS notch and Android navigation bar handling
+- **Advanced Animations**:
+  - Tailwind CSS Animate for micro-interactions
+  - Custom keyframes for floating, scaling, sliding effects
+  - Framer Motion 12.22.0 for complex animations
+
+#### **Accessibility Features**
+- **WCAG 2.1 AA Compliance**:
+  - Focus management and keyboard navigation
+  - Screen reader support with ARIA attributes
+  - Skip links and proper heading hierarchy
+  - Minimum touch target sizes (44px)
+- **User Preferences**:
+  - Reduced motion support
+  - High contrast mode
+  - Color blind accessibility (protanopia, deuteranopia, tritanopia)
+  - Theme switching (light/dark/system)
+  - Font size adjustment
+- **Sound Effects** - Optional audio feedback with user preference controls
+
+### **State Management**
+
+#### **Context Architecture**
+- **AuthContext** - User authentication state with Supabase Auth
+- **AppContext** - Central application state (user profile, stats, activities)
+- **UserStatsContext** - Real-time user statistics with Supabase subscriptions
+- **UserPreferencesContext** - User settings and accessibility preferences
+
+#### **Data Fetching**
+- **TanStack React Query 5.56.2** - Server state management, caching, and synchronization
+- **Supabase Client** - Real-time database subscriptions and authentication
+
+### **Mobile Development**
+- **Capacitor 7.4.0** - Cross-platform native app development
+- **PWA Support** - Progressive Web App capabilities
+- **Native Features**:
+  - Camera access for QR code scanning
+  - Health data integration
+  - Push notifications
+  - Haptic feedback
+
+## **Backend Architecture**
+
+### **Database (Supabase PostgreSQL)**
+
+#### **Core Tables**
+1. **profiles** - User profile information
+   - `id`, `user_id`, `name`, `email`, `department`
+   - `height`, `weight`, `age`, `weekly_goal`
+   - `avatar_url`, `join_date`, `fitness_level`
+
+2. **user_stats** - Real-time fitness tracking
+   - `today_steps`, `weekly_steps`, `current_streak`
+   - `water_intake`, `calories_burned`, `heart_rate`
+   - `sleep_hours`, `last_activity_date`
+
+3. **activities** - Activity logging
+   - `type`, `duration`, `steps`, `distance`
+   - `calories_burned`, `date`, `user_id`
+
+4. **challenges** - Team challenges
+   - `title`, `description`, `type`, `target_value`
+   - `start_date`, `end_date`, `is_active`, `created_by`
+
+5. **events** - Event management
+   - `name`, `description`, `location`
+   - `start_time`, `end_time`, `created_by`
+
+6. **notifications** - User notifications
+   - `title`, `message`, `type`, `is_read`
+   - `user_id`, `event_id`
+
+7. **user_roles** - Role-based access control
+   - Enum: `admin`, `manager`, `moderator`, `user`
+
+8. **user_preferences** - User settings
+   - `theme`, `language`, `sound_enabled`
+   - `haptic_enabled`, `notifications_enabled`
+
+9. **user_sessions** - Session tracking
+   - `session_id`, `user_agent`, `page_path`
+   - `last_seen`, `is_active`, `ip_address`
+
+#### **Database Functions**
+- **`has_role(user_id, role)`** - Role checking with security definer
+- **`update_user_session()`** - Session management
+- **`handle_new_user()`** - Automatic profile creation trigger
+
+#### **Row Level Security (RLS)**
+- **Profile Access**: Users can view all profiles, modify only their own
+- **Stats Access**: Users can only access their own statistics
+- **Activity Access**: Users can only view/modify their own activities
+- **Admin Access**: Role-based access to user management
+- **Challenge Access**: Public viewing, creator modification
+- **Event Management**: Public events, creator control
+
+### **Authentication & Authorization**
+- **Supabase Auth** - Built-in authentication system
+- **JWT Tokens** - Secure session management
+- **Role-Based Access Control** - Hierarchical permissions (admin > manager > user)
+- **Protected Routes** - Frontend route protection
+
+### **Real-time Features**
+- **Supabase Realtime** - WebSocket connections for live updates
+- **User Presence** - Real-time user activity tracking
+- **Live Statistics** - Real-time step counting and health metrics
+- **Push Notifications** - Event and challenge notifications
+
+## **Key Features & Components**
+
+### **Dashboard System**
+- **Responsive Layout** - Mobile-first design with desktop optimization
+- **Health Summary** - Real-time fitness metrics display
+- **Challenge Integration** - Team challenges with countdown timers
+- **Social Feed** - Activity sharing and community features
+- **Quick Actions** - Context-sensitive action buttons
+
+### **Activity Tracking**
+- **Step Counter** - Daily/weekly step tracking
+- **Activity Types** - Walk, run, cycle, workout categorization
+- **Calorie Calculation** - Metabolic rate-based calorie estimation
+- **Goal Progress** - Visual progress indicators
+- **Streak Tracking** - Consecutive day achievement system
+
+### **User Management**
+- **Profile Editor** - Comprehensive user profile management
+- **Role Management** - Admin interface for user role assignment
+- **Department Organization** - Team-based organization structure
+- **CSV Import** - Bulk user import functionality
+
+### **Accessibility & UX**
+- **Keyboard Navigation** - Full keyboard accessibility
+- **Screen Reader Support** - ARIA labels and live regions
+- **Focus Management** - Proper focus trapping and indicators
+- **Error Boundaries** - Graceful error handling
+- **Loading States** - Comprehensive loading and skeleton screens
+
+### **Media & Content**
+- **Video Library** - Apple News-style media presentation
+- **QR Code Integration** - Event check-in and sharing
+- **Image Uploads** - Avatar and content image support
+- **Editorial System** - Content management interface
+
+## **Development & Deployment**
+
+### **Development Workflow**
+- **Hot Module Replacement** - Fast development iteration
+- **TypeScript Integration** - Full type checking and IntelliSense
+- **Component Development** - Modular, reusable component architecture
+- **Error Tracking** - Console error monitoring and reporting
+
+### **Performance Optimization**
+- **Code Splitting** - Route-based code splitting
+- **Lazy Loading** - Component and image lazy loading
+- **Caching Strategy** - React Query caching and Supabase optimization
+- **Bundle Optimization** - Vite's built-in optimization
+
+### **Testing & Quality**
+- **TypeScript Safety** - Compile-time error prevention
+- **ESLint Rules** - Code quality enforcement
+- **Accessibility Testing** - Built-in accessibility validation
+- **Error Boundaries** - Runtime error containment
+
+This fitness tracking application represents a modern, full-stack web application with native mobile capabilities, built with a focus on accessibility, performance, and user experience. The architecture supports real-time collaboration, comprehensive user management, and scalable team-based fitness challenges.

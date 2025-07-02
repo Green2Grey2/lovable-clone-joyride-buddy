@@ -1,4 +1,5 @@
 
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,19 +11,24 @@ import { UserPreferencesProvider } from "@/hooks/useUserPreferences";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { UserActivityTracker } from "@/components/UserActivityTracker";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingState } from "@/components/ui/loading-state";
+
+// Eager load critical pages
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import Activity from "./pages/Activity";
-import ActiveActivity from "./pages/ActiveActivity";
-import Awards from "./pages/Awards";
 import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
-import Manager from "./pages/Manager";
-import Media from "./pages/Media";
-import Editorial from "./pages/Editorial";
-import SocialAdmin from "./pages/SocialAdmin";
-import NotFound from "./pages/NotFound";
+import Dashboard from "./pages/Dashboard";
+
+// Lazy load secondary pages
+const Profile = lazy(() => import("./pages/Profile"));
+const Activity = lazy(() => import("./pages/Activity"));
+const ActiveActivity = lazy(() => import("./pages/ActiveActivity"));
+const Awards = lazy(() => import("./pages/Awards"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Manager = lazy(() => import("./pages/Manager"));
+const Media = lazy(() => import("./pages/Media"));
+const Editorial = lazy(() => import("./pages/Editorial"));
+const SocialAdmin = lazy(() => import("./pages/SocialAdmin"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -55,91 +61,93 @@ const App = () => {
                   </a>
                   <Toaster />
                   <BrowserRouter>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route
-                        path="/dashboard"
-                        element={
-                          <ProtectedRoute>
-                            <Dashboard />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/profile"
-                        element={
-                          <ProtectedRoute>
-                            <Profile />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/activity"
-                        element={
-                          <ProtectedRoute>
-                            <Activity />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/active-activity"
-                        element={
-                          <ProtectedRoute>
-                            <ActiveActivity />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/awards"
-                        element={
-                          <ProtectedRoute>
-                            <Awards />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/admin"
-                        element={
-                          <ProtectedRoute>
-                            <Admin />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/manager"
-                        element={
-                          <ProtectedRoute>
-                            <Manager />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/media"
-                        element={
-                          <ProtectedRoute>
-                            <Media />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/editorial"
-                        element={
-                          <ProtectedRoute>
-                            <Editorial />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/social-admin"
-                        element={
-                          <ProtectedRoute>
-                            <SocialAdmin />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
+                    <Suspense fallback={<LoadingState />}>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/auth" element={<Auth />} />
+                        <Route
+                          path="/dashboard"
+                          element={
+                            <ProtectedRoute>
+                              <Dashboard />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/profile"
+                          element={
+                            <ProtectedRoute>
+                              <Profile />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/activity"
+                          element={
+                            <ProtectedRoute>
+                              <Activity />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/active-activity"
+                          element={
+                            <ProtectedRoute>
+                              <ActiveActivity />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/awards"
+                          element={
+                            <ProtectedRoute>
+                              <Awards />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin"
+                          element={
+                            <ProtectedRoute>
+                              <Admin />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/manager"
+                          element={
+                            <ProtectedRoute>
+                              <Manager />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/media"
+                          element={
+                            <ProtectedRoute>
+                              <Media />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/editorial"
+                          element={
+                            <ProtectedRoute>
+                              <Editorial />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/social-admin"
+                          element={
+                            <ProtectedRoute>
+                              <SocialAdmin />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
                   </BrowserRouter>
                 </ErrorBoundary>
                 </AppProvider>
