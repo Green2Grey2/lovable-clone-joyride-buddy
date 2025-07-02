@@ -503,59 +503,6 @@ export const ActivityHeatMap: React.FC = () => {
         ref={expandedSwipeRef as React.RefObject<HTMLDivElement>}
         className="select-none"
       >
-        {/* Month Navigation Header */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={navigatePrevious}
-            className="p-3 rounded-full glass dark:glass-dark hover:bg-primary/10 transition-all duration-200 active:scale-95"
-            aria-label="Previous month"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          
-          <div className="flex flex-col items-center gap-1">
-            <h3 className="text-lg font-semibold text-foreground">
-              {format(currentDate, 'MMMM yyyy')}
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Swipe to navigate months • {isMobile ? 'Tap' : 'Double-click'} for details
-            </p>
-            {/* Today button for expanded view */}
-            {!isSameMonth(currentDate, new Date()) && (
-              <button
-                onClick={handleGoToToday}
-                className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors mt-1"
-              >
-                <Calendar className="h-3 w-3" />
-                <span>Today</span>
-              </button>
-            )}
-          </div>
-          
-          <button
-            onClick={navigateNext}
-            disabled={isSameMonth(currentDate, new Date())}
-            className={cn(
-              "p-3 rounded-full glass dark:glass-dark transition-all duration-200 active:scale-95",
-              isSameMonth(currentDate, new Date()) 
-                ? "opacity-50 cursor-not-allowed" 
-                : "hover:bg-primary/10"
-            )}
-            aria-label="Next month"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Day labels */}
-        <div className="grid grid-cols-7 gap-1 mb-3">
-          {weekDays.map((day, i) => (
-            <div key={i} className="text-xs text-muted-foreground text-center font-semibold py-2">
-              {day}
-            </div>
-          ))}
-        </div>
-
         {/* Calendar grid with enhanced mobile interactions */}
         <div className="space-y-1">
           {weeks.map((week, weekIndex) => (
