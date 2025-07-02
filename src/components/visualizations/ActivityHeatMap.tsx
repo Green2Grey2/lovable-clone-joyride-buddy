@@ -1,11 +1,11 @@
-import React, { useMemo, useRef, useCallback } from 'react';
+import React, { useMemo, useRef, useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, subMonths, startOfYear, eachMonthOfInterval, isSameDay, startOfWeek, endOfWeek, subDays, addDays } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { activityTrackingService } from '@/utils/activityTrackingService';
-import { useEffect, useState } from 'react';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Info, Activity, Clock, Flame, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
@@ -38,6 +38,7 @@ export const ActivityHeatMap: React.FC = () => {
   const [weekOffset, setWeekOffset] = useState(0); // For compact week navigation
   const [dataCache, setDataCache] = useState<Map<string, Record<string, ActivityData>>>(new Map());
   const [preloadedWeeks, setPreloadedWeeks] = useState<Set<number>>(new Set());
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -219,23 +220,38 @@ export const ActivityHeatMap: React.FC = () => {
     }
   }, [isMobile, lightTap]);
 
-  // Navigation handlers
+  // Navigation handlers with debouncing
   const navigatePrevious = useCallback(() => {
     playSoftClick();
     mediumTap();
+    
+    // Clear existing timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
     
     if (isExpanded) {
       // Month navigation when expanded
       setCurrentDate(prev => subMonths(prev, 1));
     } else {
-      // Week navigation when compact
+      // Week navigation when compact - debounce rapid navigation
       setWeekOffset(prev => prev + 7);
+      
+      // Debounce preloading to avoid excessive API calls
+      debounceTimer.current = setTimeout(() => {
+        preloadAdjacentWeeks(weekOffset + 7);
+      }, 300);
     }
-  }, [isExpanded, playSoftClick, mediumTap]);
+  }, [isExpanded, playSoftClick, mediumTap, weekOffset, preloadAdjacentWeeks]);
 
   const navigateNext = useCallback(() => {
     playSoftClick();
     mediumTap();
+    
+    // Clear existing timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
     
     if (isExpanded) {
       // Month navigation when expanded
@@ -244,15 +260,36 @@ export const ActivityHeatMap: React.FC = () => {
         setCurrentDate(nextMonth);
       }
     } else {
-      // Week navigation when compact
+      // Week navigation when compact - debounce rapid navigation
       if (weekOffset > 0) {
         setWeekOffset(prev => prev - 7);
+        
+        // Debounce preloading to avoid excessive API calls
+        debounceTimer.current = setTimeout(() => {
+          preloadAdjacentWeeks(weekOffset - 7);
+        }, 300);
       }
     }
-  }, [isExpanded, currentDate, weekOffset, playSoftClick, mediumTap]);
+  }, [isExpanded, currentDate, weekOffset, playSoftClick, mediumTap, preloadAdjacentWeeks]);
 
   const handleToggleExpand = () => {
     playSoftClick();
+    
+    if (isExpanded) {
+      // Switching from expanded to collapsed - calculate weekOffset from currentDate
+      const today = new Date();
+      const diffTime = today.getTime() - currentDate.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const newWeekOffset = Math.max(0, Math.floor(diffDays / 7) * 7);
+      setWeekOffset(newWeekOffset);
+    } else {
+      // Switching from collapsed to expanded - set currentDate from weekOffset
+      const today = new Date();
+      const targetDate = subDays(today, weekOffset);
+      const monthOfTargetWeek = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1);
+      setCurrentDate(monthOfTargetWeek);
+    }
+    
     setIsExpanded(!isExpanded);
   };
 
