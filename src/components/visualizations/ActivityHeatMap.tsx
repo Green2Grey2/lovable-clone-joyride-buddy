@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, subMonths, startOfYear, eachMonthOfInterval, isSameDay } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { activityTrackingService } from '@/utils/activityTrackingService';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -39,24 +39,22 @@ export const ActivityHeatMap: React.FC = () => {
         ? endOfMonth(currentDate)
         : new Date();
 
-      const { data, error } = await supabase
-        .from('activities')
-        .select('date, duration, calories_burned')
-        .eq('user_id', user?.id)
-        .gte('date', format(startDate, 'yyyy-MM-dd'))
-        .lte('date', format(endDate, 'yyyy-MM-dd'));
-
-      if (error) throw error;
+      const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const activities = await activityTrackingService.getActivityHistory(user?.id!, days);
 
       const processed: Record<string, ActivityData> = {};
-      data?.forEach(activity => {
-        const intensity = calculateIntensity(activity.duration, activity.calories_burned);
-        processed[activity.date] = {
-          date: activity.date,
-          intensity,
-          minutes: activity.duration,
-          calories: activity.calories_burned
-        };
+      activities?.forEach(activity => {
+        if (activity.date >= format(startDate, 'yyyy-MM-dd') && 
+            activity.date <= format(endDate, 'yyyy-MM-dd')) {
+          const intensity = calculateIntensity(activity.duration || 0, activity.calories_burned || 0);
+          processed[activity.date] = {
+            date: activity.date,
+            intensity,
+            minutes: activity.duration || 0,
+            calories: activity.calories_burned || 0,
+            steps: activity.steps || 0
+          };
+        }
       });
 
       setActivityData(processed);

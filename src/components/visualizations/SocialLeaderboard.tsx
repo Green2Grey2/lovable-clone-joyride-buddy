@@ -59,21 +59,20 @@ export const SocialLeaderboard: React.FC = () => {
       
       // Get date range based on timeframe
       const now = new Date();
-      let startDate = new Date();
+      let days = 7;
       
       if (timeframe === 'today') {
-        startDate.setHours(0, 0, 0, 0);
+        days = 1;
       } else if (timeframe === 'week') {
-        startDate.setDate(now.getDate() - 7);
+        days = 7;
       } else {
-        startDate.setDate(now.getDate() - 30);
+        days = 30;
       }
 
-      // Get aggregated data for all users
-      const { data: activities } = await supabase
-        .from('activities')
-        .select('user_id, steps, calories_burned, duration')
-        .gte('date', startDate.toISOString());
+      // Get aggregated data for all users using the social feed function
+      const { data: socialFeed } = await supabase.rpc('get_social_feed', {
+        p_limit: 100
+      });
 
       // Get user profiles and stats
       const { data: profiles } = await supabase
@@ -82,45 +81,46 @@ export const SocialLeaderboard: React.FC = () => {
 
       const { data: stats } = await supabase
         .from('user_stats')
-        .select('user_id, current_streak');
+        .select('user_id, current_streak, today_steps, weekly_steps, monthly_steps, calories_burned');
 
-      if (!activities || !profiles) return;
+      if (!profiles || !stats) return;
 
-      // Aggregate data by user
-      const userMetrics = new Map<string, any>();
-      
-      activities.forEach(activity => {
-        const current = userMetrics.get(activity.user_id) || {
-          steps: 0,
-          calories: 0,
-          duration: 0
-        };
-        
-        userMetrics.set(activity.user_id, {
-          steps: current.steps + (activity.steps || 0),
-          calories: current.calories + (activity.calories_burned || 0),
-          duration: current.duration + (activity.duration || 0)
-        });
-      });
-
-      // Create leaderboard entries
-      const entries: LeaderboardEntry[] = Array.from(userMetrics.entries())
-        .map(([userId, metrics]) => {
-          const profile = profiles.find(p => p.user_id === userId);
-          const userStats = stats?.find(s => s.user_id === userId);
+      // Create leaderboard entries from user stats
+      const entries: LeaderboardEntry[] = stats
+        .map(userStat => {
+          const profile = profiles.find(p => p.user_id === userStat.user_id);
+          
+          let score = 0;
+          switch (activeTab) {
+            case 'steps':
+              score = timeframe === 'today' ? (userStat.today_steps || 0) :
+                     timeframe === 'week' ? (userStat.weekly_steps || 0) :
+                     (userStat.monthly_steps || 0);
+              break;
+            case 'calories':
+              score = userStat.calories_burned || 0;
+              break;
+            case 'duration':
+              // Approximate duration from steps (rough calculation)
+              score = Math.round((userStat.today_steps || 0) / 100) * (timeframe === 'today' ? 1 : timeframe === 'week' ? 7 : 30);
+              break;
+            case 'streak':
+              score = userStat.current_streak || 0;
+              break;
+          }
           
           return {
-            id: userId,
-            user_id: userId,
+            id: userStat.user_id,
+            user_id: userStat.user_id,
             username: profile?.name || 'Anonymous',
             avatar_url: profile?.avatar_url,
-            score: activeTab === 'streak' ? (userStats?.current_streak || 0) : metrics[activeTab],
+            score,
             metric: activeTab,
             rank: 0,
             change: Math.floor(Math.random() * 5) - 2, // Simulated rank change
-            isCurrentUser: userId === user?.id,
+            isCurrentUser: userStat.user_id === user?.id,
             department: profile?.department,
-            streak: userStats?.current_streak
+            streak: userStat.current_streak
           };
         })
         .filter(entry => entry.score > 0)
@@ -135,6 +135,8 @@ export const SocialLeaderboard: React.FC = () => {
       const currentUserEntry = entries.find(e => e.isCurrentUser);
       if (currentUserEntry) {
         setUserRank(currentUserEntry.rank);
+      } else {
+        setUserRank(0);
       }
     } catch (error) {
       console.error('Error loading leaderboard:', error);

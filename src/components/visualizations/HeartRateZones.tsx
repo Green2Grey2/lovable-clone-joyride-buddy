@@ -4,6 +4,7 @@ import { Activity, Heart, Zap, Flame, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface HeartRateZone {
   name: string;
@@ -31,6 +32,8 @@ export const HeartRateZones: React.FC<HeartRateZonesProps> = ({
   const [calculatedMaxHR, setCalculatedMaxHR] = useState(maxHeartRate || 220 - age);
   const [activeZone, setActiveZone] = useState<number>(-1);
   const [timeInZones, setTimeInZones] = useState<number[]>([15, 35, 30, 15, 5]);
+  const [realHeartRate, setRealHeartRate] = useState(currentHeartRate);
+  const [loading, setLoading] = useState(true);
 
   const zones: HeartRateZone[] = [
     {
@@ -86,25 +89,90 @@ export const HeartRateZones: React.FC<HeartRateZonesProps> = ({
   ];
 
   useEffect(() => {
-    if (currentHeartRate > 0) {
+    if (user) {
+      loadHeartRateData();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const heartRateToUse = realHeartRate || currentHeartRate;
+    if (heartRateToUse > 0) {
       const zoneIndex = zones.findIndex(zone => {
         const minHR = zone.min * calculatedMaxHR;
         const maxHR = zone.max * calculatedMaxHR;
-        return currentHeartRate >= minHR && currentHeartRate <= maxHR;
+        return heartRateToUse >= minHR && heartRateToUse <= maxHR;
       });
       setActiveZone(zoneIndex);
     }
-  }, [currentHeartRate, calculatedMaxHR]);
+  }, [realHeartRate, currentHeartRate, calculatedMaxHR]);
+
+  const loadHeartRateData = async () => {
+    try {
+      setLoading(true);
+      
+      // Get user's profile for max heart rate
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('max_heart_rate, age')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (profile?.max_heart_rate) {
+        setCalculatedMaxHR(profile.max_heart_rate);
+      } else if (profile?.age) {
+        setCalculatedMaxHR(220 - profile.age);
+      }
+
+      // Get recent heart rate data (last 7 days)
+      const { data: heartRateData } = await supabase
+        .from('heart_rate_data')
+        .select('heart_rate, timestamp, zone')
+        .eq('user_id', user?.id)
+        .gte('timestamp', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('timestamp', { ascending: false })
+        .limit(100);
+
+      if (heartRateData && heartRateData.length > 0) {
+        // Use most recent heart rate
+        setRealHeartRate(heartRateData[0].heart_rate);
+        
+        // Calculate time in zones from recent data
+        const zoneDistribution = [0, 0, 0, 0, 0];
+        heartRateData.forEach(hr => {
+          const zoneIndex = zones.findIndex(zone => {
+            const minHR = zone.min * calculatedMaxHR;
+            const maxHR = zone.max * calculatedMaxHR;
+            return hr.heart_rate >= minHR && hr.heart_rate <= maxHR;
+          });
+          if (zoneIndex >= 0) {
+            zoneDistribution[zoneIndex]++;
+          }
+        });
+        
+        // Convert to percentages
+        const total = zoneDistribution.reduce((sum, count) => sum + count, 0);
+        if (total > 0) {
+          const percentages = zoneDistribution.map(count => Math.round((count / total) * 100));
+          setTimeInZones(percentages);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading heart rate data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getZoneWidth = (zone: HeartRateZone): number => {
+    const heartRateToUse = realHeartRate || currentHeartRate;
     const minHR = zone.min * calculatedMaxHR;
     const maxHR = zone.max * calculatedMaxHR;
     
-    if (currentHeartRate <= 0) return 0;
-    if (currentHeartRate < minHR) return 0;
-    if (currentHeartRate >= maxHR) return 100;
+    if (heartRateToUse <= 0) return 0;
+    if (heartRateToUse < minHR) return 0;
+    if (heartRateToUse >= maxHR) return 100;
     
-    return ((currentHeartRate - minHR) / (maxHR - minHR)) * 100;
+    return ((heartRateToUse - minHR) / (maxHR - minHR)) * 100;
   };
 
   return (
@@ -115,7 +183,7 @@ export const HeartRateZones: React.FC<HeartRateZonesProps> = ({
           <div className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-red-500 animate-pulse" />
             <span className="text-2xl font-bold text-foreground">
-              {currentHeartRate > 0 ? currentHeartRate : '--'}
+              {realHeartRate || currentHeartRate || '--'}
             </span>
             <span className="text-sm text-muted-foreground">bpm</span>
           </div>
