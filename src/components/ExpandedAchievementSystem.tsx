@@ -263,7 +263,7 @@ export const ExpandedAchievementSystem = () => {
           ))}
         </TabsList>
         
-        <TabsContent value={selectedCategory} className="mt-8">
+        <TabsContent value={selectedCategory} className="mt-12">
           <div className="grid gap-4">
             {filteredAchievements.map((achievement) => {
               const IconComponent = iconMap[achievement.icon] || iconMap['award'] || Award;
