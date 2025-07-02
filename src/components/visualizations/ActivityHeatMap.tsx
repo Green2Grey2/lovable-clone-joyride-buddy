@@ -607,15 +607,40 @@ export const ActivityHeatMap: React.FC = () => {
           <Skeleton className="h-6 w-32" />
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="grid grid-cols-7 gap-1">
-                {[1, 2, 3, 4, 5, 6, 7].map(j => (
-                  <Skeleton key={j} className="aspect-square rounded-lg" />
+          {!isExpanded ? (
+            // Compact week view skeleton
+            <div className="space-y-4">
+              {/* Navigation skeleton */}
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </div>
+              {/* Stats skeleton */}
+              <div className="grid grid-cols-3 gap-3">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-16 rounded-xl" />
                 ))}
               </div>
-            ))}
-          </div>
+              {/* Week row skeleton */}
+              <div className="grid grid-cols-7 gap-2">
+                {[1, 2, 3, 4, 5, 6, 7].map(j => (
+                  <Skeleton key={j} className="aspect-square rounded-xl" />
+                ))}
+              </div>
+            </div>
+          ) : (
+            // Full month view skeleton
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="grid grid-cols-7 gap-1">
+                  {[1, 2, 3, 4, 5, 6, 7].map(j => (
+                    <Skeleton key={j} className="aspect-square rounded-lg" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     );
