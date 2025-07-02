@@ -14,9 +14,9 @@ const weeklyData = [
 
 export const WeeklyActivityChart = () => {
   return (
-    <Card className="bg-white border-0 rounded-3xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+    <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
       <CardHeader className="pb-4">
-        <CardTitle className="text-[#1D244D] text-xl font-semibold">Weekly Activity</CardTitle>
+        <CardTitle className="text-foreground text-xl font-semibold">Weekly Activity</CardTitle>
       </CardHeader>
       <CardContent className="p-8 pt-0">
         <div className="h-48">
@@ -24,22 +24,22 @@ export const WeeklyActivityChart = () => {
             <BarChart data={weeklyData} barCategoryGap="20%">
               <defs>
                 <linearGradient id="todayGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#735CF7" />
-                  <stop offset="100%" stopColor="#00A3FF" />
+                  <stop offset="0%" stopColor="hsl(var(--primary))" />
+                  <stop offset="100%" stopColor="hsl(var(--blue-500))" />
                 </linearGradient>
               </defs>
               <XAxis 
                 dataKey="day" 
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#8A94A6', fontSize: 12 }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               />
               <YAxis hide />
               <Bar dataKey="steps" radius={[8, 8, 0, 0]}>
                 {weeklyData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.isToday ? 'url(#todayGradient)' : '#E5E7EB'} 
+                    fill={entry.isToday ? 'url(#todayGradient)' : 'hsl(var(--muted))'} 
                   />
                 ))}
               </Bar>
@@ -49,13 +49,13 @@ export const WeeklyActivityChart = () => {
         
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="bg-[#F5F6FA] rounded-2xl p-4 text-center">
-            <p className="text-[#8A94A6] text-sm">Distance</p>
-            <p className="text-[#1D244D] text-lg font-bold">2.4 km</p>
+          <div className="bg-muted rounded-2xl p-4 text-center">
+            <p className="text-muted-foreground text-sm">Distance</p>
+            <p className="text-foreground text-lg font-bold">2.4 km</p>
           </div>
-          <div className="bg-[#F5F6FA] rounded-2xl p-4 text-center">
-            <p className="text-[#8A94A6] text-sm">Time</p>
-            <p className="text-[#1D244D] text-lg font-bold">45 min</p>
+          <div className="bg-muted rounded-2xl p-4 text-center">
+            <p className="text-muted-foreground text-sm">Time</p>
+            <p className="text-foreground text-lg font-bold">45 min</p>
           </div>
         </div>
       </CardContent>

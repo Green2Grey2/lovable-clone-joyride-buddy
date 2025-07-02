@@ -128,7 +128,7 @@ export const SocialActivityFeed = () => {
       case 'personal_record':
         return <Trophy className="h-4 w-4 text-pink-500" />;
       default:
-        return <Target className="h-4 w-4 text-gray-500" />;
+        return <Target className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -145,7 +145,7 @@ export const SocialActivityFeed = () => {
       case 'personal_record':
         return <Badge className="bg-pink-100 text-pink-800">Personal Record</Badge>;
       default:
-        return <Badge className="bg-gray-100 text-gray-800">Activity</Badge>;
+        return <Badge className="bg-muted text-muted-foreground">Activity</Badge>;
     }
   };
 
@@ -180,7 +180,7 @@ export const SocialActivityFeed = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-[#1D244D]">Activity Feed</h2>
+        <h2 className="text-xl font-bold text-foreground">Activity Feed</h2>
         <Button size="sm" variant="outline">
           Share Achievement
         </Button>
@@ -188,7 +188,7 @@ export const SocialActivityFeed = () => {
 
       <div className="space-y-4">
         {posts.map((post) => (
-          <Card key={post.id} className="bg-white border-0 rounded-2xl shadow-[0px_8px_25px_rgba(115,92,247,0.08)] hover:shadow-[0px_12px_35px_rgba(115,92,247,0.12)] transition-all duration-300">
+          <Card key={post.id} className="bg-card border-0 rounded-2xl shadow-lg dark:shadow-primary/10 hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <Avatar className="w-12 h-12">
@@ -199,11 +199,11 @@ export const SocialActivityFeed = () => {
                 
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-[#1D244D]">{post.userName}</h3>
-                    <span className="text-sm text-[#8A94A6]">•</span>
-                    <span className="text-sm text-[#8A94A6]">{post.userDepartment}</span>
-                    <span className="text-sm text-[#8A94A6]">•</span>
-                    <span className="text-sm text-[#8A94A6]">{post.timestamp}</span>
+                    <h3 className="font-semibold text-foreground">{post.userName}</h3>
+                    <span className="text-sm text-muted-foreground">•</span>
+                    <span className="text-sm text-muted-foreground">{post.userDepartment}</span>
+                    <span className="text-sm text-muted-foreground">•</span>
+                    <span className="text-sm text-muted-foreground">{post.timestamp}</span>
                     {getPostBadge(post.type, post.data)}
                   </div>
                   
@@ -211,7 +211,7 @@ export const SocialActivityFeed = () => {
                     <div className="p-2 bg-gray-50 rounded-full">
                       {getPostIcon(post.type, post.data)}
                     </div>
-                    <p className="text-[#1D244D] leading-relaxed">{post.content}</p>
+                    <p className="text-foreground leading-relaxed">{post.content}</p>
                   </div>
 
                   {/* Special data display */}
@@ -220,13 +220,13 @@ export const SocialActivityFeed = () => {
                       {post.type === 'achievement' && post.data.achievementName && (
                         <div className="flex items-center gap-2">
                           <Award className="h-4 w-4 text-blue-500" />
-                          <span className="font-semibold text-[#1D244D]">{post.data.achievementName}</span>
+                          <span className="font-semibold text-foreground">{post.data.achievementName}</span>
                           {post.data.achievementRarity && (
                             <Badge className={
                               post.data.achievementRarity === 'legendary' ? 'bg-yellow-100 text-yellow-800' :
                               post.data.achievementRarity === 'epic' ? 'bg-purple-100 text-purple-800' :
                               post.data.achievementRarity === 'rare' ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
+                              'bg-muted text-muted-foreground'
                             }>
                               {post.data.achievementRarity}
                             </Badge>
@@ -236,19 +236,19 @@ export const SocialActivityFeed = () => {
                       {post.type === 'streak' && post.data.streakDays && (
                         <div className="flex items-center gap-2">
                           <Zap className="h-4 w-4 text-red-500" />
-                          <span className="font-semibold text-[#1D244D]">{post.data.streakDays}-day streak</span>
+                          <span className="font-semibold text-foreground">{post.data.streakDays}-day streak</span>
                         </div>
                       )}
                       {post.type === 'challenge' && post.data.challengeName && (
                         <div className="flex items-center gap-2">
                           <Trophy className="h-4 w-4 text-orange-500" />
-                          <span className="font-semibold text-[#1D244D]">{post.data.challengeName}</span>
+                          <span className="font-semibold text-foreground">{post.data.challengeName}</span>
                         </div>
                       )}
                       {(post.type === 'milestone' || post.type === 'personal_record') && post.data.milestoneValue && (
                         <div className="flex items-center gap-2">
                           <Target className="h-4 w-4 text-green-500" />
-                          <span className="font-semibold text-[#1D244D]">
+                          <span className="font-semibold text-foreground">
                             {post.data.milestoneValue.toLocaleString()} {post.data.metricType}
                           </span>
                         </div>
@@ -261,17 +261,17 @@ export const SocialActivityFeed = () => {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className={`flex items-center gap-2 ${post.isLiked ? 'text-red-500' : 'text-[#8A94A6]'}`}
+                        className={`flex items-center gap-2 ${post.isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
                         onClick={() => handleLike(post.id)}
                       >
                         <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
                         {post.likes}
                       </Button>
-                      <Button size="sm" variant="ghost" className="flex items-center gap-2 text-[#8A94A6]">
+                      <Button size="sm" variant="ghost" className="flex items-center gap-2 text-muted-foreground">
                         <MessageCircle className="h-4 w-4" />
                         {post.comments}
                       </Button>
-                      <Button size="sm" variant="ghost" className="flex items-center gap-2 text-[#8A94A6]">
+                      <Button size="sm" variant="ghost" className="flex items-center gap-2 text-muted-foreground">
                         <Share2 className="h-4 w-4" />
                         Share
                       </Button>

@@ -20,9 +20,9 @@ const chartConfig = {
 
 export const StepChart = ({ data, timeRange }: StepChartProps) => {
   return (
-    <Card className="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md border border-white/30 shadow-xl">
+    <Card className="bg-gradient-to-br from-white/90 to-white/70 dark:from-gray-800/90 dark:to-gray-900/70 backdrop-blur-md border border-white/30 dark:border-gray-700/30 shadow-xl">
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
           Step History - {timeRange === 'week' ? 'Last 7 Days' : 'Last 30 Days'}
         </CardTitle>
       </CardHeader>
@@ -32,20 +32,20 @@ export const StepChart = ({ data, timeRange }: StepChartProps) => {
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="stepGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" opacity={0.7} />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.7} />
               <XAxis 
                 dataKey="date" 
-                stroke="#6B7280"
+                className="fill-gray-600 dark:fill-gray-400"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis 
-                stroke="#6B7280"
+                className="fill-gray-600 dark:fill-gray-400"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -53,22 +53,15 @@ export const StepChart = ({ data, timeRange }: StepChartProps) => {
               />
               <ChartTooltip 
                 content={<ChartTooltipContent />}
-                contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: 'none',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-                  backdropFilter: 'blur(10px)'
-                }}
               />
               <Area 
                 type="monotone" 
                 dataKey="steps" 
-                stroke="#3B82F6" 
+                stroke="hsl(var(--primary))" 
                 strokeWidth={3}
                 fill="url(#stepGradient)"
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, fill: '#1D4ED8' }}
+                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
               />
             </AreaChart>
           </ResponsiveContainer>

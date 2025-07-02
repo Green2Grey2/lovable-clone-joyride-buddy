@@ -71,27 +71,27 @@ export const WalkingChallengeCountdown = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200 hover:scale-105">
+        <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20 hover:scale-105 card-modern glass dark:glass-dark">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full">
-                  <MapPin className="h-4 w-4 text-white" />
+                <div className="p-2 bg-gradient-to-br from-primary to-secondary rounded-full">
+                  <MapPin className="h-4 w-4 text-primary-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-emerald-800 text-sm">Department Walking Challenge</h3>
-                  <p className="text-xs text-emerald-600">
+                  <h3 className="font-semibold text-foreground text-sm">Department Walking Challenge</h3>
+                  <p className="text-xs text-muted-foreground">
                     Starts {formatDate(challengeSettings.startDate)} • Department vs Department
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="flex items-center gap-1 text-xs font-mono bg-white/50 px-2 py-1 rounded-lg">
-                  <span className="text-emerald-700">{formatTime(timeLeft.days)}d</span>
-                  <span className="text-emerald-600">:</span>
-                  <span className="text-emerald-700">{formatTime(timeLeft.hours)}h</span>
-                  <span className="text-emerald-600">:</span>
-                  <span className="text-emerald-700">{formatTime(timeLeft.minutes)}m</span>
+                <div className="flex items-center gap-1 text-xs font-mono bg-background/50 px-2 py-1 rounded-lg">
+                  <span className="text-primary">{formatTime(timeLeft.days)}d</span>
+                  <span className="text-muted-foreground">:</span>
+                  <span className="text-primary">{formatTime(timeLeft.hours)}h</span>
+                  <span className="text-muted-foreground">:</span>
+                  <span className="text-primary">{formatTime(timeLeft.minutes)}m</span>
                 </div>
               </div>
             </div>
@@ -101,32 +101,32 @@ export const WalkingChallengeCountdown = () => {
       
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-emerald-600" />
+          <DialogTitle className="text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
             Department Walking Challenge
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
           {/* Countdown Display */}
-          <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg border border-emerald-200">
-            <h3 className="text-lg font-semibold text-emerald-800 mb-4">Challenge Starts In:</h3>
+          <div className="text-center p-6 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Challenge Starts In:</h3>
             <div className="grid grid-cols-4 gap-2 text-center">
-              <div className="bg-white p-3 rounded-lg shadow-sm">
-                <div className="text-xl font-bold text-emerald-700">{formatTime(timeLeft.days)}</div>
-                <div className="text-xs text-emerald-600">Days</div>
+              <div className="bg-card p-3 rounded-lg shadow-sm border border-border/50">
+                <div className="text-xl font-bold text-primary">{formatTime(timeLeft.days)}</div>
+                <div className="text-xs text-muted-foreground">Days</div>
               </div>
-              <div className="bg-white p-3 rounded-lg shadow-sm">
-                <div className="text-xl font-bold text-emerald-700">{formatTime(timeLeft.hours)}</div>
-                <div className="text-xs text-emerald-600">Hours</div>
+              <div className="bg-card p-3 rounded-lg shadow-sm border border-border/50">
+                <div className="text-xl font-bold text-primary">{formatTime(timeLeft.hours)}</div>
+                <div className="text-xs text-muted-foreground">Hours</div>
               </div>
-              <div className="bg-white p-3 rounded-lg shadow-sm">
-                <div className="text-xl font-bold text-emerald-700">{formatTime(timeLeft.minutes)}</div>
-                <div className="text-xs text-emerald-600">Minutes</div>
+              <div className="bg-card p-3 rounded-lg shadow-sm border border-border/50">
+                <div className="text-xl font-bold text-primary">{formatTime(timeLeft.minutes)}</div>
+                <div className="text-xs text-muted-foreground">Minutes</div>
               </div>
-              <div className="bg-white p-3 rounded-lg shadow-sm">
-                <div className="text-xl font-bold text-emerald-700">{formatTime(timeLeft.seconds)}</div>
-                <div className="text-xs text-emerald-600">Seconds</div>
+              <div className="bg-card p-3 rounded-lg shadow-sm border border-border/50">
+                <div className="text-xl font-bold text-primary">{formatTime(timeLeft.seconds)}</div>
+                <div className="text-xs text-muted-foreground">Seconds</div>
               </div>
             </div>
           </div>
@@ -135,17 +135,17 @@ export const WalkingChallengeCountdown = () => {
 
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-emerald-600 mt-1" />
+              <Calendar className="h-5 w-5 text-primary mt-1" />
               <div>
-                <h4 className="font-semibold text-gray-800">Duration</h4>
-                <p className="text-sm text-gray-600">
+                <h4 className="font-semibold text-foreground">Duration</h4>
+                <p className="text-sm text-muted-foreground">
                   30 days from {formatDate(challengeSettings.startDate)} to {formatDate(challengeSettings.endDate)}
                 </p>
               </div>
             </div>
             
             <div className="flex items-start gap-3">
-              <Trophy className="h-5 w-5 text-emerald-600 mt-1" />
+              <Trophy className="h-5 w-5 text-primary mt-1" />
               <div>
                 <h4 className="font-semibold text-gray-800">Department Competition</h4>
                 <p className="text-sm text-gray-600">Departments compete for the highest total steps. Individual goal: 10,000 steps daily</p>

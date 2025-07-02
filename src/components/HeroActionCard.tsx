@@ -17,7 +17,7 @@ export const HeroActionCard = React.memo(({
       <div className="absolute inset-0 bg-black/20"></div>
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-4 right-4 w-32 h-32 bg-white/20 rounded-full blur-3xl animate-pulse-subtle"></div>
-        <div className="absolute bottom-6 left-6 w-24 h-24 bg-white/20 rounded-full blur-2xl animate-pulse-subtle" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-6 left-6 w-24 h-24 bg-white/20 rounded-full blur-2xl animate-pulse-subtle [animation-delay:1s]"></div>
       </div>
       <CardContent className="relative z-10 p-8 h-full flex flex-col justify-center">
         <h2 className="text-white text-4xl font-bold mb-3 drop-shadow-lg">

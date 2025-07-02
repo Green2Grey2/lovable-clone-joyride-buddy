@@ -256,11 +256,11 @@ export const EditorialMediaForm = ({ item, onSave, onCancel }: EditorialMediaFor
           )}
 
           {/* Pin to Home */}
-          <div className="flex items-center space-x-2 p-4 bg-[#735CF7]/5 rounded-lg">
-            <Pin className="h-4 w-4 text-[#735CF7]" />
+          <div className="flex items-center space-x-2 p-4 bg-primary/5 rounded-lg">
+            <Pin className="h-4 w-4 text-primary" />
             <div className="flex-1">
               <Label htmlFor="isPinned" className="font-medium">Pin to Home Screen</Label>
-              <p className="text-sm text-[#8A94A6]">
+              <p className="text-sm text-muted-foreground">
                 Pinned content will appear in the curated fitness videos section on the home screen
               </p>
             </div>

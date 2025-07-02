@@ -11,16 +11,16 @@ const Awards = () => {
   const firstName = userProfile.name.split(' ')[0];
 
   return (
-    <div className="min-h-screen bg-[#F9F9F9] pb-32">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
-      <div className="bg-white/95 backdrop-blur-xl sticky top-0 z-30 border-b border-gray-100/50">
+      <div className="glass dark:glass-dark backdrop-blur-xl sticky top-0 z-30 border-b border-border/50">
         <div className="px-6 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-[#1D244D] mb-1">
+              <h1 className="text-2xl font-bold text-foreground mb-1">
                 Awards & Achievements 🏆
               </h1>
-              <p className="text-[#8A94A6] text-sm">
+              <p className="text-muted-foreground text-sm">
                 Great work, {firstName}! Track your progress and unlock new achievements
               </p>
             </div>

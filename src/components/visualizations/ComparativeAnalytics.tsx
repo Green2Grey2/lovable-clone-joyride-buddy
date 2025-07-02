@@ -194,8 +194,8 @@ export const ComparativeAnalytics: React.FC = () => {
         <div className="glass dark:glass-dark p-3 rounded-lg shadow-xl">
           <p className="text-sm font-medium text-foreground mb-1">{label}</p>
           {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.value}
+            <p key={index} className="text-sm text-foreground">
+              <span style={{ color: entry.color }}>{entry.name}</span>: {entry.value}
             </p>
           ))}
         </div>
@@ -310,9 +310,10 @@ export const ComparativeAnalytics: React.FC = () => {
               <Tooltip content={<CustomTooltip />} />
               <Legend 
                 wrapperStyle={{ 
-                  paddingTop: '20px',
-                  fontSize: '12px'
+                  paddingTop: '20px'
                 }}
+                iconType="line"
+                formatter={(value) => <span className="text-xs text-foreground">{value}</span>}
               />
               <Line 
                 type="monotone" 

@@ -109,7 +109,7 @@ export const ConfettiExplosion: React.FC<{
       {particles.map(particle => (
         <div
           key={particle.id}
-          className="absolute w-2 h-2 rounded-full"
+          className="absolute rounded-full transition-opacity"
           style={{
             left: particle.x,
             top: particle.y,
@@ -169,7 +169,7 @@ export const FireworksBurst: React.FC<{
             ease: "easeOut"
           }}
         >
-          <div className="w-32 h-32 rounded-full bg-gradient-radial from-yellow-400 via-orange-500 to-transparent" />
+          <div className="w-32 h-32 rounded-full bg-gradient-radial from-yellow-400 via-orange-500 to-transparent dark:from-yellow-300 dark:via-orange-400" />
         </motion.div>
       ))}
     </div>
@@ -326,7 +326,7 @@ export const CelebrationModal: React.FC<CelebrationProps> = ({
       <AnimatePresence>
         {isVisible && (
           <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -334,7 +334,7 @@ export const CelebrationModal: React.FC<CelebrationProps> = ({
           >
             <motion.div
               className={cn(
-                "bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl",
+                "bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl",
                 "relative overflow-hidden"
               )}
               initial={{ scale: 0.5, opacity: 0, y: 50 }}
@@ -377,7 +377,7 @@ export const CelebrationModal: React.FC<CelebrationProps> = ({
 
                 {/* Title */}
                 <motion.h2
-                  className="text-2xl font-bold text-gray-900"
+                  className="text-2xl font-bold text-gray-900 dark:text-gray-100"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
@@ -388,7 +388,7 @@ export const CelebrationModal: React.FC<CelebrationProps> = ({
                 {/* Description */}
                 {description && (
                   <motion.p
-                    className="text-gray-600"
+                    className="text-gray-600 dark:text-gray-400"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
@@ -426,7 +426,7 @@ export const CelebrationModal: React.FC<CelebrationProps> = ({
 
                 {/* Tap to Continue */}
                 <motion.p
-                  className="text-sm text-gray-400 mt-4"
+                  className="text-sm text-gray-400 dark:text-gray-500 mt-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1 }}

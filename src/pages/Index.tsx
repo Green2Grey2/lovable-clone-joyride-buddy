@@ -27,8 +27,8 @@ const Index = () => {
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-20 w-32 h-32 bg-primary rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-accent rounded-full blur-2xl animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-secondary rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-accent rounded-full blur-2xl animate-pulse [animation-delay:1s]"></div>
+        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-secondary rounded-full blur-3xl animate-pulse [animation-delay:2s]"></div>
       </div>
 
       <div className="relative z-10 text-center max-w-3xl mx-auto">

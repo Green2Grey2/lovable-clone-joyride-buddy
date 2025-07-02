@@ -37,7 +37,7 @@ export const GoalsEditor = ({ isOpen, onClose }: GoalsEditorProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md rounded-3xl animate-in fade-in-0 zoom-in-95 duration-200">
         <DialogHeader className="text-center pb-4">
-          <DialogTitle className="text-2xl font-bold text-[#1D244D] animate-in slide-in-from-top-2 duration-300">
+          <DialogTitle className="text-2xl font-bold text-foreground animate-in slide-in-from-top-2 duration-300">
             Goals & Targets 🎯
           </DialogTitle>
         </DialogHeader>
@@ -57,7 +57,7 @@ export const GoalsEditor = ({ isOpen, onClose }: GoalsEditorProps) => {
               }}
               className="rounded-xl text-2xl font-bold text-center transition-all duration-200 focus:ring-2 hover:shadow-md"
             />
-            <p className="text-sm text-[#8A94A6] mt-1 transition-colors duration-200 hover:text-gray-600">Recommended: 8,000-10,000 steps</p>
+            <p className="text-sm text-muted-foreground mt-1 transition-colors duration-200 hover:text-muted-foreground/80">Recommended: 8,000-10,000 steps</p>
           </div>
           
           <div className="animate-in slide-in-from-left-2 duration-300 delay-100">
@@ -74,7 +74,7 @@ export const GoalsEditor = ({ isOpen, onClose }: GoalsEditorProps) => {
               }}
               className="rounded-xl text-2xl font-bold text-center transition-all duration-200 focus:ring-2 hover:shadow-md"
             />
-            <p className="text-sm text-[#8A94A6] mt-1 transition-colors duration-200 hover:text-gray-600">This equals about {Math.floor(weeklyGoal / 7)} steps per day</p>
+            <p className="text-sm text-muted-foreground mt-1 transition-colors duration-200 hover:text-muted-foreground/80">This equals about {Math.floor(weeklyGoal / 7)} steps per day</p>
           </div>
         </div>
         
@@ -88,7 +88,7 @@ export const GoalsEditor = ({ isOpen, onClose }: GoalsEditorProps) => {
             Cancel
           </Button>
           <Button 
-            className="flex-1 bg-gradient-to-r from-[#735CF7] to-[#00A3FF] text-white rounded-2xl transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-lg"
+            className="flex-1 bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-2xl transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-lg">
             onClick={handleSave}
             soundEnabled={false}
           >

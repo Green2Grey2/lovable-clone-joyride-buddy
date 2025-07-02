@@ -37,9 +37,9 @@ export const CalorieTracker = () => {
   const progress = dailyCalorieGoal > 0 ? (caloriesBurned / dailyCalorieGoal) * 100 : 0;
 
   return (
-    <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
+    <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-orange-200 dark:border-orange-800">
       <CardHeader>
-        <CardTitle className="text-lg font-bold text-orange-800 flex items-center gap-2">
+        <CardTitle className="text-lg font-bold text-orange-800 dark:text-orange-200 flex items-center gap-2">
           <Flame className="h-5 w-5" />
           Calorie Tracker
         </CardTitle>
@@ -47,17 +47,17 @@ export const CalorieTracker = () => {
       <CardContent className="space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-2xl font-bold text-orange-800">{caloriesBurned}</p>
-            <p className="text-sm text-orange-600">Calories burned today</p>
+            <p className="text-2xl font-bold text-orange-800 dark:text-orange-200">{caloriesBurned}</p>
+            <p className="text-sm text-orange-600 dark:text-orange-400">Calories burned today</p>
           </div>
           <div className="text-right">
-            <p className="text-lg font-semibold text-orange-700">/ {dailyCalorieGoal}</p>
-            <p className="text-xs text-orange-600">Daily goal</p>
+            <p className="text-lg font-semibold text-orange-700 dark:text-orange-300">/ {dailyCalorieGoal}</p>
+            <p className="text-xs text-orange-600 dark:text-orange-400">Daily goal</p>
           </div>
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-orange-700">
+          <div className="flex justify-between text-sm text-orange-700 dark:text-orange-300">
             <span>Progress</span>
             <span>{Math.round(progress)}%</span>
           </div>
@@ -65,13 +65,13 @@ export const CalorieTracker = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <div className="bg-white/50 rounded-lg p-2">
-            <p className="font-semibold text-orange-800">{stepsCalories}</p>
-            <p className="text-orange-600 text-xs">From steps</p>
+          <div className="bg-background/50 rounded-lg p-2">
+            <p className="font-semibold text-orange-800 dark:text-orange-200">{stepsCalories}</p>
+            <p className="text-orange-600 dark:text-orange-400 text-xs">From steps</p>
           </div>
-          <div className="bg-white/50 rounded-lg p-2">
-            <p className="font-semibold text-orange-800">{Math.max(0, caloriesBurned - stepsCalories)}</p>
-            <p className="text-orange-600 text-xs">From activities</p>
+          <div className="bg-background/50 rounded-lg p-2">
+            <p className="font-semibold text-orange-800 dark:text-orange-200">{Math.max(0, caloriesBurned - stepsCalories)}</p>
+            <p className="text-orange-600 dark:text-orange-400 text-xs">From activities</p>
           </div>
         </div>
       </CardContent>

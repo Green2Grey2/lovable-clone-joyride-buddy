@@ -132,11 +132,11 @@ export const EnhancedTeamChallenges = () => {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-blue-100 text-blue-800';
-      case 'hard': return 'bg-orange-100 text-orange-800';
-      case 'extreme': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'easy': return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200';
+      case 'medium': return 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200';
+      case 'hard': return 'bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200';
+      case 'extreme': return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200';
+      default: return 'bg-secondary text-secondary-foreground';
     }
   };
 
@@ -153,10 +153,10 @@ export const EnhancedTeamChallenges = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'upcoming': return 'bg-blue-500';
-      case 'completed': return 'bg-gray-500';
-      default: return 'bg-gray-500';
+      case 'active': return 'bg-green-500 dark:bg-green-600';
+      case 'upcoming': return 'bg-blue-500 dark:bg-blue-600';
+      case 'completed': return 'bg-muted-foreground';
+      default: return 'bg-muted-foreground';
     }
   };
 
@@ -189,30 +189,30 @@ export const EnhancedTeamChallenges = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[#1D244D] flex items-center gap-2">
-          <Trophy className="h-6 w-6 text-[#735CF7]" />
+        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <Trophy className="h-6 w-6 text-primary" />
           Team Challenges
         </h2>
-        <Badge className="bg-[#735CF7] text-white">
+        <Badge className="bg-primary text-primary-foreground">
           {challenges.filter(c => c.isUserParticipating).length} Active
         </Badge>
       </div>
 
       <div className="grid gap-6">
         {challenges.map((challenge) => (
-          <Card key={challenge.id} className="bg-white border-0 rounded-3xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)] hover:shadow-[0px_15px_35px_rgba(115,92,247,0.15)] transition-all duration-300">
+          <Card key={challenge.id} className="bg-card border-0 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300">
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 bg-gradient-to-br from-[#735CF7] to-[#00A3FF] rounded-2xl flex items-center justify-center text-white`}>
+                  <div className={`w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-2xl flex items-center justify-center text-primary-foreground`}>
                     {getTypeIcon(challenge.type)}
                   </div>
                   <div>
-                    <CardTitle className="text-[#1D244D] mb-1 flex items-center gap-2">
+                    <CardTitle className="text-foreground mb-1 flex items-center gap-2">
                       {challenge.name}
                       <div className={`w-2 h-2 rounded-full ${getStatusColor(challenge.status)}`}></div>
                     </CardTitle>
-                    <p className="text-sm text-[#8A94A6]">{challenge.description}</p>
+                    <p className="text-sm text-muted-foreground">{challenge.description}</p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
@@ -229,10 +229,10 @@ export const EnhancedTeamChallenges = () => {
             <CardContent className="space-y-4">
               {/* Progress Section */}
               {challenge.status === 'active' && challenge.isUserParticipating && (
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-2xl">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-[#1D244D]">Your Progress</span>
-                    <span className="text-sm font-bold text-[#735CF7]">
+                    <span className="text-sm font-medium text-foreground">Your Progress</span>
+                    <span className="text-sm font-bold text-primary">
                       {challenge.currentProgress.toLocaleString()} / {challenge.targetValue.toLocaleString()} {challenge.metric}
                     </span>
                   </div>
@@ -240,7 +240,7 @@ export const EnhancedTeamChallenges = () => {
                     value={(challenge.currentProgress / challenge.targetValue) * 100} 
                     className="h-3"
                   />
-                  <p className="text-xs text-[#8A94A6] mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     {Math.round((challenge.currentProgress / challenge.targetValue) * 100)}% complete
                   </p>
                 </div>
@@ -250,31 +250,31 @@ export const EnhancedTeamChallenges = () => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-[#8A94A6]" />
-                    <span className="text-[#8A94A6]">Participants:</span>
-                    <span className="font-semibold text-[#1D244D]">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Participants:</span>
+                    <span className="font-semibold text-foreground">
                       {challenge.participants}{challenge.maxParticipants ? `/${challenge.maxParticipants}` : ''}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-[#8A94A6]" />
-                    <span className="text-[#8A94A6]">Target:</span>
-                    <span className="font-semibold text-[#1D244D]">
+                    <Target className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Target:</span>
+                    <span className="font-semibold text-foreground">
                       {challenge.targetValue.toLocaleString()} {challenge.metric}
                     </span>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-[#8A94A6]" />
-                    <span className="text-[#8A94A6]">Duration:</span>
-                    <span className="font-semibold text-[#1D244D]">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Duration:</span>
+                    <span className="font-semibold text-foreground">
                       {challenge.startDate} - {challenge.endDate}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4 text-[#8A94A6]" />
-                    <span className="text-[#8A94A6]">Status:</span>
+                    <Award className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Status:</span>
                     <Badge variant="outline" className="text-xs">
                       {challenge.status}
                     </Badge>
@@ -284,7 +284,7 @@ export const EnhancedTeamChallenges = () => {
 
               {/* Rewards */}
               <div>
-                <h4 className="font-semibold text-[#1D244D] mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                   <Trophy className="h-4 w-4" />
                   Rewards
                 </h4>
@@ -300,24 +300,24 @@ export const EnhancedTeamChallenges = () => {
               {/* Leaderboard for active challenges */}
               {challenge.leaderboard && challenge.status === 'active' && (
                 <div>
-                  <h4 className="font-semibold text-[#1D244D] mb-3 flex items-center gap-2">
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                     <TrendingUp className="h-4 w-4" />
                     Top Performers
                   </h4>
                   <div className="space-y-2">
                     {challenge.leaderboard.slice(0, 3).map((entry, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-2 bg-secondary rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            entry.rank === 1 ? 'bg-yellow-100 text-yellow-800' :
-                            entry.rank === 2 ? 'bg-gray-100 text-gray-800' :
-                            'bg-amber-100 text-amber-800'
+                            entry.rank === 1 ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200' :
+                            entry.rank === 2 ? 'bg-secondary text-secondary-foreground' :
+                            'bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200'
                           }`}>
                             {entry.rank}
                           </div>
                           <div>
-                            <p className="font-medium text-[#1D244D] text-sm">{entry.name}</p>
-                            <p className="text-xs text-[#8A94A6]">{entry.department}</p>
+                            <p className="font-medium text-foreground text-sm">{entry.name}</p>
+                            <p className="text-xs text-muted-foreground">{entry.department}</p>
                           </div>
                         </div>
                         <span className="font-semibold text-[#1D244D] text-sm">

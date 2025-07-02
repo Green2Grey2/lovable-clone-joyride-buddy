@@ -1,0 +1,419 @@
+SUPABASE DATABASE REQUIREMENTS & MODIFICATIONS
+==============================================
+Date: July 2, 2025
+Project: Joyride Buddy Fitness App
+
+OVERVIEW
+--------
+This document outlines the Supabase database requirements and modifications needed to support the new data visualization features and UI/UX improvements implemented in the app.
+
+EXISTING TABLES USED
+--------------------
+1. profiles
+   - user_id (uuid, primary key)
+   - username (text)
+   - avatar_url (text)
+   - department (text)
+   - created_at (timestamp)
+   - updated_at (timestamp)
+
+2. activities
+   - id (uuid, primary key)
+   - user_id (uuid, foreign key to profiles)
+   - activity_type (text)
+   - steps (integer)
+   - calories (integer)
+   - duration (integer) // in minutes
+   - distance (numeric) // in km
+   - date (timestamp)
+   - created_at (timestamp)
+
+3. user_stats
+   - user_id (uuid, primary key, foreign key to profiles)
+   - total_steps (integer)
+   - total_calories (integer)
+   - total_duration (integer)
+   - current_streak (integer)
+   - best_streak (integer)
+   - last_activity_date (date)
+   - today_steps (integer)
+   - today_calories (integer)
+   - today_duration (integer)
+   - updated_at (timestamp)
+
+4. challenges
+   - id (uuid, primary key)
+   - name (text)
+   - description (text)
+   - start_date (timestamp)
+   - end_date (timestamp)
+   - target_type (text) // 'steps', 'calories', 'duration', 'distance'
+   - target_value (integer)
+   - created_by (uuid, foreign key to profiles)
+   - department_specific (boolean)
+   - created_at (timestamp)
+
+REQUIRED NEW TABLES
+-------------------
+
+1. heart_rate_data
+```sql
+CREATE TABLE heart_rate_data (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(user_id) ON DELETE CASCADE,
+  activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
+  timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+  heart_rate INTEGER NOT NULL,
+  zone VARCHAR(20), -- 'recovery', 'fat_burn', 'cardio', 'peak', 'maximum'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_heart_rate_user_timestamp ON heart_rate_data(user_id, timestamp);
+CREATE INDEX idx_heart_rate_activity ON heart_rate_data(activity_id);
+```
+
+2. user_achievements
+```sql
+CREATE TABLE user_achievements (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(user_id) ON DELETE CASCADE,
+  achievement_type VARCHAR(50) NOT NULL,
+  achievement_name VARCHAR(100) NOT NULL,
+  achievement_value NUMERIC,
+  achieved_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  previous_best NUMERIC,
+  improvement_percentage NUMERIC,
+  UNIQUE(user_id, achievement_type)
+);
+
+CREATE INDEX idx_achievements_user ON user_achievements(user_id);
+CREATE INDEX idx_achievements_date ON user_achievements(achieved_at);
+```
+
+3. workout_insights
+```sql
+CREATE TABLE workout_insights (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(user_id) ON DELETE CASCADE,
+  insight_type VARCHAR(50) NOT NULL, -- 'improvement', 'warning', 'suggestion', 'achievement'
+  title VARCHAR(200) NOT NULL,
+  description TEXT,
+  metrics JSONB, -- Store current/target values
+  priority INTEGER DEFAULT 5,
+  actionable BOOLEAN DEFAULT false,
+  expires_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_insights_user ON workout_insights(user_id);
+CREATE INDEX idx_insights_active ON workout_insights(user_id, expires_at);
+```
+
+4. activity_patterns
+```sql
+CREATE TABLE activity_patterns (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(user_id) ON DELETE CASCADE,
+  pattern_type VARCHAR(50) NOT NULL, -- 'consistency', 'intensity', 'volume', 'recovery'
+  score INTEGER CHECK (score >= 0 AND score <= 100),
+  trend VARCHAR(10), -- 'up', 'down', 'stable'
+  calculated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  period_start DATE NOT NULL,
+  period_end DATE NOT NULL
+);
+
+CREATE INDEX idx_patterns_user_date ON activity_patterns(user_id, calculated_at);
+```
+
+5. social_interactions
+```sql
+CREATE TABLE social_interactions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(user_id) ON DELETE CASCADE,
+  interaction_type VARCHAR(50) NOT NULL, -- 'like', 'comment', 'challenge', 'follow'
+  target_user_id UUID REFERENCES profiles(user_id),
+  activity_id UUID REFERENCES activities(id),
+  challenge_id UUID REFERENCES challenges(id),
+  content TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_interactions_user ON social_interactions(user_id);
+CREATE INDEX idx_interactions_activity ON social_interactions(activity_id);
+```
+
+REQUIRED MODIFICATIONS TO EXISTING TABLES
+-----------------------------------------
+
+1. Add to activities table:
+```sql
+ALTER TABLE activities 
+ADD COLUMN IF NOT EXISTS heart_rate_avg INTEGER,
+ADD COLUMN IF NOT EXISTS heart_rate_max INTEGER,
+ADD COLUMN IF NOT EXISTS elevation_gain NUMERIC,
+ADD COLUMN IF NOT EXISTS weather_conditions JSONB,
+ADD COLUMN IF NOT EXISTS notes TEXT,
+ADD COLUMN IF NOT EXISTS is_manual_entry BOOLEAN DEFAULT false;
+```
+
+2. Add to user_stats table:
+```sql
+ALTER TABLE user_stats
+ADD COLUMN IF NOT EXISTS weekly_goal_steps INTEGER DEFAULT 70000,
+ADD COLUMN IF NOT EXISTS weekly_goal_calories INTEGER DEFAULT 3500,
+ADD COLUMN IF NOT EXISTS weekly_goal_duration INTEGER DEFAULT 300,
+ADD COLUMN IF NOT EXISTS preferred_workout_time VARCHAR(20),
+ADD COLUMN IF NOT EXISTS fitness_level VARCHAR(20) DEFAULT 'intermediate';
+```
+
+3. Add to profiles table:
+```sql
+ALTER TABLE profiles
+ADD COLUMN IF NOT EXISTS date_of_birth DATE,
+ADD COLUMN IF NOT EXISTS height_cm INTEGER,
+ADD COLUMN IF NOT EXISTS weight_kg NUMERIC,
+ADD COLUMN IF NOT EXISTS max_heart_rate INTEGER,
+ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS privacy_settings JSONB DEFAULT '{"profile_visible": true, "activities_visible": true, "stats_visible": true}';
+```
+
+REQUIRED DATABASE FUNCTIONS
+---------------------------
+
+1. Calculate user percentile ranking:
+```sql
+CREATE OR REPLACE FUNCTION calculate_user_percentile(
+  p_user_id UUID,
+  p_metric VARCHAR,
+  p_timeframe VARCHAR DEFAULT 'week'
+)
+RETURNS INTEGER AS $$
+DECLARE
+  user_value NUMERIC;
+  total_users INTEGER;
+  users_below INTEGER;
+BEGIN
+  -- Get user's metric value
+  SELECT 
+    CASE p_metric
+      WHEN 'steps' THEN SUM(steps)
+      WHEN 'calories' THEN SUM(calories)
+      WHEN 'duration' THEN SUM(duration)
+    END INTO user_value
+  FROM activities
+  WHERE user_id = p_user_id
+    AND date >= CURRENT_DATE - INTERVAL '1 ' || p_timeframe;
+
+  -- Count total active users
+  SELECT COUNT(DISTINCT user_id) INTO total_users
+  FROM activities
+  WHERE date >= CURRENT_DATE - INTERVAL '1 ' || p_timeframe;
+
+  -- Count users below this user's value
+  SELECT COUNT(DISTINCT user_id) INTO users_below
+  FROM activities
+  WHERE date >= CURRENT_DATE - INTERVAL '1 ' || p_timeframe
+  GROUP BY user_id
+  HAVING 
+    CASE p_metric
+      WHEN 'steps' THEN SUM(steps)
+      WHEN 'calories' THEN SUM(calories)
+      WHEN 'duration' THEN SUM(duration)
+    END < user_value;
+
+  RETURN ROUND((users_below::NUMERIC / total_users) * 100);
+END;
+$$ LANGUAGE plpgsql;
+```
+
+2. Generate workout insights:
+```sql
+CREATE OR REPLACE FUNCTION generate_workout_insights(p_user_id UUID)
+RETURNS void AS $$
+DECLARE
+  avg_steps INTEGER;
+  recent_streak INTEGER;
+  consistency_score INTEGER;
+BEGIN
+  -- Calculate metrics
+  SELECT AVG(steps) INTO avg_steps
+  FROM activities
+  WHERE user_id = p_user_id AND date >= CURRENT_DATE - INTERVAL '30 days';
+
+  SELECT current_streak INTO recent_streak
+  FROM user_stats
+  WHERE user_id = p_user_id;
+
+  -- Generate insights based on patterns
+  IF avg_steps < 8000 THEN
+    INSERT INTO workout_insights (user_id, insight_type, title, description, priority, actionable)
+    VALUES (
+      p_user_id,
+      'suggestion',
+      'Step Count Opportunity',
+      'Adding a 15-minute walk after lunch could boost your daily steps by 2,000.',
+      3,
+      true
+    )
+    ON CONFLICT DO NOTHING;
+  END IF;
+
+  IF recent_streak >= 7 THEN
+    INSERT INTO workout_insights (user_id, insight_type, title, description, priority)
+    VALUES (
+      p_user_id,
+      'achievement',
+      recent_streak || '-Day Streak! 🔥',
+      'Amazing consistency! You''re building a strong habit. Keep it up!',
+      2
+    )
+    ON CONFLICT DO NOTHING;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+REQUIRED REAL-TIME SUBSCRIPTIONS
+--------------------------------
+
+1. Enable real-time for leaderboard updates:
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE activities;
+ALTER PUBLICATION supabase_realtime ADD TABLE user_stats;
+```
+
+2. Enable real-time for social features:
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE social_interactions;
+ALTER PUBLICATION supabase_realtime ADD TABLE challenges;
+```
+
+REQUIRED ROW LEVEL SECURITY (RLS) POLICIES
+------------------------------------------
+
+1. For heart_rate_data:
+```sql
+ALTER TABLE heart_rate_data ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own heart rate data"
+  ON heart_rate_data FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own heart rate data"
+  ON heart_rate_data FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+```
+
+2. For user_achievements:
+```sql
+ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Achievements are viewable by all authenticated users"
+  ON user_achievements FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Users can insert own achievements"
+  ON user_achievements FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+```
+
+3. For workout_insights:
+```sql
+ALTER TABLE workout_insights ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own insights"
+  ON workout_insights FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "System can manage insights"
+  ON workout_insights FOR ALL
+  USING (auth.jwt() ->> 'role' = 'service_role');
+```
+
+REQUIRED INDEXES FOR PERFORMANCE
+--------------------------------
+
+```sql
+-- For heat map visualization
+CREATE INDEX idx_activities_user_date ON activities(user_id, date);
+
+-- For leaderboard queries
+CREATE INDEX idx_activities_date_desc ON activities(date DESC);
+CREATE INDEX idx_user_stats_streak ON user_stats(current_streak DESC);
+
+-- For pattern analysis
+CREATE INDEX idx_activities_user_type_date ON activities(user_id, activity_type, date);
+```
+
+MIGRATION NOTES
+--------------
+
+1. Run migrations in order - create tables before adding foreign keys
+2. Backfill user_achievements from existing activities data
+3. Generate initial workout insights for all active users
+4. Set up cron job to calculate activity patterns daily
+5. Enable pg_cron extension for scheduled tasks:
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS pg_cron;
+   ```
+
+6. Schedule daily pattern calculation:
+   ```sql
+   SELECT cron.schedule(
+     'calculate-activity-patterns',
+     '0 2 * * *', -- Run at 2 AM daily
+     $$
+     INSERT INTO activity_patterns (user_id, pattern_type, score, trend, period_start, period_end)
+     SELECT 
+       user_id,
+       'consistency',
+       -- Calculate consistency score
+       ...
+     FROM user_stats;
+     $$
+   );
+   ```
+
+TESTING REQUIREMENTS
+-------------------
+
+1. Test real-time subscriptions with multiple concurrent users
+2. Verify RLS policies don't leak data between users
+3. Check query performance with 10k+ activity records
+4. Test heart rate zone calculations accuracy
+5. Verify insight generation logic
+6. Test leaderboard ranking calculations
+
+ROLLBACK PLAN
+-------------
+
+Keep backups of all modified tables before running migrations. If issues arise:
+
+```sql
+-- Disable real-time subscriptions
+ALTER PUBLICATION supabase_realtime DROP TABLE activities;
+
+-- Drop new tables in reverse order
+DROP TABLE IF EXISTS social_interactions CASCADE;
+DROP TABLE IF EXISTS activity_patterns CASCADE;
+DROP TABLE IF EXISTS workout_insights CASCADE;
+DROP TABLE IF EXISTS user_achievements CASCADE;
+DROP TABLE IF EXISTS heart_rate_data CASCADE;
+
+-- Remove added columns
+ALTER TABLE activities 
+DROP COLUMN IF EXISTS heart_rate_avg,
+DROP COLUMN IF EXISTS heart_rate_max;
+-- etc...
+```
+
+MONITORING
+----------
+
+Set up monitoring for:
+- Real-time subscription performance
+- Query execution times for leaderboard
+- Storage usage for heart rate data
+- Insight generation job success rate
+
+Contact the backend team if you need help with any of these database modifications.

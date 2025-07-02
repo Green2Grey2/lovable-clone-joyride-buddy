@@ -31,13 +31,13 @@ export const HealthDataForm = ({ onSave }: HealthDataFormProps) => {
   };
 
   return (
-    <Card className="bg-white border-0 rounded-3xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+    <Card className="bg-card border-0 rounded-3xl shadow-sm">
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-[#1D244D] flex items-center gap-2">
+        <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
           <Heart className="h-5 w-5 text-red-500" />
           Health Information
         </CardTitle>
-        <p className="text-sm text-[#8A94A6]">Used for accurate calorie calculations</p>
+        <p className="text-sm text-muted-foreground">Used for accurate calorie calculations</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -98,7 +98,7 @@ export const HealthDataForm = ({ onSave }: HealthDataFormProps) => {
         
         <Button 
           onClick={handleSave}
-          className="w-full bg-gradient-to-r from-[#735CF7] to-[#00A3FF] text-white rounded-xl"
+          className="w-full bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-xl">
           soundEnabled={false}
         >
           Save Health Data

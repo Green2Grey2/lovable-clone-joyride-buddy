@@ -63,7 +63,7 @@ export const GoalProximityCard = React.memo(({
       return {
         message: "Let's get moving!",
         subtitle: `${stepGoal.toLocaleString()} step goal today`,
-        color: "text-gray-700",
+        color: "text-foreground",
         bgGradient: "from-gray-400 to-slate-500",
         buttonText: "🎯 Start Now",
         icon: Target,
@@ -76,16 +76,16 @@ export const GoalProximityCard = React.memo(({
   const IconComponent = proximityData.icon;
 
   return (
-    <Card className="bg-white border-0 rounded-3xl shadow-[0px_15px_40px_rgba(115,92,247,0.12)] hover:shadow-[0px_20px_50px_rgba(115,92,247,0.18)] transition-all duration-300 overflow-hidden">
+    <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/15 hover:shadow-xl dark:hover:shadow-primary/25 transition-all duration-300 overflow-hidden">
       <div className={`h-2 bg-gradient-to-r ${proximityData.bgGradient}`}></div>
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className={`p-3 bg-gradient-to-br ${proximityData.bgGradient} rounded-2xl ${proximityData.animate}`}>
-            <IconComponent className="h-6 w-6 text-white" />
+            <IconComponent className="h-6 w-6 text-primary-foreground" />
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-[#1D244D]">{steps.toLocaleString()}</p>
-            <p className="text-sm text-[#8A94A6]">of {stepGoal.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-foreground">{steps.toLocaleString()}</p>
+            <p className="text-sm text-muted-foreground">of {stepGoal.toLocaleString()}</p>
           </div>
         </div>
         
@@ -93,10 +93,10 @@ export const GoalProximityCard = React.memo(({
           <h3 className={`text-lg font-bold ${proximityData.color} mb-1`}>
             {proximityData.message}
           </h3>
-          <p className="text-[#8A94A6] text-sm">{proximityData.subtitle}</p>
+          <p className="text-muted-foreground text-sm">{proximityData.subtitle}</p>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-4 overflow-hidden">
+        <div className="w-full bg-muted rounded-full h-3 mb-4 overflow-hidden">
           <div 
             className={`h-full bg-gradient-to-r ${proximityData.bgGradient} rounded-full transition-all duration-700 ease-out`}
             style={{ width: `${stepProgress}%` }}
@@ -105,7 +105,7 @@ export const GoalProximityCard = React.memo(({
 
         <Button 
           onClick={onQuickAction}
-          className={`w-full bg-gradient-to-r ${proximityData.bgGradient} hover:opacity-90 text-white font-semibold py-3 rounded-2xl transition-all duration-300 hover:scale-105 shadow-lg`}
+          className={`w-full bg-gradient-to-r ${proximityData.bgGradient} hover:opacity-90 text-primary-foreground font-semibold py-3 rounded-2xl transition-all duration-300 hover:scale-105 shadow-lg`}
           soundEnabled={false}
         >
           {proximityData.buttonText}

@@ -19,25 +19,25 @@ export const ProfileStatsGrid = React.memo(({ userStats }: ProfileStatsGridProps
       icon: Target,
       value: userStats.totalSteps.toLocaleString(),
       label: 'Total Steps',
-      gradient: 'from-[#735CF7] to-[#00A3FF]'
+      gradient: 'from-primary to-primary/60'
     },
     {
       icon: Calendar,
       value: userStats.totalWorkouts,
       label: 'Workouts',
-      gradient: 'from-[#FF7B5A] to-[#FF6B4A]'
+      gradient: 'from-orange-500 to-orange-600'
     },
     {
       icon: Flame,
       value: userStats.currentStreak,
       label: 'Day Streak',
-      gradient: 'from-[#FF7B5A] to-[#FFD700]'
+      gradient: 'from-orange-500 to-yellow-500'
     },
     {
       icon: Award,
       value: userStats.longestStreak,
       label: 'Best Streak',
-      gradient: 'from-[#FFD700] to-[#FFA500]'
+      gradient: 'from-yellow-500 to-orange-500'
     }
   ];
 
@@ -46,13 +46,13 @@ export const ProfileStatsGrid = React.memo(({ userStats }: ProfileStatsGridProps
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         return (
-          <Card key={index} className="bg-white border-0 rounded-3xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+          <Card key={index} className="bg-card border-0 rounded-3xl shadow-sm">
             <CardContent className="p-6 text-center">
               <div className={`w-12 h-12 bg-gradient-to-br ${stat.gradient} rounded-2xl flex items-center justify-center mx-auto mb-3`}>
-                <IconComponent className="h-6 w-6 text-white" />
+                <IconComponent className="h-6 w-6 text-primary-foreground" />
               </div>
-              <p className="text-2xl font-bold text-[#1D244D]">{stat.value}</p>
-              <p className="text-sm text-[#8A94A6]">{stat.label}</p>
+              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
             </CardContent>
           </Card>
         );

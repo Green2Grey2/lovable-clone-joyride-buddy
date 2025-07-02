@@ -18,10 +18,10 @@ export const StreakVisualization = React.memo(({
   const today = new Date().getDay() - 1; // Adjust for Monday start
   
   return (
-    <Card className="bg-white border-0 rounded-3xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)] hover:shadow-[0px_15px_40px_rgba(115,92,247,0.15)] transition-all duration-300">
+    <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10 hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-[#1D244D] text-xl font-semibold">Weekly Streak</h3>
+          <h3 className="text-foreground text-xl font-semibold">Weekly Streak</h3>
           <div className="flex items-center gap-2">
             <Flame className="h-5 w-5 text-orange-500" />
             <span className="text-orange-600 font-bold">{currentStreak} days</span>
@@ -44,21 +44,21 @@ export const StreakVisualization = React.memo(({
                       ? 'bg-gradient-to-br from-yellow-400 to-orange-500 border-yellow-300'
                       : isToday
                         ? 'bg-gradient-to-br from-blue-400 to-purple-500 border-blue-300 animate-pulse-subtle'
-                        : 'bg-gray-100 border-gray-200'
+                        : 'bg-muted border-border'
                 }`}>
                   {isCompleted && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Trophy className="h-6 w-6 text-white" />
+                      <Trophy className="h-6 w-6 text-primary-foreground" />
                     </div>
                   )}
                   {isToday && !isCompleted && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Calendar className="h-5 w-5 text-white" />
+                      <Calendar className="h-5 w-5 text-primary-foreground" />
                     </div>
                   )}
                 </div>
                 <span className={`text-xs mt-2 font-medium ${
-                  isToday ? 'text-blue-600' : 'text-[#8A94A6]'
+                  isToday ? 'text-blue-600' : 'text-muted-foreground'
                 }`}>
                   {day}
                 </span>
@@ -74,7 +74,7 @@ export const StreakVisualization = React.memo(({
               <Flame className="h-5 w-5 text-orange-500" />
               <span className="text-orange-600 font-bold text-lg">{currentStreak}</span>
             </div>
-            <p className="text-[#8A94A6] text-sm">Current Streak</p>
+            <p className="text-muted-foreground text-sm">Current Streak</p>
           </div>
           
           <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-2xl">
@@ -82,7 +82,7 @@ export const StreakVisualization = React.memo(({
               <Trophy className="h-5 w-5 text-yellow-600" />
               <span className="text-yellow-600 font-bold text-lg">{longestStreak}</span>
             </div>
-            <p className="text-[#8A94A6] text-sm">Best Streak</p>
+            <p className="text-muted-foreground text-sm">Best Streak</p>
           </div>
         </div>
       </CardContent>

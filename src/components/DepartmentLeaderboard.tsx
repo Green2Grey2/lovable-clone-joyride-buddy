@@ -19,28 +19,28 @@ export const DepartmentLeaderboard = () => {
   };
 
   return (
-    <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+    <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border-emerald-200 dark:border-emerald-800">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-emerald-800">
+        <CardTitle className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200">
           <Trophy className="h-5 w-5" />
           Department Leaderboard
         </CardTitle>
-        <p className="text-sm text-emerald-600">Walking Challenge Rankings</p>
+        <p className="text-sm text-emerald-600 dark:text-emerald-400">Walking Challenge Rankings</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {challengeData.departments.map((dept, index) => (
-          <div key={dept.id} className="bg-white rounded-lg p-4 shadow-sm border border-emerald-100">
+          <div key={dept.id} className="bg-background rounded-lg p-4 shadow-sm border border-emerald-100 dark:border-emerald-800">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${dept.color} flex items-center justify-center text-white font-bold text-sm`}>
+                <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${dept.color} flex items-center justify-center text-primary-foreground font-bold text-sm`}>
                   {dept.rank}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
                     {dept.name}
                     <span className="text-lg">{getRankEmoji(dept.rank)}</span>
                   </h3>
-                  <div className="flex items-center gap-4 text-xs text-gray-600">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
                       {dept.participantCount} people
@@ -57,7 +57,7 @@ export const DepartmentLeaderboard = () => {
               </Badge>
             </div>
             <div className="space-y-2">
-              <div className="flex justify-between text-xs text-gray-600">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Progress</span>
                 <span>{((dept.totalSteps / maxSteps) * 100).toFixed(1)}%</span>
               </div>
@@ -69,15 +69,15 @@ export const DepartmentLeaderboard = () => {
           </div>
         ))}
         
-        <div className="mt-6 p-4 bg-white rounded-lg border border-emerald-200">
-          <h4 className="font-semibold text-emerald-800 mb-2">Challenge Details</h4>
+        <div className="mt-6 p-4 bg-background rounded-lg border border-emerald-200 dark:border-emerald-800">
+          <h4 className="font-semibold text-emerald-800 dark:text-emerald-200 mb-2">Challenge Details</h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-600">Total Participants:</span>
+              <span className="text-muted-foreground">Total Participants:</span>
               <span className="font-semibold ml-2">{challengeData.totalParticipants}</span>
             </div>
             <div>
-              <span className="text-gray-600">Combined Steps:</span>
+              <span className="text-muted-foreground">Combined Steps:</span>
               <span className="font-semibold ml-2">{challengeData.departments.reduce((sum, dept) => sum + dept.totalSteps, 0).toLocaleString()}</span>
             </div>
           </div>

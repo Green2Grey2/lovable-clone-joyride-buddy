@@ -24,7 +24,7 @@ export const MediaNavigation = ({
       <Button 
         variant="ghost" 
         size="sm"
-        className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 w-10 h-10 p-0 rounded-full transition-all duration-300 hover:scale-110"
+        className="bg-background/20 backdrop-blur-sm text-white hover:bg-background/30 w-10 h-10 p-0 rounded-full transition-all duration-300 hover:scale-110"
         onClick={onBackToFeed}
         soundEnabled={false}
       >
@@ -34,7 +34,7 @@ export const MediaNavigation = ({
         <Button 
           variant="ghost" 
           size="sm"
-          className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 w-10 h-10 p-0 rounded-full transition-all duration-300 hover:scale-110"
+          className="bg-background/20 backdrop-blur-sm text-white hover:bg-background/30 w-10 h-10 p-0 rounded-full transition-all duration-300 hover:scale-110"
           onClick={onShare}
           soundEnabled={false}
         >
@@ -43,7 +43,7 @@ export const MediaNavigation = ({
         <Button 
           variant="ghost" 
           size="sm"
-          className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 w-10 h-10 p-0 rounded-full transition-all duration-300 hover:scale-110"
+          className="bg-background/20 backdrop-blur-sm text-white hover:bg-background/30 w-10 h-10 p-0 rounded-full transition-all duration-300 hover:scale-110"
           onClick={onBookmark}
           soundEnabled={false}
         >

@@ -33,19 +33,19 @@
   }
   
   .glass-card {
-    @apply backdrop-blur-sm bg-white/80 border border-white/20 shadow-lg;
+    @apply backdrop-blur-sm bg-background/80 dark:bg-card/80 border border-border/20 shadow-lg;
   }
   
   .gradient-text {
-    @apply bg-gradient-to-r from-[#735CF7] to-[#00A3FF] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
   }
   
   .shadow-glow {
-    box-shadow: 0 0 20px rgba(115, 92, 247, 0.3);
+    box-shadow: 0 0 20px rgba(34, 191, 253, 0.3);
   }
   
   .shadow-glow-hover {
-    @apply hover:shadow-[0_0_30px_rgba(115,92,247,0.4)] transition-shadow duration-300;
+    @apply hover:shadow-[0_0_30px_rgba(34,191,253,0.4)] transition-shadow duration-300;
   }
 }
 

@@ -53,29 +53,29 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F9F9F9] to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-background/95 flex items-center justify-center p-4">
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-[#735CF7] rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-[#00A3FF] rounded-full blur-2xl animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-[#FF7B5A] rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+      <div className="absolute inset-0 opacity-5 dark:opacity-10">
+        <div className="absolute top-20 left-20 w-32 h-32 bg-primary rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-blue-500 rounded-full blur-2xl animate-pulse [animation-delay:1s]"></div>
+        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-orange-500 rounded-full blur-3xl animate-pulse [animation-delay:2s]"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#735CF7] to-[#00A3FF] bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent mb-2">
             Olive View UCLA Medical Center
           </h1>
-          <p className="text-[#8A94A6] font-medium">Employee Wellness Portal</p>
+          <p className="text-muted-foreground font-medium">Employee Wellness Portal</p>
         </div>
 
-        <Card className="border-0 shadow-[0px_15px_35px_rgba(115,92,247,0.1)] bg-white/80 backdrop-blur-sm">
+        <Card className="border-0 shadow-[0px_15px_35px_rgba(115,92,247,0.1)] dark:shadow-[0px_15px_35px_rgba(115,92,247,0.2)] bg-card/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-bold text-[#1D244D]">
+            <CardTitle className="text-2xl font-bold text-foreground">
               {isLogin ? 'Employee Login' : 'Register as Employee'}
             </CardTitle>
-            <p className="text-[#8A94A6]">
+            <p className="text-muted-foreground">
               {isLogin ? 'Sign in to access your wellness dashboard' : 'Create your employee wellness account'}
             </p>
           </CardHeader>
@@ -83,16 +83,16 @@ const Auth = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-[#1D244D] font-medium">Full Name</Label>
+                  <Label htmlFor="name" className="text-foreground font-medium">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#8A94A6]" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="name"
                       type="text"
                       placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="pl-10 h-12 border-gray-200 focus:border-[#735CF7] transition-colors"
+                      className="pl-10 h-12 border-border focus:border-primary transition-colors"
                       required={!isLogin}
                     />
                   </div>
@@ -100,32 +100,32 @@ const Auth = () => {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-[#1D244D] font-medium">Work Email</Label>
+                <Label htmlFor="email" className="text-foreground font-medium">Work Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#8A94A6]" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="Enter your work email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-12 border-gray-200 focus:border-[#735CF7] transition-colors"
+                    className="pl-10 h-12 border-border focus:border-primary transition-colors"
                     required
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-[#1D244D] font-medium">Password</Label>
+                <Label htmlFor="password" className="text-foreground font-medium">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#8A94A6]" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 h-12 border-gray-200 focus:border-[#735CF7] transition-colors"
+                    className="pl-10 h-12 border-border focus:border-primary transition-colors"
                     required
                   />
                 </div>
@@ -134,7 +134,7 @@ const Auth = () => {
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-[#735CF7] to-[#00A3FF] hover:from-[#6B4FF5] hover:to-[#0092E6] text-white font-bold text-lg rounded-xl shadow-[0px_15px_35px_rgba(115,92,247,0.4)] hover:shadow-[0px_20px_45px_rgba(115,92,247,0.5)] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50"
+                className="w-full h-12 bg-gradient-to-r from-primary to-blue-500 hover:from-primary/90 hover:to-blue-600 text-primary-foreground font-bold text-lg rounded-xl shadow-[0px_15px_35px_rgba(115,92,247,0.4)] hover:shadow-[0px_20px_45px_rgba(115,92,247,0.5)] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50"
               >
                 {loading ? 'Please wait...' : (
                   <>
@@ -149,18 +149,18 @@ const Auth = () => {
               <Button 
                 variant="link" 
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-[#735CF7] hover:text-[#6B4FF5] font-medium"
+                className="text-primary hover:text-primary/90 font-medium"
               >
                 {isLogin ? "Need an account? Register here" : "Already have an account? Sign in"}
               </Button>
             </div>
 
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-2 text-blue-700 text-sm">
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 text-sm">
                 <AlertCircle className="h-4 w-4" />
                 <span className="font-medium">For Employees Only</span>
               </div>
-              <p className="text-blue-600 text-xs mt-1">
+              <p className="text-blue-600 dark:text-blue-500 text-xs mt-1">
                 This portal is exclusively for Olive View UCLA Medical Center staff and employees.
               </p>
             </div>

@@ -297,14 +297,14 @@ export const ExpandedAchievementSystem = () => {
                               {achievement.name}
                               {achievement.season && getSeasonIcon(achievement.season)}
                             </h3>
-                            <p className="text-[#8A94A6] text-sm mb-2">{achievement.description}</p>
+                            <p className="text-muted-foreground text-sm mb-2">{achievement.description}</p>
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge className={`${getRarityColor(achievement.rarity)} text-xs font-medium border`}>
                               {achievement.rarity}
                             </Badge>
                             {achievement.earned && (
-                              <Badge className="bg-green-100 text-green-800 text-xs">
+                              <Badge className="bg-green-500/20 text-green-500 dark:text-green-400 text-xs">
                                 ✓ Earned
                               </Badge>
                             )}
@@ -313,12 +313,12 @@ export const ExpandedAchievementSystem = () => {
 
                         {achievement.earned ? (
                           <div className="space-y-2">
-                            <p className="text-xs text-green-600 font-medium">
+                            <p className="text-xs text-green-500 dark:text-green-400 font-medium">
                               🎉 Earned {achievement.earnedDate} • +{achievement.points} points
                             </p>
                             {achievement.celebrationMessage && (
-                              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                <p className="text-sm text-green-800 font-medium">
+                              <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                                <p className="text-sm text-green-600 dark:text-green-400 font-medium">
                                   {achievement.celebrationMessage}
                                 </p>
                               </div>
@@ -327,26 +327,26 @@ export const ExpandedAchievementSystem = () => {
                         ) : achievement.total ? (
                           <div className="space-y-2">
                             <div className="flex justify-between text-xs">
-                              <span className="text-[#8A94A6]">Progress</span>
-                              <span className="text-[#1D244D] font-medium">
+                              <span className="text-muted-foreground">Progress</span>
+                              <span className="text-foreground font-medium">
                                 {achievement.progress?.toLocaleString()} / {achievement.total?.toLocaleString()}
                               </span>
                             </div>
                             <div className="relative">
                               <Progress value={progressPercentage} className="h-3" />
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-xs font-bold text-[#1D244D] bg-white/90 px-2 py-0.5 rounded-full shadow-sm">
+                                <span className="text-xs font-bold text-foreground bg-background/90 px-2 py-0.5 rounded-full shadow-sm">
                                   {Math.round(progressPercentage)}%
                                 </span>
                               </div>
                             </div>
-                            <p className="text-xs text-[#8A94A6]">
+                            <p className="text-xs text-muted-foreground">
                               {achievement.points} points when completed
                             </p>
                           </div>
                         ) : (
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-sm text-gray-600">
+                          <div className="p-3 bg-muted/50 rounded-lg">
+                            <p className="text-sm text-muted-foreground">
                               🏆 Complete the requirement to unlock • {achievement.points} points
                             </p>
                           </div>

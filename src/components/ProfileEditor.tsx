@@ -24,7 +24,7 @@ export const ProfileEditor = ({ isOpen, onClose }: ProfileEditorProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md rounded-3xl animate-in fade-in-0 zoom-in-95 duration-200">
         <DialogHeader className="text-center pb-4">
-          <DialogTitle className="text-2xl font-bold text-[#1D244D] animate-in slide-in-from-top-2 duration-300">
+          <DialogTitle className="text-2xl font-bold text-foreground animate-in slide-in-from-top-2 duration-300">
             Edit Profile ✏️
           </DialogTitle>
         </DialogHeader>
@@ -82,7 +82,7 @@ export const ProfileEditor = ({ isOpen, onClose }: ProfileEditorProps) => {
             Cancel
           </Button>
           <Button 
-            className="flex-1 bg-gradient-to-r from-[#735CF7] to-[#00A3FF] text-white rounded-2xl transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-lg"
+            className="flex-1 bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-2xl transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-lg">
             onClick={handleSave}
           >
             Save Changes
