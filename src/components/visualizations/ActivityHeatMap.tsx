@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, subMonths, startOfYear, eachMonthOfInterval, isSameDay } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { activityTrackingService } from '@/utils/activityTrackingService';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Plus, Info, Activity, Clock, Flame } from 'lucide-react';
 
 interface ActivityData {
   date: string;
@@ -21,6 +23,11 @@ export const ActivityHeatMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'month' | 'year'>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showTip, setShowTip] = useState(true);
+  const [clickCount, setClickCount] = useState(0);
+  const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -80,9 +87,45 @@ export const ActivityHeatMap: React.FC = () => {
       'bg-primary/20 dark:bg-primary/25 shadow-sm',     // 1 - Light
       'bg-primary/40 dark:bg-primary/45 shadow-sm',     // 2 - Moderate
       'bg-primary/60 dark:bg-primary/65 shadow-md',     // 3 - Good
-      'bg-primary/80 dark:bg-primary/90 shadow-lg shadow-primary/30', // 4 - Excellent (changed from full primary/white)
+      'bg-primary/80 dark:bg-primary/90 shadow-lg shadow-primary/30', // 4 - Excellent
     ];
     return colors[Math.min(intensity, 4)];
+  };
+
+  const getActivityPattern = (intensity: number) => {
+    // Add visual patterns for different intensities
+    const patterns = [
+      '', // 0 - No pattern
+      'bg-gradient-to-br from-transparent via-primary/10 to-transparent', // 1 - Subtle gradient
+      'bg-gradient-to-tr from-primary/20 via-transparent to-primary/20', // 2 - Diagonal gradient
+      'bg-gradient-to-r from-primary/30 via-primary/50 to-primary/30', // 3 - Horizontal gradient
+      'bg-gradient-to-br from-primary/60 via-primary/90 to-primary/60', // 4 - Strong radial-like
+    ];
+    return patterns[Math.min(intensity, 4)];
+  };
+
+  const handleDayClick = (dateStr: string, activity: ActivityData | undefined) => {
+    if (!activity) return;
+    
+    setSelectedDay(dateStr);
+    setClickCount(prev => prev + 1);
+    
+    if (clickTimer) {
+      clearTimeout(clickTimer);
+    }
+    
+    const timer = setTimeout(() => {
+      if (clickCount === 0) {
+        // Single click - show enhanced tooltip (already handled by hover)
+        setShowTip(false);
+      } else if (clickCount === 1) {
+        // Double click - show detailed modal
+        setShowDetailModal(true);
+      }
+      setClickCount(0);
+    }, 300);
+    
+    setClickTimer(timer);
   };
 
   const renderMonthView = () => {
@@ -115,6 +158,25 @@ export const ActivityHeatMap: React.FC = () => {
           ))}
         </div>
         
+        {/* User Education Tip */}
+        {showTip && viewMode === 'month' && (
+          <div className="mb-4 p-3 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
+            <div className="flex items-center gap-2 text-sm">
+              <Info className="h-4 w-4 text-primary animate-pulse" />
+              <span className="text-primary font-medium">💡 Tip:</span>
+              <span className="text-muted-foreground">
+                Tap days with activity for details, double-tap for full breakdown
+              </span>
+              <button 
+                onClick={() => setShowTip(false)}
+                className="ml-auto text-muted-foreground hover:text-foreground text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Calendar grid */}
         <div className="space-y-1">
           {weeks.map((week, weekIndex) => (
@@ -125,27 +187,64 @@ export const ActivityHeatMap: React.FC = () => {
                 const intensity = activity?.intensity || 0;
                 const isCurrentMonth = isSameMonth(day, currentDate);
                 const isToday = isSameDay(day, new Date());
+                const hasActivity = activity && intensity > 0;
                 
                 return (
                   <div
                     key={`${weekIndex}-${dayIndex}`}
                     className={cn(
-                      "aspect-square rounded-lg transition-all duration-300 hover:scale-110 cursor-pointer relative group",
+                      "aspect-square rounded-lg transition-all duration-300 hover:scale-110 relative group",
                       isCurrentMonth ? getActivityColor(intensity) : 'bg-muted/10',
-                      isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                      hasActivity ? 'cursor-pointer' : 'cursor-default',
+                      isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                      // Add visual patterns
+                      isCurrentMonth && getActivityPattern(intensity)
                     )}
+                    onClick={() => hasActivity && handleDayClick(dateStr, activity)}
                   >
+                    {/* Day number */}
                     <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground/70">
                       {isCurrentMonth && format(day, 'd')}
                     </span>
                     
-                    {/* Tooltip */}
+                    {/* Activity indicator (+ icon) */}
+                    {hasActivity && (
+                      <div className="absolute top-0.5 right-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <Plus className="h-2.5 w-2.5 text-primary animate-pulse" />
+                      </div>
+                    )}
+                    
+                    {/* Hover indicator for clickable days */}
+                    {hasActivity && (
+                      <div className="absolute inset-0 rounded-lg bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    )}
+                    
+                    {/* Enhanced Tooltip */}
                     {activity && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 pointer-events-none">
-                        <div className="glass dark:glass-dark p-2 rounded-lg shadow-xl text-xs whitespace-nowrap">
-                          <div className="font-semibold">{format(day, 'MMM d')}</div>
-                          <div className="text-muted-foreground">{activity.minutes} min</div>
-                          <div className="text-primary">{activity.calories} cal</div>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none">
+                        <div className="glass dark:glass-dark p-3 rounded-lg shadow-xl text-xs whitespace-nowrap min-w-[120px]">
+                          <div className="font-semibold text-primary flex items-center gap-1">
+                            <Activity className="h-3 w-3" />
+                            {format(day, 'MMM d')}
+                          </div>
+                          <div className="space-y-1 mt-2">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-muted-foreground">{activity.minutes} min</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Flame className="h-3 w-3 text-orange-500" />
+                              <span className="text-orange-500">{activity.calories} cal</span>
+                            </div>
+                            {activity.steps && activity.steps > 0 && (
+                              <div className="text-primary text-xs">
+                                {activity.steps.toLocaleString()} steps
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-2 border-t border-border/30 pt-1">
+                            Click for details • Double-click for more
+                          </div>
                         </div>
                       </div>
                     )}
@@ -301,6 +400,76 @@ export const ActivityHeatMap: React.FC = () => {
           </div>
         </div>
       </CardContent>
+
+      {/* Detailed Activity Modal */}
+      <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-primary" />
+              Activity Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedDay && activityData[selectedDay] && (
+            <div className="space-y-4">
+              <div className="text-center p-4 bg-primary/5 dark:bg-primary/10 rounded-lg">
+                <h3 className="text-lg font-semibold text-primary">
+                  {format(new Date(selectedDay), 'EEEE, MMMM d, yyyy')}
+                </h3>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Intensity Level: {activityData[selectedDay].intensity}/4
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-muted/20 rounded-lg">
+                  <Clock className="h-6 w-6 text-primary mx-auto mb-1" />
+                  <div className="text-xl font-bold">{activityData[selectedDay].minutes}</div>
+                  <div className="text-xs text-muted-foreground">Minutes</div>
+                </div>
+                <div className="text-center p-3 bg-muted/20 rounded-lg">
+                  <Flame className="h-6 w-6 text-orange-500 mx-auto mb-1" />
+                  <div className="text-xl font-bold">{activityData[selectedDay].calories}</div>
+                  <div className="text-xs text-muted-foreground">Calories</div>
+                </div>
+              </div>
+
+              {activityData[selectedDay].steps && activityData[selectedDay].steps! > 0 && (
+                <div className="text-center p-3 bg-muted/20 rounded-lg">
+                  <div className="text-2xl font-bold text-primary">
+                    {activityData[selectedDay].steps!.toLocaleString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Steps Taken</div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Activity Breakdown</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Workout Duration:</span>
+                    <span>{activityData[selectedDay].minutes} min</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Energy Burned:</span>
+                    <span>{activityData[selectedDay].calories} cal</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Intensity Score:</span>
+                    <span className="text-primary font-medium">
+                      {activityData[selectedDay].intensity}/4
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-xs text-center text-muted-foreground border-t border-border/30 pt-3">
+                Keep up the great work! 💪
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

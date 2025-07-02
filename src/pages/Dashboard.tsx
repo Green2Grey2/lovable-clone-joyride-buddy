@@ -184,9 +184,6 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-        <div className="mt-8">
-          <TestFlagActivity />
-        </div>
       </div>
         </aside>
 
