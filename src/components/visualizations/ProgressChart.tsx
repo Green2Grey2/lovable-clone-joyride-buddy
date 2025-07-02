@@ -55,7 +55,7 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({
 
       const { data: activities, error } = await supabase
         .from('activities')
-        .select('date, duration, calories')
+        .select('date, duration, calories_burned')
         .eq('user_id', user?.id)
         .gte('date', format(startDate, 'yyyy-MM-dd'))
         .lte('date', format(endDate, 'yyyy-MM-dd'))
@@ -105,7 +105,7 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({
       if (grouped[key]) {
         switch (metric) {
           case 'calories':
-            grouped[key].value += activity.calories || 0;
+            grouped[key].value += activity.calories_burned || 0;
             break;
           case 'duration':
             grouped[key].value += activity.duration || 0;
