@@ -118,7 +118,7 @@ export const FloatingBottomNav = () => {
       )}
 
       <div 
-        ref={swipeRef}
+        ref={swipeRef as React.RefObject<HTMLDivElement>}
         className={cn(
           "fixed bottom-0 left-0 right-0 z-50 pb-safe transition-transform duration-300 ease-in-out",
           isVisible ? "translate-y-0" : "translate-y-full"
@@ -144,8 +144,8 @@ export const FloatingBottomNav = () => {
                       ? 'text-primary bg-primary/10 scale-105'
                       : 'text-muted-foreground hover:text-primary'
                   )}
-                  ariaLabel={`Navigate to ${item.label}`}
-                  ariaCurrent={isActive(item.path) ? 'page' : undefined}
+                  aria-label={`Navigate to ${item.label}`}
+                  aria-current={isActive(item.path) ? 'page' : undefined}
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="text-xs font-medium">{item.label}</span>
@@ -158,7 +158,7 @@ export const FloatingBottomNav = () => {
                   onClick={handlePlusClick}
                   className="h-12 w-12 rounded-full bg-gradient-to-r from-[#735CF7] to-[#8B5FE6] hover:from-[#6B4FF5] hover:to-[#7A4FE3] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation"
                   size="icon"
-                  ariaLabel="Start new activity"
+                  aria-label="Start new activity"
                 >
                   <Plus className="h-6 w-6" />
                 </Button>
@@ -177,8 +177,8 @@ export const FloatingBottomNav = () => {
                       ? 'text-primary bg-primary/10 scale-105'
                       : 'text-muted-foreground hover:text-primary'
                   )}
-                  ariaLabel={`Navigate to ${item.label}`}
-                  ariaCurrent={isActive(item.path) ? 'page' : undefined}
+                  aria-label={`Navigate to ${item.label}`}
+                  aria-current={isActive(item.path) ? 'page' : undefined}
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="text-xs font-medium">{item.label}</span>
