@@ -1,0 +1,10 @@
+/* Improved focus states for accessibility */
+@layer components {
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#735CF7] focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+  }
+  
+  .interactive-card {
+    @apply hover-lift hover-scale cursor-pointer focus-ring rounded-3xl transition-all duration-300;
+  }
+}
