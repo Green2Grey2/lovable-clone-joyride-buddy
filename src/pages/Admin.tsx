@@ -19,6 +19,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { ActiveUsersMonitor } from '@/components/ActiveUsersMonitor';
 import { DepartmentManagement } from '@/components/DepartmentManagement';
+import { TestFlagActivity } from '@/components/TestFlagActivity';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -293,6 +294,9 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Test Flagging System */}
+            <TestFlagActivity />
           </TabsContent>
 
           {/* Users Tab - Now includes both user management and user creation */}
