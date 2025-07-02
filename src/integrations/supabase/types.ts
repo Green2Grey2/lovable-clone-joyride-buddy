@@ -553,6 +553,7 @@ export type Database = {
           age: number | null
           avatar_url: string | null
           created_at: string
+          daily_step_goal: number | null
           date_of_birth: string | null
           department: string | null
           email: string | null
@@ -562,12 +563,14 @@ export type Database = {
           id: string
           join_date: string | null
           max_heart_rate: number | null
+          monthly_step_goal: number | null
           name: string | null
           notification_preferences: Json | null
           privacy_settings: Json | null
           updated_at: string
           user_id: string
           weekly_goal: number | null
+          weekly_step_goal: number | null
           weight: string | null
           weight_kg: number | null
         }
@@ -575,6 +578,7 @@ export type Database = {
           age?: number | null
           avatar_url?: string | null
           created_at?: string
+          daily_step_goal?: number | null
           date_of_birth?: string | null
           department?: string | null
           email?: string | null
@@ -584,12 +588,14 @@ export type Database = {
           id?: string
           join_date?: string | null
           max_heart_rate?: number | null
+          monthly_step_goal?: number | null
           name?: string | null
           notification_preferences?: Json | null
           privacy_settings?: Json | null
           updated_at?: string
           user_id: string
           weekly_goal?: number | null
+          weekly_step_goal?: number | null
           weight?: string | null
           weight_kg?: number | null
         }
@@ -597,6 +603,7 @@ export type Database = {
           age?: number | null
           avatar_url?: string | null
           created_at?: string
+          daily_step_goal?: number | null
           date_of_birth?: string | null
           department?: string | null
           email?: string | null
@@ -606,12 +613,14 @@ export type Database = {
           id?: string
           join_date?: string | null
           max_heart_rate?: number | null
+          monthly_step_goal?: number | null
           name?: string | null
           notification_preferences?: Json | null
           privacy_settings?: Json | null
           updated_at?: string
           user_id?: string
           weekly_goal?: number | null
+          weekly_step_goal?: number | null
           weight?: string | null
           weight_kg?: number | null
         }
@@ -783,6 +792,7 @@ export type Database = {
       }
       user_stats: {
         Row: {
+          average_streak_length: number | null
           calories_burned: number | null
           created_at: string
           current_streak: number | null
@@ -791,8 +801,12 @@ export type Database = {
           id: string
           last_activity_date: string | null
           last_updated: string | null
+          lifetime_steps: number | null
+          longest_streak: number | null
+          monthly_steps: number | null
           preferred_workout_time: string | null
           sleep_hours: number | null
+          streak_resets: number | null
           today_steps: number | null
           updated_at: string
           user_id: string
@@ -801,8 +815,10 @@ export type Database = {
           weekly_goal_duration: number | null
           weekly_goal_steps: number | null
           weekly_steps: number | null
+          yearly_steps: number | null
         }
         Insert: {
+          average_streak_length?: number | null
           calories_burned?: number | null
           created_at?: string
           current_streak?: number | null
@@ -811,8 +827,12 @@ export type Database = {
           id?: string
           last_activity_date?: string | null
           last_updated?: string | null
+          lifetime_steps?: number | null
+          longest_streak?: number | null
+          monthly_steps?: number | null
           preferred_workout_time?: string | null
           sleep_hours?: number | null
+          streak_resets?: number | null
           today_steps?: number | null
           updated_at?: string
           user_id: string
@@ -821,8 +841,10 @@ export type Database = {
           weekly_goal_duration?: number | null
           weekly_goal_steps?: number | null
           weekly_steps?: number | null
+          yearly_steps?: number | null
         }
         Update: {
+          average_streak_length?: number | null
           calories_burned?: number | null
           created_at?: string
           current_streak?: number | null
@@ -831,8 +853,12 @@ export type Database = {
           id?: string
           last_activity_date?: string | null
           last_updated?: string | null
+          lifetime_steps?: number | null
+          longest_streak?: number | null
+          monthly_steps?: number | null
           preferred_workout_time?: string | null
           sleep_hours?: number | null
+          streak_resets?: number | null
           today_steps?: number | null
           updated_at?: string
           user_id?: string
@@ -841,6 +867,7 @@ export type Database = {
           weekly_goal_duration?: number | null
           weekly_goal_steps?: number | null
           weekly_steps?: number | null
+          yearly_steps?: number | null
         }
         Relationships: []
       }

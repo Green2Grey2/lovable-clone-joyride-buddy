@@ -1,5 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -33,8 +36,137 @@ interface Challenge {
 
 export const EnhancedTeamChallenges = () => {
   const { userProfile } = useApp();
-  
-  const [challenges, setChallenges] = useState<Challenge[]>([
+  const { user } = useAuth();
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchChallenges();
+    }
+  }, [user]);
+
+  const fetchChallenges = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: challengesData, error } = await supabase
+        .from('challenges')
+        .select(`
+          *,
+          challenge_participants(user_id)
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const processedChallenges: Challenge[] = challengesData?.map(challenge => ({
+        id: challenge.id,
+        name: challenge.title,
+        description: challenge.description || '',
+        type: 'weekly', // Default type
+        status: new Date(challenge.end_date) > new Date() ? 'active' : 'completed',
+        startDate: new Date(challenge.start_date).toLocaleDateString(),
+        endDate: new Date(challenge.end_date).toLocaleDateString(),
+        participants: challenge.challenge_participants?.length || 0,
+        maxParticipants: undefined,
+        currentProgress: 0, // TODO: Calculate from user activities
+        targetValue: challenge.target_value || 0,
+        metric: challenge.type === 'steps' ? 'steps' : 'active_minutes',
+        rewards: ['Challenge Badge', '100 Fitness Points'],
+        difficulty: 'medium',
+        isUserParticipating: challenge.challenge_participants?.some(p => p.user_id === user.id) || false,
+      })) || [];
+
+      setChallenges(processedChallenges);
+    } catch (error) {
+      console.error('Error fetching challenges:', error);
+      toast.error('Failed to load challenges');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const joinChallenge = async (challengeId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('challenge_participants')
+        .insert([{
+          challenge_id: challengeId,
+          user_id: user.id
+        }]);
+
+      if (error) throw error;
+
+      setChallenges(challenges.map(challenge => {
+        if (challenge.id === challengeId) {
+          return {
+            ...challenge,
+            isUserParticipating: true,
+            participants: challenge.participants + 1
+          };
+        }
+        return challenge;
+      }));
+
+      toast.success('Successfully joined challenge!');
+    } catch (error) {
+      console.error('Error joining challenge:', error);
+      toast.error('Failed to join challenge');
+    }
+  };
+
+  const leaveChallenge = async (challengeId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('challenge_participants')
+        .delete()
+        .eq('challenge_id', challengeId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setChallenges(challenges.map(challenge => {
+        if (challenge.id === challengeId) {
+          return {
+            ...challenge,
+            isUserParticipating: false,
+            participants: Math.max(0, challenge.participants - 1)
+          };
+        }
+        return challenge;
+      }));
+
+      toast.success('Successfully left challenge');
+    } catch (error) {
+      console.error('Error leaving challenge:', error);
+      toast.error('Failed to leave challenge');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Trophy className="h-6 w-6 text-primary" />
+            Team Challenges
+          </h2>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Loading challenges...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Keep the mock data structure but replace with real data
+  const mockChallenges = [
     {
       id: '1',
       name: 'Weekend Warriors Blitz',
@@ -128,7 +260,7 @@ export const EnhancedTeamChallenges = () => {
       difficulty: 'medium',
       isUserParticipating: false
     }
-  ]);
+  ] as Challenge[];
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -160,31 +292,8 @@ export const EnhancedTeamChallenges = () => {
     }
   };
 
-  const joinChallenge = (challengeId: string) => {
-    setChallenges(challenges.map(challenge => {
-      if (challenge.id === challengeId) {
-        return {
-          ...challenge,
-          isUserParticipating: true,
-          participants: challenge.participants + 1
-        };
-      }
-      return challenge;
-    }));
-  };
-
-  const leaveChallenge = (challengeId: string) => {
-    setChallenges(challenges.map(challenge => {
-      if (challenge.id === challengeId) {
-        return {
-          ...challenge,
-          isUserParticipating: false,
-          participants: Math.max(0, challenge.participants - 1)
-        };
-      }
-      return challenge;
-    }));
-  };
+  // Use real challenges if available, otherwise fall back to mock data
+  const displayChallenges = challenges.length > 0 ? challenges : mockChallenges;
 
   return (
     <div className="space-y-6">
@@ -194,12 +303,12 @@ export const EnhancedTeamChallenges = () => {
           Team Challenges
         </h2>
         <Badge className="bg-primary text-primary-foreground">
-          {challenges.filter(c => c.isUserParticipating).length} Active
+          {displayChallenges.filter(c => c.isUserParticipating).length} Active
         </Badge>
       </div>
 
       <div className="grid gap-6">
-        {challenges.map((challenge) => (
+        {displayChallenges.map((challenge) => (
           <Card key={challenge.id} className="bg-card border-0 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300">
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
