@@ -82,7 +82,7 @@ export const ActivityHeatMap: React.FC = () => {
       'bg-primary/20 dark:bg-primary/25 shadow-sm',     // 1 - Light
       'bg-primary/40 dark:bg-primary/45 shadow-sm',     // 2 - Moderate
       'bg-primary/60 dark:bg-primary/65 shadow-md',     // 3 - Good
-      'bg-primary dark:bg-primary shadow-lg shadow-primary/30', // 4 - Excellent
+      'bg-primary/80 dark:bg-primary/90 shadow-lg shadow-primary/30', // 4 - Excellent (changed from full primary/white)
     ];
     return colors[Math.min(intensity, 4)];
   };
