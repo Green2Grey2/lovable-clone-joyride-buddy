@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Award, Star, Target, Zap, Crown, Medal, Calendar, Snowflake, Sun, Leaf, Flower } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import { achievementIconMap } from '@/components/icons/AchievementIcons';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -270,7 +271,11 @@ export const ExpandedAchievementSystem = () => {
         <TabsContent value={selectedCategory} className="mt-12">
           <div className="grid gap-4">
             {filteredAchievements.map((achievement) => {
-              const IconComponent = iconMap[achievement.icon] || iconMap['award'] || Award;
+              // Use custom SVG icons based on achievement name, fallback to Lucide icons
+              const CustomIconComponent = achievementIconMap[achievement.name];
+              const LucideIconComponent = iconMap[achievement.icon] || iconMap['award'] || Award;
+              const IconComponent = CustomIconComponent || LucideIconComponent;
+              
               const progressPercentage = achievement.total ? (achievement.progress || 0) / achievement.total * 100 : 0;
               
               return (
@@ -284,10 +289,16 @@ export const ExpandedAchievementSystem = () => {
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className={`w-16 h-16 bg-gradient-to-br ${achievement.color} rounded-2xl flex items-center justify-center ${
+                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
                         !achievement.earned ? 'opacity-60' : ''
                       } shadow-lg`}>
-                        <IconComponent className="h-8 w-8 text-white" />
+                        {CustomIconComponent ? (
+                          <IconComponent />
+                        ) : (
+                          <div className={`w-full h-full bg-gradient-to-br ${achievement.color} rounded-2xl flex items-center justify-center`}>
+                            <IconComponent className="h-8 w-8 text-white" />
+                          </div>
+                        )}
                       </div>
                       
                       <div className="flex-1">
