@@ -3,18 +3,19 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Home, Activity, Award, Plus, ArrowLeft, BookOpen } from 'lucide-react';
 import { ActivitySelector } from '@/components/ActivitySelector';
-import { useScrollDirection, useSwipe, useHapticFeedback } from '@/hooks/useGestures';
+import { useSwipe, useHapticFeedback } from '@/hooks/useGestures';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useNavigation } from '@/contexts/NavigationContext';
 import { cn } from '@/lib/utils';
 
 export const FloatingBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showActivitySelector, setShowActivitySelector] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const { preferences } = useUserPreferences();
   const { lightTap, mediumTap } = useHapticFeedback();
+  const { isBottomNavVisible, setIsBottomNavVisible } = useNavigation();
 
   const isActive = (path: string) => location.pathname === path;
   
@@ -50,12 +51,7 @@ export const FloatingBottomNav = () => {
     { icon: Award, label: 'Awards', path: '/awards' },
   ];
 
-  // Auto-hide navigation on scroll
-  const { scrollDirection } = useScrollDirection({
-    threshold: 20,
-    onScrollDown: () => setIsVisible(false),
-    onScrollUp: () => setIsVisible(true),
-  });
+  // Navigation visibility is now managed by NavigationContext
 
   // Swipe gesture support
   const swipeRef = useSwipe({
@@ -73,10 +69,10 @@ export const FloatingBottomNav = () => {
       if (preferences.hapticEnabled) lightTap();
     },
     onSwipeUp: () => {
-      setIsVisible(true);
+      setIsBottomNavVisible(true);
     },
     onSwipeDown: () => {
-      setIsVisible(false);
+      setIsBottomNavVisible(false);
     },
   });
 
@@ -121,7 +117,7 @@ export const FloatingBottomNav = () => {
         ref={swipeRef as React.RefObject<HTMLDivElement>}
         className={cn(
           "fixed bottom-0 left-0 right-0 z-50 pb-safe transition-transform duration-300 ease-in-out",
-          isVisible ? "translate-y-0" : "translate-y-full"
+          isBottomNavVisible ? "translate-y-0" : "translate-y-full"
         )}
       >
         <div className="glass dark:glass-dark mx-4 mb-4 rounded-2xl shadow-premium">
