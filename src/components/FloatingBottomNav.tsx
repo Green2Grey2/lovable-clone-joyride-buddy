@@ -141,7 +141,7 @@ export const FloatingBottomNav = () => {
                   className={cn(
                     "flex flex-col items-center gap-1 h-auto py-2 px-2 transition-all duration-200 touch-manipulation",
                     isActive(item.path)
-                      ? 'text-primary bg-primary/10 scale-105'
+                      ? 'text-inverse gradient-primary scale-105'
                       : 'text-muted-foreground hover:text-primary'
                   )}
                   aria-label={`Navigate to ${item.label}`}
@@ -174,7 +174,7 @@ export const FloatingBottomNav = () => {
                   className={cn(
                     "flex flex-col items-center gap-1 h-auto py-2 px-2 transition-all duration-200 touch-manipulation",
                     isActive(item.path)
-                      ? 'text-primary bg-primary/10 scale-105'
+                      ? 'text-inverse gradient-primary scale-105'
                       : 'text-muted-foreground hover:text-primary'
                   )}
                   aria-label={`Navigate to ${item.label}`}
