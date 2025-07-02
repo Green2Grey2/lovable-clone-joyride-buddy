@@ -71,7 +71,7 @@ export const FloatingActivityFeed = () => {
     return (
       <Button
         onClick={handleOpen}
-        className="fixed right-4 bottom-20 md:bottom-4 z-40 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-200 p-0"
+        className="fixed right-4 bottom-24 md:bottom-6 z-40 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 p-0"
       >
         <Users className="h-6 w-6 text-white" />
         {unreadCount > 0 && (
@@ -86,8 +86,12 @@ export const FloatingActivityFeed = () => {
   }
 
   return (
-    <Card className={`fixed right-4 ${isMinimized ? 'bottom-20 md:bottom-4' : 'bottom-20 md:bottom-4 top-20 md:top-auto'} z-40 w-[calc(100vw-2rem)] max-w-md transition-all duration-300 shadow-xl ${isMinimized ? 'h-14' : 'md:h-[600px]'}`}>
-      <div className="flex items-center justify-between p-3 border-b">
+    <Card className={`fixed right-4 z-40 w-[calc(100vw-2rem)] max-w-md transition-all duration-300 shadow-xl ${
+      isMinimized 
+        ? 'bottom-24 md:bottom-6 h-14' 
+        : 'bottom-24 md:bottom-6 top-20 md:top-auto h-[calc(100vh-8rem)] md:h-[600px]'
+    }`}>
+      <div className="flex items-center justify-between p-3 border-b bg-card">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
           <h3 className="font-semibold">Activity Feed</h3>
@@ -113,7 +117,7 @@ export const FloatingActivityFeed = () => {
       </div>
       
       {!isMinimized && (
-        <div className="overflow-y-auto h-[calc(100%-60px)] p-4">
+        <div className="overflow-y-auto overflow-x-hidden h-[calc(100%-60px)] p-4 bg-card">
           <ActivityFeed />
         </div>
       )}
