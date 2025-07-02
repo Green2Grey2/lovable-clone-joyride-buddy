@@ -13,7 +13,7 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 interface ActivityItem {
   id: string;
   user_id: string;
-  type: 'achievement' | 'milestone' | 'activity' | 'challenge';
+  type: 'achievement' | 'milestone' | 'activity' | 'challenge' | 'streak_achievement' | 'step_milestone';
   title: string;
   description: string;
   data: any;
@@ -54,7 +54,7 @@ export const ActivityFeed = () => {
       const processedData = data?.map(item => ({
         id: item.id,
         user_id: item.user_id,
-        type: item.type as 'achievement' | 'milestone' | 'activity' | 'challenge',
+        type: item.type as 'achievement' | 'milestone' | 'activity' | 'challenge' | 'streak_achievement' | 'step_milestone',
         title: item.title,
         description: item.description,
         data: item.data,
@@ -149,14 +149,18 @@ export const ActivityFeed = () => {
     switch (type) {
       case 'achievement':
         return <Trophy className="h-5 w-5 text-yellow-500" />;
-      case 'milestone':
+      case 'streak_achievement':
+        return <Flame className="h-5 w-5 text-orange-500" />;
+      case 'step_milestone':
         return <Target className="h-5 w-5 text-blue-500" />;
+      case 'milestone':
+        return <Target className="h-5 w-5 text-green-500" />;
       case 'activity':
         return <Footprints className="h-5 w-5 text-green-500" />;
       case 'challenge':
         return <Flame className="h-5 w-5 text-orange-500" />;
       default:
-        return null;
+        return <Trophy className="h-5 w-5 text-primary" />;
     }
   };
 
@@ -216,18 +220,69 @@ export const ActivityFeed = () => {
               {activity.description}
             </p>
             
-            {/* Activity-specific content */}
-            {activity.type === 'achievement' && activity.data?.badge && (
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-3 rounded-lg mb-3">
-                <p className="text-sm font-medium text-orange-800">
-                  🏆 Earned: {activity.data.badge}
-                </p>
+            {/* Enhanced achievement display */}
+            {activity.type === 'achievement' && activity.data && (
+              <div className="bg-gradient-to-r from-yellow-50 via-yellow-100 to-orange-50 dark:from-yellow-900/20 dark:via-yellow-800/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-700 p-4 rounded-lg mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-yellow-200 dark:bg-yellow-800 rounded-full">
+                    <Trophy className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-yellow-900 dark:text-yellow-100 text-base">
+                      🏆 {activity.data.achievement_name || 'New Achievement!'}
+                    </p>
+                    {activity.data.points && (
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        +{activity.data.points} points earned
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
             
-            {activity.type === 'milestone' && activity.data?.value && (
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-3 rounded-lg mb-3">
-                <p className="text-sm font-medium text-blue-800">
+            {/* Enhanced streak milestone display */}
+            {activity.type === 'streak_achievement' && activity.data && (
+              <div className="bg-gradient-to-r from-orange-50 via-red-50 to-pink-50 dark:from-orange-900/20 dark:via-red-900/20 dark:to-pink-900/20 border border-orange-200 dark:border-orange-700 p-4 rounded-lg mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-200 dark:bg-orange-800 rounded-full">
+                    <Flame className="h-6 w-6 text-orange-600 dark:text-orange-300" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-orange-900 dark:text-orange-100 text-base">
+                      🔥 {activity.data.streak_days}-Day Streak!
+                    </p>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      Consistency level: Expert
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Enhanced step milestone display */}
+            {activity.type === 'step_milestone' && activity.data && (
+              <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-900/20 dark:via-cyan-900/20 dark:to-teal-900/20 border border-blue-200 dark:border-blue-700 p-4 rounded-lg mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-200 dark:bg-blue-800 rounded-full">
+                    <Target className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-blue-900 dark:text-blue-100 text-base">
+                      👟 {activity.data.steps?.toLocaleString() || activity.data.milestone} Steps Reached!
+                    </p>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Daily goal achievement
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Generic milestone display for other types */}
+            {activity.type === 'milestone' && !activity.type.includes('step') && activity.data?.value && (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 p-3 rounded-lg mb-3">
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
                   🎯 {activity.data.value} {activity.data.unit || 'achieved'}!
                 </p>
               </div>
