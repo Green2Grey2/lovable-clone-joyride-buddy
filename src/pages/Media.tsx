@@ -4,6 +4,7 @@ import { FloatingBottomNav } from '@/components/FloatingBottomNav';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { NotificationBell } from '@/components/NotificationBell';
 import { GlobalSearch } from '@/components/GlobalSearch';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { WalkingChallengeCountdown } from '@/components/WalkingChallengeCountdown';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock, Share, Bookmark } from 'lucide-react';
@@ -292,16 +293,17 @@ Many people confuse circuit training with true HIIT. If you can hold a conversat
       {/* Enhanced Header with Apple News styling */}
       <div className="glass dark:glass-dark backdrop-blur-xl sticky top-0 z-30 border-b border-border/50">
         <div className="px-6 py-6">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-1 tracking-tight">
+              <h1 className="text-2xl font-bold text-foreground mb-1">
                 Today
               </h1>
-              <p className="text-muted-foreground text-sm font-medium">Sunday, June 29</p>
+              <p className="text-muted-foreground text-sm">Sunday, June 29</p>
             </div>
             <div className="flex items-center gap-3">
               <GlobalSearch />
               <NotificationBell />
+              <ThemeToggle />
               <ProfileDropdown />
             </div>
           </div>

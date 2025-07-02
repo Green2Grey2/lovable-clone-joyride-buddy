@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { FloatingBottomNav } from '@/components/FloatingBottomNav';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface User {
   id: string;
@@ -71,6 +72,7 @@ const Manager = () => {
               <p className="text-muted-foreground text-sm">Manage your department team</p>
             </div>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <Button 
                 variant="outline" 
                 size="sm" 

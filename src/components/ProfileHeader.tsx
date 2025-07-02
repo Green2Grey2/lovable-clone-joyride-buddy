@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface ProfileHeaderProps {
   onGoalsEditorOpen: () => void;
@@ -18,15 +19,18 @@ export const ProfileHeader = React.memo(({ onGoalsEditorOpen }: ProfileHeaderPro
             </h1>
             <p className="text-muted-foreground text-sm">Manage your account and preferences</p>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="text-muted-foreground hover:bg-muted rounded-full w-10 h-10 p-0"
-            onClick={onGoalsEditorOpen}
-            soundEnabled={false}
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-muted-foreground hover:bg-muted rounded-full w-10 h-10 p-0"
+              onClick={onGoalsEditorOpen}
+              soundEnabled={false}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

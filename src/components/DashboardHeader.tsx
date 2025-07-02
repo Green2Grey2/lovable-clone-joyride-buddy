@@ -4,6 +4,7 @@ import { Bell } from 'lucide-react';
 import { ProfileDropdown } from './ProfileDropdown';
 import { NotificationBell } from './NotificationBell';
 import { GlobalSearch } from './GlobalSearch';
+import { ThemeToggle } from './ThemeToggle';
 
 interface DashboardHeaderProps {
   userName: string;
@@ -29,6 +30,7 @@ export const DashboardHeader = ({ userName, currentStreak, weeklyGoal, currentSt
           <div className="flex items-center gap-3">
             <GlobalSearch />
             <NotificationBell />
+            <ThemeToggle />
             <ProfileDropdown />
           </div>
         </div>

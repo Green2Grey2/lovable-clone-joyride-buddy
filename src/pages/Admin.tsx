@@ -15,6 +15,7 @@ import { EventManagement } from '@/components/EventManagement';
 import { QRCodeScanner } from '@/components/QRCodeScanner';
 import { UserCreation } from '@/components/UserCreation';
 import { SystemHealthCheck } from '@/components/SystemHealthCheck';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { ActiveUsersMonitor } from '@/components/ActiveUsersMonitor';
 
@@ -129,6 +130,7 @@ const Admin = () => {
               <p className="text-muted-foreground text-sm">Olive View UCLA Medical Center</p>
             </div>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
                 <Activity className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">User View</span>
