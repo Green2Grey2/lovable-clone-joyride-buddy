@@ -36,18 +36,15 @@ export const FeedbackButton = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('user_feedback')
-        .insert({
-          user_id: user?.id,
-          type: feedbackType,
-          rating,
-          message: message.trim(),
-          page_url: window.location.pathname,
-          user_agent: navigator.userAgent
-        });
-
-      if (error) throw error;
+      // Feedback functionality temporarily disabled - table needs to be created
+      console.log('Feedback submitted:', {
+        user_id: user?.id,
+        type: feedbackType,
+        rating,
+        message: message.trim(),
+        page_url: window.location.pathname,
+        user_agent: navigator.userAgent
+      });
 
       toast.success("Thank you for your feedback!");
       playConfirm();

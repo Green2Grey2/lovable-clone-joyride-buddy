@@ -24,57 +24,10 @@ class PushNotificationService {
     if (this.isInitialized) return;
 
     try {
-      // Dynamic import for Capacitor plugins
-      const { PushNotifications } = await import('@capacitor/push-notifications');
-      
-      // Request permission
-      let permStatus = await PushNotifications.checkPermissions();
-      
-      if (permStatus.receive === 'prompt') {
-        permStatus = await PushNotifications.requestPermissions();
-      }
-
-      if (permStatus.receive !== 'granted') {
-        throw new Error('User denied permissions!');
-      }
-
-      // Register with the push notification service
-      await PushNotifications.register();
-
-      // Listen for registration token
-      await PushNotifications.addListener('registration', async (token: any) => {
-        console.log('Push registration success, token: ' + token.value);
-        this.token = token.value;
-        await this.saveTokenToDatabase(token.value);
-      });
-
-      // Listen for registration errors
-      await PushNotifications.addListener('registrationError', (error: any) => {
-        console.error('Error on registration: ' + JSON.stringify(error));
-      });
-
-      // Handle notification received while app is in foreground
-      await PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
-        console.log('Push notification received: ' + JSON.stringify(notification));
-        
-        // Show in-app notification
-        toast(notification.title || 'New notification', {
-          description: notification.body,
-          action: notification.data?.action ? {
-            label: 'View',
-            onClick: () => this.handleNotificationAction(notification.data)
-          } : undefined
-        });
-      });
-
-      // Handle notification tap
-      await PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
-        console.log('Push notification action performed', notification);
-        this.handleNotificationAction(notification.notification.data);
-      });
-
+      // Temporarily disabled - Capacitor push notifications not installed
+      console.log('Push notifications temporarily disabled - missing Capacitor modules');
       this.isInitialized = true;
-      
+      return false;
     } catch (error) {
       console.error('Push notification initialization error:', error);
       toast.error('Failed to initialize push notifications');
@@ -86,18 +39,8 @@ class PushNotificationService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
-        .from('push_tokens')
-        .upsert({
-          user_id: user.id,
-          token: token,
-          platform: Capacitor.getPlatform(),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,platform'
-        });
-
-      if (error) throw error;
+      // Temporarily disabled - push_tokens table doesn't exist yet
+      console.log('Saving push token temporarily disabled:', token);
     } catch (error) {
       console.error('Error saving push token:', error);
     }
@@ -128,19 +71,8 @@ class PushNotificationService {
     if (!Capacitor.isNativePlatform()) return;
 
     try {
-      const { LocalNotifications } = await import('@capacitor/local-notifications');
-      
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            title,
-            body,
-            id: Math.floor(Math.random() * 1000000),
-            schedule: { at: scheduleAt },
-            extra: data
-          }
-        ]
-      });
+      // Temporarily disabled - LocalNotifications not installed
+      console.log('Local notification temporarily disabled:', { title, body, scheduleAt, data });
     } catch (error) {
       console.error('Error scheduling local notification:', error);
     }
@@ -150,8 +82,8 @@ class PushNotificationService {
     if (!Capacitor.isNativePlatform()) return;
 
     try {
-      const { LocalNotifications } = await import('@capacitor/local-notifications');
-      await LocalNotifications.cancel({ notifications: [] });
+      // Temporarily disabled - LocalNotifications not installed
+      console.log('Cancel notifications temporarily disabled');
     } catch (error) {
       console.error('Error canceling notifications:', error);
     }

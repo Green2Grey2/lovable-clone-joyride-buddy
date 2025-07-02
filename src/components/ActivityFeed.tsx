@@ -43,21 +43,30 @@ export const ActivityFeed = () => {
 
   const loadActivities = async (pageNum: number = 1) => {
     try {
-      const { data, error } = await supabase
-        .from('social_activities')
-        .select(`
-          *,
-          user:profiles!user_id(name, avatar_url, department),
-          activity_likes!left(user_id)
-        `)
-        .order('created_at', { ascending: false })
-        .range((pageNum - 1) * 10, pageNum * 10 - 1);
+      const { data, error } = await supabase.rpc('get_social_feed', {
+        p_user_id: user?.id,
+        p_limit: 10,
+        p_offset: (pageNum - 1) * 10
+      });
 
       if (error) throw error;
 
       const processedData = data?.map(item => ({
-        ...item,
-        liked_by_me: item.activity_likes?.some((like: any) => like.user_id === user?.id)
+        id: item.id,
+        user_id: item.user_id,
+        type: item.type as 'achievement' | 'milestone' | 'activity' | 'challenge',
+        title: item.title,
+        description: item.description,
+        data: item.data,
+        created_at: item.created_at,
+        likes: Number(item.like_count || 0),
+        comments: 0, // Comments feature not implemented yet
+        user: {
+          name: item.user_name || 'Unknown User',
+          avatar_url: undefined,
+          department: item.user_department || 'Unknown'
+        },
+        liked_by_me: item.liked_by_me || false
       })) || [];
 
       if (pageNum === 1) {
@@ -85,25 +94,9 @@ export const ActivityFeed = () => {
           schema: 'public',
           table: 'social_activities'
         },
-        async (payload) => {
-          // Fetch the complete activity with user data
-          const { data } = await supabase
-            .from('social_activities')
-            .select(`
-              *,
-              user:profiles!user_id(name, avatar_url, department),
-              activity_likes!left(user_id)
-            `)
-            .eq('id', payload.new.id)
-            .single();
-
-          if (data) {
-            const processedData = {
-              ...data,
-              liked_by_me: data.activity_likes?.some((like: any) => like.user_id === user?.id)
-            };
-            setActivities(prev => [processedData, ...prev]);
-          }
+        async () => {
+          // Reload the first page when new activities are added
+          loadActivities(1);
         }
       )
       .subscribe();

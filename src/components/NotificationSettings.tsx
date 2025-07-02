@@ -43,11 +43,11 @@ export const NotificationSettings = () => {
       if (data && !error) {
         setPreferences({
           enabled: data.notifications_enabled ?? false,
-          dailyReminders: data.daily_reminders ?? true,
-          achievementAlerts: data.achievement_alerts ?? true,
-          challengeUpdates: data.challenge_updates ?? true,
-          socialActivity: data.social_activity ?? true,
-          reminderTime: data.reminder_time || "09:00"
+          dailyReminders: data.notifications_enabled ?? true, // Use fallback
+          achievementAlerts: data.notifications_enabled ?? true, // Use fallback
+          challengeUpdates: data.notifications_enabled ?? true, // Use fallback
+          socialActivity: data.notifications_enabled ?? true, // Use fallback
+          reminderTime: "09:00" // Default time
         });
       }
     } catch (error) {

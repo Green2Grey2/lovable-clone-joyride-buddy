@@ -139,7 +139,7 @@ export const ExpandedAchievementSystem = () => {
           earned: isEarned,
           earnedDate: isEarned ? new Date(userAchievement.earned_at).toLocaleDateString() : undefined,
           progress: userAchievement?.progress || 0,
-          total: achievement.criteria?.value || 100,
+          total: (achievement.criteria as any)?.value || 100,
           color,
           celebrationMessage: isEarned ? `Congratulations on earning ${achievement.name}! 🎉` : undefined,
           points: achievement.points

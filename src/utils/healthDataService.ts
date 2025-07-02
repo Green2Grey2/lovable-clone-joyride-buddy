@@ -208,8 +208,8 @@ class HealthDataService {
       await supabase
         .from('user_preferences')
         .update({
-          health_platform: this.platform,
-          health_permissions_granted: this.permissions.granted
+          // health_platform: this.platform, // Disabled - column doesn't exist yet
+          // health_permissions_granted: this.permissions.granted // Disabled - column doesn't exist yet
         })
         .eq('user_id', user.id);
     } catch (error) {
