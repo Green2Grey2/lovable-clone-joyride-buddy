@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FloatingBottomNav } from '@/components/FloatingBottomNav';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
+import { NotificationBell } from '@/components/NotificationBell';
+import { GlobalSearch } from '@/components/GlobalSearch';
 import { WalkingChallengeCountdown } from '@/components/WalkingChallengeCountdown';
 import { Button } from '@/components/ui/button';
-import { Bell, Search, ArrowLeft, Clock, Share, Bookmark } from 'lucide-react';
+import { ArrowLeft, Clock, Share, Bookmark } from 'lucide-react';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { AppleNewsMediaFeed } from '@/components/media/AppleNewsMediaFeed';
 
@@ -187,15 +189,16 @@ Many people confuse circuit training with true HIIT. If you can hold a conversat
     }
   }, [lastScrollY, navVisible, selectedArticle]);
 
-  const handleNotifications = () => {
-    playSoftClick();
-    console.log('Notifications clicked');
-  };
+  // These functions are no longer needed since we use the proper components
+  // const handleNotifications = () => {
+  //   playSoftClick();
+  //   console.log('Notifications clicked');
+  // };
 
-  const handleSearch = () => {
-    playSoftClick();
-    console.log('Search clicked');
-  };
+  // const handleSearch = () => {
+  //   playSoftClick();
+  //   console.log('Search clicked');
+  // };
 
   const handleArticleClick = (articleId: string) => {
     playSoftClick();
@@ -297,25 +300,8 @@ Many people confuse circuit training with true HIIT. If you can hold a conversat
               <p className="text-muted-foreground text-sm font-medium">Sunday, June 29</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="relative text-muted-foreground hover:bg-muted w-10 h-10 p-0 rounded-full transition-all duration-200 hover:scale-110"
-                onClick={handleSearch}
-                soundEnabled={false}
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="relative text-muted-foreground hover:bg-muted w-10 h-10 p-0 rounded-full transition-all duration-200 hover:scale-110"
-                onClick={handleNotifications}
-                soundEnabled={false}
-              >
-                <Bell className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-              </Button>
+              <GlobalSearch />
+              <NotificationBell />
               <ProfileDropdown />
             </div>
           </div>
