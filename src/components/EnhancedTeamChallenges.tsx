@@ -165,135 +165,8 @@ export const EnhancedTeamChallenges = () => {
     );
   }
 
-  // Keep the mock data structure but replace with real data
-  const mockChallenges = [
-    {
-      id: '1',
-      name: 'Weekend Warriors Blitz',
-      description: 'Get 20,000 steps each day this weekend. Saturday & Sunday only!',
-      type: 'weekend',
-      status: 'active',
-      startDate: '2025-01-04',
-      endDate: '2025-01-05',
-      participants: 45,
-      maxParticipants: 100,
-      currentProgress: 15800,
-      targetValue: 20000,
-      metric: 'steps',
-      rewards: ['Weekend Warrior Badge', 'Limited Edition Weekend Trophy', '200 Fitness Points'],
-      difficulty: 'medium',
-      isUserParticipating: true,
-      leaderboard: [
-        { rank: 1, name: 'Alex Chen', department: 'Engineering', value: 19500 },
-        { rank: 2, name: 'Sarah Johnson', department: 'Engineering', value: 18200 },
-        { rank: 3, name: 'Mike Rivera', department: 'Marketing', value: 17800 }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Step Championship Tournament',
-      description: 'Quarterly step tournament - climb the brackets to become champion!',
-      type: 'tournament',
-      status: 'active',
-      startDate: '2025-01-01',
-      endDate: '2025-01-31',
-      participants: 128,
-      maxParticipants: 128,
-      currentProgress: 45000,
-      targetValue: 100000,
-      metric: 'steps',
-      rewards: ['Champion Crown', 'Tournament Trophy', '1000 Fitness Points', 'Special Title'],
-      difficulty: 'extreme',
-      isUserParticipating: false,
-      leaderboard: [
-        { rank: 1, name: 'Emma Davis', department: 'Design', value: 85000 },
-        { rank: 2, name: 'Tom Wilson', department: 'Sales', value: 82500 },
-        { rank: 3, name: 'Lisa Wang', department: 'Engineering', value: 78900 }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Engineering vs Marketing Showdown',
-      description: 'Department battle! Which team can log more active minutes this week?',
-      type: 'team_vs_team',
-      status: 'active',
-      startDate: '2025-01-01',
-      endDate: '2025-01-07',
-      participants: 24,
-      currentProgress: 1200,
-      targetValue: 2000,
-      metric: 'active_minutes',
-      rewards: ['Team Victory Badge', 'Department Trophy', '300 Fitness Points'],
-      difficulty: 'hard',
-      isUserParticipating: true
-    },
-    {
-      id: '4',
-      name: 'Daily Sprint Challenge',
-      description: 'Hit 12,000 steps today! Simple but effective.',
-      type: 'daily',
-      status: 'active',
-      startDate: '2025-01-02',
-      endDate: '2025-01-02',
-      participants: 67,
-      currentProgress: 8450,
-      targetValue: 12000,
-      metric: 'steps',
-      rewards: ['Daily Achiever Badge', '50 Fitness Points'],
-      difficulty: 'easy',
-      isUserParticipating: true
-    },
-    {
-      id: '5',
-      name: 'New Year Resolution Relay',
-      description: 'Team relay - pass the baton by completing your daily goal!',
-      type: 'relay',
-      status: 'upcoming',
-      startDate: '2025-01-06',
-      endDate: '2025-01-12',
-      participants: 0,
-      maxParticipants: 40,
-      currentProgress: 0,
-      targetValue: 10000,
-      metric: 'steps',
-      rewards: ['Relay Champion Badge', 'Team Spirit Trophy', '400 Fitness Points'],
-      difficulty: 'medium',
-      isUserParticipating: false
-    }
-  ] as Challenge[];
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200';
-      case 'medium': return 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200';
-      case 'hard': return 'bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200';
-      case 'extreme': return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200';
-      default: return 'bg-secondary text-secondary-foreground';
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'tournament': return <Crown className="h-4 w-4" />;
-      case 'weekend': return <Calendar className="h-4 w-4" />;
-      case 'team_vs_team': return <Users className="h-4 w-4" />;
-      case 'relay': return <Zap className="h-4 w-4" />;
-      case 'daily': return <Timer className="h-4 w-4" />;
-      default: return <Trophy className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-500 dark:bg-green-600';
-      case 'upcoming': return 'bg-blue-500 dark:bg-blue-600';
-      case 'completed': return 'bg-muted-foreground';
-      default: return 'bg-muted-foreground';
-    }
-  };
-
-  // Use real challenges if available, otherwise fall back to mock data
-  const displayChallenges = challenges.length > 0 ? challenges : mockChallenges;
+  // Use real challenges data instead of mock data
+  const displayChallenges = challenges.length > 0 ? challenges : [];
 
   return (
     <div className="space-y-6">
@@ -477,4 +350,36 @@ export const EnhancedTeamChallenges = () => {
       </div>
     </div>
   );
+};
+
+// Helper functions
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case 'daily': return <Target className="h-6 w-6" />;
+    case 'weekly': return <Calendar className="h-6 w-6" />;
+    case 'weekend': return <Zap className="h-6 w-6" />;
+    case 'tournament': return <Crown className="h-6 w-6" />;
+    case 'team_vs_team': return <Users className="h-6 w-6" />;
+    case 'relay': return <Medal className="h-6 w-6" />;
+    default: return <Trophy className="h-6 w-6" />;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'active': return 'bg-green-500';
+    case 'upcoming': return 'bg-blue-500';
+    case 'completed': return 'bg-gray-500';
+    default: return 'bg-gray-400';
+  }
+};
+
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case 'easy': return 'bg-green-100 text-green-800 border-green-200';
+    case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'hard': return 'bg-orange-100 text-orange-800 border-orange-200';
+    case 'extreme': return 'bg-red-100 text-red-800 border-red-200';
+    default: return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
 };

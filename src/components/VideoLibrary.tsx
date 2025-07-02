@@ -24,49 +24,8 @@ interface VideoLibraryProps {
 export const VideoLibrary = ({ isAdmin = false }: VideoLibraryProps) => {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   
-  // Mock video data - in real app this would come from backend
-  const videos: Video[] = [
-    {
-      id: '1',
-      title: '10-Minute Morning Walk Routine',
-      description: 'Start your day with energy! A guided morning walk routine perfect for beginners.',
-      duration: '10:30',
-      thumbnail: '/placeholder.svg',
-      category: 'walking',
-      difficulty: 'beginner',
-      views: 1240
-    },
-    {
-      id: '2',
-      title: 'Desk Stretches for Office Workers',
-      description: 'Combat desk fatigue with these simple stretches you can do at your workspace.',
-      duration: '8:15',
-      thumbnail: '/placeholder.svg',
-      category: 'stretching',
-      difficulty: 'beginner',
-      views: 890
-    },
-    {
-      id: '3',
-      title: 'Lunchtime Power Walk Challenge',
-      description: 'Maximize your lunch break with this energizing 15-minute power walk routine.',
-      duration: '15:45',
-      thumbnail: '/placeholder.svg',
-      category: 'walking',
-      difficulty: 'intermediate',
-      views: 567
-    },
-    {
-      id: '4',
-      title: '5-Minute Energy Boost Cardio',
-      description: 'Quick cardio burst to boost energy levels during your workday.',
-      duration: '5:20',
-      thumbnail: '/placeholder.svg',
-      category: 'cardio',
-      difficulty: 'intermediate',
-      views: 2100
-    }
-  ];
+  // This will be replaced with real video data from editorial_media table
+  const videos: Video[] = [];
 
   const getCategoryColor = (category: string) => {
     const colors = {

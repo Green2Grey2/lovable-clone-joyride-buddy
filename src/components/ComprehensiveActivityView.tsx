@@ -1,81 +1,70 @@
-
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Target, Clock, MapPin, TrendingUp, Calendar as CalendarIcon, 
-  Flame, Droplets, Heart, Award, ChevronDown, Zap 
-} from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LineChart, Line, Area, AreaChart, Tooltip } from 'recharts';
-import { useApp } from '@/contexts/AppContext';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { Target, Flame, MapPin, Zap, CalendarDays } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { activityTrackingService } from '@/utils/activityTrackingService';
+import { format, subDays } from 'date-fns';
 
-export const ComprehensiveActivityView = () => {
-  const { userStats, userProfile } = useApp();
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedMetric, setSelectedMetric] = useState<'steps' | 'calories' | 'distance' | 'workouts'>('steps');
+interface ComprehensiveActivityViewProps {
+  userStats: any;
+}
+
+export const ComprehensiveActivityView = ({ userStats }: ComprehensiveActivityViewProps) => {
+  const { user } = useAuth();
+  const [selectedView, setSelectedView] = useState<'weekly' | 'monthly'>('weekly');
+  const [selectedMetric, setSelectedMetric] = useState('steps');
+  const [weeklyData, setWeeklyData] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
   
-  // Convert to US metrics (miles)
-  const stepGoal = Math.floor(userProfile.weeklyGoal / 7);
-  const stepProgress = (userStats.todaySteps / stepGoal) * 100;
-  const todayMiles = (userStats.todaySteps / 2000).toFixed(1); // 2000 steps ≈ 1 mile
+  const stepGoal = 10000;
+  const stepProgress = (userStats.today_steps / stepGoal) * 100;
+  const todayMiles = (userStats.today_steps / 2000).toFixed(1);
 
-  // Use real user data for weekly view
-  const weeklyData = [
-    { day: 'Mon', steps: Math.floor(userStats.weeklySteps * 0.12), calories: Math.floor(userStats.calories * 0.12), distance: parseFloat((userStats.weeklySteps * 0.12 / 2000).toFixed(1)), date: '2024-01-15' },
-    { day: 'Tue', steps: Math.floor(userStats.weeklySteps * 0.18), calories: Math.floor(userStats.calories * 0.18), distance: parseFloat((userStats.weeklySteps * 0.18 / 2000).toFixed(1)), date: '2024-01-16' },
-    { day: 'Wed', steps: Math.floor(userStats.weeklySteps * 0.15), calories: Math.floor(userStats.calories * 0.15), distance: parseFloat((userStats.weeklySteps * 0.15 / 2000).toFixed(1)), date: '2024-01-17' },
-    { day: 'Thu', steps: Math.floor(userStats.weeklySteps * 0.20), calories: Math.floor(userStats.calories * 0.20), distance: parseFloat((userStats.weeklySteps * 0.20 / 2000).toFixed(1)), date: '2024-01-18' },
-    { day: 'Fri', steps: userStats.todaySteps, calories: userStats.calories, distance: parseFloat(todayMiles), date: '2024-01-19' },
-    { day: 'Sat', steps: 0, calories: 0, distance: 0, date: '2024-01-20' },
-    { day: 'Sun', steps: 0, calories: 0, distance: 0, date: '2024-01-21' },
-  ];
-
-  // Use real user data for monthly view
-  const monthlyData = [
-    { week: 'W1', steps: Math.floor(userStats.monthlySteps * 0.28), calories: Math.floor(userStats.calories * 4 * 0.28), workouts: Math.floor(userStats.totalWorkouts * 0.28), distance: parseFloat((userStats.monthlySteps * 0.28 / 2000).toFixed(1)), activeMinutes: Math.floor(userStats.activeMinutes * 4 * 0.28) },
-    { week: 'W2', steps: Math.floor(userStats.monthlySteps * 0.32), calories: Math.floor(userStats.calories * 4 * 0.32), workouts: Math.floor(userStats.totalWorkouts * 0.32), distance: parseFloat((userStats.monthlySteps * 0.32 / 2000).toFixed(1)), activeMinutes: Math.floor(userStats.activeMinutes * 4 * 0.32) },
-    { week: 'W3', steps: Math.floor(userStats.monthlySteps * 0.25), calories: Math.floor(userStats.calories * 4 * 0.25), workouts: Math.floor(userStats.totalWorkouts * 0.25), distance: parseFloat((userStats.monthlySteps * 0.25 / 2000).toFixed(1)), activeMinutes: Math.floor(userStats.activeMinutes * 4 * 0.25) },
-    { week: 'W4', steps: Math.floor(userStats.monthlySteps * 0.15), calories: Math.floor(userStats.calories * 4 * 0.15), workouts: Math.floor(userStats.totalWorkouts * 0.15), distance: parseFloat((userStats.monthlySteps * 0.15 / 2000).toFixed(1)), activeMinutes: Math.floor(userStats.activeMinutes * 4 * 0.15) },
-  ];
-
-  const recentActivities = [
-    {
-      id: '1',
-      activity: 'Running',
-      goal: 'Running goal completed',
-      duration: `${userStats.activeMinutes} min`,
-      date: 'Today',
-      stats: { distance: `${todayMiles} mi`, pace: '8:30/mi', calories: userStats.calories.toString() },
-      icon: Target,
-      completed: true
-    },
-    {
-      id: '2',
-      activity: 'Walking',
-      goal: 'Daily steps achieved',
-      duration: `${Math.floor(userStats.activeMinutes * 1.2)} min`,
-      date: 'Yesterday',
-      stats: { steps: userStats.todaySteps.toLocaleString(), distance: `${(userStats.todaySteps * 0.8 / 2000).toFixed(1)} mi`, calories: Math.floor(userStats.calories * 0.8).toString() },
-      icon: Target,
-      completed: true
-    },
-    {
-      id: '3',
-      activity: 'Workout',
-      goal: 'Strength training',
-      duration: '30 min',
-      date: '2 days ago',
-      stats: { sets: '12', reps: '180', calories: Math.floor(userStats.calories * 0.6).toString() },
-      icon: Zap,
-      completed: true
+  useEffect(() => {
+    if (user) {
+      loadActivityData();
     }
-  ];
+  }, [user]);
+
+  const loadActivityData = async () => {
+    try {
+      // Get weekly activity history
+      const weeklyActivities = await activityTrackingService.getActivityHistory(user?.id!, 7);
+      const weeklyStats = await activityTrackingService.getWeeklySummary(user?.id!);
+      
+      // Process weekly data from real activities
+      const processedWeeklyData = weeklyActivities.map((activity, index) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - index));
+        return {
+          day: format(date, 'EEE'),
+          steps: activity.steps || 0,
+          calories: activity.calories_burned || 0,
+          distance: parseFloat(((activity.steps || 0) / 2000).toFixed(1)),
+          date: format(date, 'yyyy-MM-dd')
+        };
+      });
+
+      // Get monthly data (simplified - using weekly averages)
+      const monthlyStats = [
+        { week: 'W1', steps: Math.floor((weeklyStats?.totalSteps || 0) * 0.28), calories: Math.floor((weeklyStats?.totalCalories || 0) * 0.28), workouts: Math.floor((weeklyStats?.activeDays || 0) * 0.28), distance: parseFloat(((weeklyStats?.totalSteps || 0) * 0.28 / 2000).toFixed(1)), activeMinutes: Math.floor((weeklyStats?.totalDuration || 0) * 0.28) },
+        { week: 'W2', steps: Math.floor((weeklyStats?.totalSteps || 0) * 0.32), calories: Math.floor((weeklyStats?.totalCalories || 0) * 0.32), workouts: Math.floor((weeklyStats?.activeDays || 0) * 0.32), distance: parseFloat(((weeklyStats?.totalSteps || 0) * 0.32 / 2000).toFixed(1)), activeMinutes: Math.floor((weeklyStats?.totalDuration || 0) * 0.32) },
+        { week: 'W3', steps: Math.floor((weeklyStats?.totalSteps || 0) * 0.25), calories: Math.floor((weeklyStats?.totalCalories || 0) * 0.25), workouts: Math.floor((weeklyStats?.activeDays || 0) * 0.25), distance: parseFloat(((weeklyStats?.totalSteps || 0) * 0.25 / 2000).toFixed(1)), activeMinutes: Math.floor((weeklyStats?.totalDuration || 0) * 0.25) },
+        { week: 'W4', steps: Math.floor((weeklyStats?.totalSteps || 0) * 0.15), calories: Math.floor((weeklyStats?.totalCalories || 0) * 0.15), workouts: Math.floor((weeklyStats?.activeDays || 0) * 0.15), distance: parseFloat(((weeklyStats?.totalSteps || 0) * 0.15 / 2000).toFixed(1)), activeMinutes: Math.floor((weeklyStats?.totalDuration || 0) * 0.15) },
+      ];
+
+      setWeeklyData(processedWeeklyData);
+      setMonthlyData(monthlyStats);
+      setRecentActivities(weeklyActivities.slice(0, 3));
+    } catch (error) {
+      console.error('Error loading activity data:', error);
+    }
+  };
 
   const metricOptions = [
     { key: 'steps', label: 'Steps', icon: Target, color: 'hsl(var(--primary))' },
@@ -84,493 +73,172 @@ export const ComprehensiveActivityView = () => {
     { key: 'workouts', label: 'Workouts', icon: Zap, color: 'hsl(var(--green-500))' },
   ];
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-card p-4 rounded-2xl shadow-xl border border-border dark:shadow-xl/10">
-          <p className="font-semibold text-foreground mb-2">{label}</p>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-primary rounded-full"></div>
-              <span className="text-sm">Steps: {data.steps?.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-              <span className="text-sm">Calories: {data.calories}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span className="text-sm">Distance: {data.distance} mi</span>
-            </div>
-            {data.activeMinutes && (
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Active: {data.activeMinutes} min</span>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+  const currentData = selectedView === 'weekly' ? weeklyData : monthlyData;
+  const dataKey = selectedView === 'weekly' ? 'day' : 'week';
 
-  const TodayContent = () => (
-    <div className="space-y-6">
-      {/* Today's Progress */}
-      <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-bold text-foreground">Today's Progress</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Steps Progress */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-medium">Steps</span>
-              <span className="text-2xl font-bold text-foreground">{userStats.todaySteps.toLocaleString()}</span>
-            </div>
-            <Progress value={stepProgress} className="h-3 bg-gray-100" />
-            <p className="text-sm text-muted-foreground">{Math.max(0, stepGoal - userStats.todaySteps).toLocaleString()} steps to reach your goal</p>
-          </div>
+  const pieData = [
+    { name: 'Completed', value: stepProgress },
+    { name: 'Remaining', value: 100 - stepProgress }
+  ];
 
-          {/* Today's Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 pt-4">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-2">
-                <MapPin className="h-6 w-6 text-white" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">{todayMiles}</p>
-              <p className="text-xs text-muted-foreground">miles walked</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
-                <Clock className="h-6 w-6 text-white" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">{userStats.activeMinutes}</p>
-              <p className="text-xs text-muted-foreground">active mins</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">{userStats.calories}</p>
-              <p className="text-xs text-muted-foreground">calories</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Health Metrics */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-          <CardContent className="p-4 text-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Droplets className="h-5 w-5 text-white" />
-            </div>
-            <p className="text-xl font-bold text-blue-800">{userStats.water}</p>
-            <p className="text-xs text-blue-600">glasses water</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-          <CardContent className="p-4 text-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Heart className="h-5 w-5 text-white" />
-            </div>
-            <p className="text-xl font-bold text-red-800">{userStats.heartRate}</p>
-            <p className="text-xs text-red-600">avg BPM</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-          <CardContent className="p-4 text-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Flame className="h-5 w-5 text-white" />
-            </div>
-            <p className="text-xl font-bold text-orange-800">{userStats.calories}</p>
-            <p className="text-xs text-orange-600">calories burned</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activities */}
-      <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-foreground text-xl font-semibold">Today's Activities</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentActivities.slice(0, 2).map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <Card key={item.id} className="bg-muted border-0 rounded-2xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary to-blue-500 rounded-2xl flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-6 w-6 text-white" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-foreground font-semibold">{item.goal}</h4>
-                          <Badge className="bg-green-100 text-green-700 border-0">
-                            Completed
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex items-center gap-4 mb-3">
-                          <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                            <Clock className="h-4 w-4" />
-                            {item.duration}
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-2">
-                          {Object.entries(item.stats).map(([key, value]) => (
-                            <div key={key} className="bg-card rounded-xl p-3 text-center">
-                              <p className="text-muted-foreground text-xs capitalize">{key}</p>
-                              <p className="text-foreground text-sm font-semibold">{value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
-  const WeeklyContent = () => (
-    <div className="space-y-6">
-      {/* Weekly Chart */}
-      <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-foreground text-xl font-semibold">Weekly Activity</CardTitle>
-        </CardHeader>
-        <CardContent className="p-8 pt-0">
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData} barCategoryGap="20%">
-                <defs>
-                  <linearGradient id="weeklyGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" />
-                    <stop offset="100%" stopColor="hsl(var(--blue-500))" />
-                  </linearGradient>
-                </defs>
-                <XAxis 
-                  dataKey="day" 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                />
-                <YAxis hide />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="steps" radius={[8, 8, 0, 0]}>
-                  {weeklyData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.day === 'Fri' ? 'url(#weeklyGradient)' : 'hsl(var(--muted))'} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Weekly Overview */}
-      <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5" />
-            This Week's Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {weeklyData.map((day, index) => (
-              <div key={index} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${day.steps > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                  <span className="font-medium text-foreground">{day.day}</span>
-                </div>
-                <div className="flex gap-6 text-right">
-                  <div>
-                    <span className="text-sm font-bold text-foreground">{day.steps.toLocaleString()}</span>
-                    <span className="text-xs text-muted-foreground ml-1">steps</span>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-foreground">{day.distance}</span>
-                    <span className="text-xs text-muted-foreground ml-1">mi</span>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-foreground">{day.calories}</span>
-                    <span className="text-xs text-muted-foreground ml-1">cal</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* All Activities This Week */}
-      <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-foreground text-xl font-semibold">All Activities This Week</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentActivities.map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <Card key={item.id} className="bg-muted border-0 rounded-2xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary to-blue-500 rounded-2xl flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-6 w-6 text-white" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-foreground font-semibold">{item.goal}</h4>
-                          <Badge className="bg-green-100 text-green-700 border-0">
-                            Completed
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex items-center gap-4 mb-3">
-                          <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                            <Clock className="h-4 w-4" />
-                            {item.duration}
-                          </div>
-                          <span className="text-muted-foreground text-sm">{item.date}</span>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-2">
-                          {Object.entries(item.stats).map(([key, value]) => (
-                            <div key={key} className="bg-card rounded-xl p-3 text-center">
-                              <p className="text-muted-foreground text-xs capitalize">{key}</p>
-                              <p className="text-foreground text-sm font-semibold">{value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
-  const MonthlyContent = () => (
-    <div className="space-y-6">
-      {/* Enhanced Monthly Chart with integrated metric selector */}
-      <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <CardTitle className="text-foreground text-lg md:text-xl font-semibold">
-              Monthly {metricOptions.find(m => m.key === selectedMetric)?.label} Overview
-            </CardTitle>
-          </div>
-          {/* Integrated Metric Selector - Fixed responsive layout */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {metricOptions.map((option) => {
-              const IconComponent = option.icon;
-              return (
-                <Button
-                  key={option.key}
-                  variant={selectedMetric === option.key ? "default" : "outline"}
-                  onClick={() => setSelectedMetric(option.key as any)}
-                  size="sm"
-                  className={`h-auto p-2 md:p-3 justify-start text-xs flex-col md:flex-row gap-1 md:gap-2 ${
-                    selectedMetric === option.key 
-                      ? 'bg-gradient-to-r from-primary to-blue-500 text-primary-foreground' 
-                      : 'bg-card hover:bg-muted text-foreground hover:text-foreground'
-                  }`}
-                >
-                  <IconComponent className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="text-xs leading-tight">{option.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 md:p-8 pt-0">
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyData}>
-                <defs>
-                  <linearGradient id="monthlyGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={metricOptions.find(m => m.key === selectedMetric)?.color} stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor={metricOptions.find(m => m.key === selectedMetric)?.color} stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <XAxis 
-                  dataKey="week" 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                />
-                <YAxis 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area 
-                  type="monotone" 
-                  dataKey={selectedMetric} 
-                  stroke={metricOptions.find(m => m.key === selectedMetric)?.color} 
-                  strokeWidth={3}
-                  fill="url(#monthlyGradient)"
-                  dot={{ fill: metricOptions.find(m => m.key === selectedMetric)?.color, strokeWidth: 2, r: 5 }}
-                  activeDot={{ r: 8, fill: metricOptions.find(m => m.key === selectedMetric)?.color }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Monthly Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <Target className="h-6 w-6 text-white" />
-            </div>
-            <p className="text-2xl font-bold text-foreground">{userStats.monthlySteps.toLocaleString()}</p>
-            <p className="text-sm text-muted-foreground">Total Steps</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <Flame className="h-6 w-6 text-white" />
-            </div>
-            <p className="text-2xl font-bold text-foreground">{Math.floor(userStats.calories * 4)}</p>
-            <p className="text-sm text-muted-foreground">Total Calories</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Monthly Breakdown */}
-      <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-foreground text-xl font-semibold">Monthly Breakdown</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {monthlyData.map((week, index) => (
-              <div key={index} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-primary rounded-full"></div>
-                  <span className="font-medium text-foreground">{week.week}</span>
-                </div>
-                <div className="flex gap-3 md:gap-6 text-right text-xs md:text-sm">
-                  <div>
-                    <span className="font-bold text-foreground">{week.steps.toLocaleString()}</span>
-                    <span className="text-muted-foreground ml-1">steps</span>
-                  </div>
-                  <div>
-                    <span className="font-bold text-foreground">{week.calories}</span>
-                    <span className="text-muted-foreground ml-1">cal</span>
-                  </div>
-                  <div>
-                    <span className="font-bold text-foreground">{week.workouts}</span>
-                    <span className="text-muted-foreground ml-1">workouts</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--muted))'];
 
   return (
     <div className="space-y-6">
-      {/* Date Range Selector */}
-      <Card className="bg-card border-0 rounded-3xl shadow-lg dark:shadow-primary/10">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Activity Overview</h2>
-            <Popover open={showCalendar} onOpenChange={setShowCalendar}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="rounded-xl">
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  {selectedDate.toLocaleDateString()}
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setSelectedDate(date);
-                      setShowCalendar(false);
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+      {/* Header with View Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/60 rounded-2xl flex items-center justify-center text-primary-foreground">
+            <CalendarDays className="h-5 w-5" />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabs for different time periods */}
-      <Tabs defaultValue="today" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-card rounded-2xl p-1 shadow-lg dark:shadow-primary/10">
-          <TabsTrigger 
-            value="today" 
-            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-500 data-[state=active]:text-primary-foreground flex items-center justify-center px-4 py-2 min-h-[2.5rem]"
-          >
-            Today
-          </TabsTrigger>
-          <TabsTrigger 
-            value="weekly" 
-            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-500 data-[state=active]:text-primary-foreground flex items-center justify-center px-4 py-2 min-h-[2.5rem]"
+          Comprehensive Activity View
+        </h2>
+        <div className="flex gap-2">
+          <Button
+            variant={selectedView === 'weekly' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedView('weekly')}
+            className="transition-all"
           >
             Weekly
-          </TabsTrigger>
-          <TabsTrigger 
-            value="monthly" 
-            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-500 data-[state=active]:text-primary-foreground flex items-center justify-center px-4 py-2 min-h-[2.5rem]"
+          </Button>
+          <Button
+            variant={selectedView === 'monthly' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedView('monthly')}
+            className="transition-all"
           >
             Monthly
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="today" className="mt-6">
-          <TodayContent />
-        </TabsContent>
-        
-        <TabsContent value="weekly" className="mt-6">
-          <WeeklyContent />
-        </TabsContent>
-        
-        <TabsContent value="monthly" className="mt-6">
-          <MonthlyContent />
-        </TabsContent>
-      </Tabs>
+          </Button>
+        </div>
+      </div>
+
+      {/* Metric Selector */}
+      <div className="flex flex-wrap gap-2">
+        {metricOptions.map((option) => {
+          const Icon = option.icon;
+          return (
+            <Button
+              key={option.key}
+              variant={selectedMetric === option.key ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedMetric(option.key)}
+              className="flex items-center gap-2 transition-all"
+            >
+              <Icon className="h-4 w-4" />
+              {option.label}
+            </Button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Chart */}
+        <div className="lg:col-span-2">
+          <Card className="card-modern glass dark:glass-dark">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                {selectedView === 'weekly' ? 'Weekly' : 'Monthly'} {metricOptions.find(m => m.key === selectedMetric)?.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={{}}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={currentData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                    <XAxis 
+                      dataKey={dataKey} 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    />
+                    <YAxis 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar 
+                      dataKey={selectedMetric} 
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Side Panel */}
+        <div className="space-y-6">
+          {/* Today's Progress */}
+          <Card className="card-modern glass dark:glass-dark">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Today's Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-foreground">{userStats.today_steps?.toLocaleString() || 0}</p>
+                  <p className="text-sm text-muted-foreground">steps today</p>
+                  <p className="text-xs text-muted-foreground">{todayMiles} miles</p>
+                </div>
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={70}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {stepProgress.toFixed(1)}% of daily goal
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activities */}
+          <Card className="card-modern glass dark:glass-dark">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Recent Activities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {recentActivities.length > 0 ? recentActivities.map((activity, index) => (
+                  <div key={activity.id || index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-foreground text-sm">{activity.type || 'Activity'}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {activity.duration ? `${activity.duration} min` : ''} • {activity.date || 'Recent'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-foreground text-sm">{activity.calories_burned || 0} cal</p>
+                      <p className="text-xs text-muted-foreground">{activity.steps || 0} steps</p>
+                    </div>
+                  </div>
+                )) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No recent activities
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

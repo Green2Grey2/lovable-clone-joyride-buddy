@@ -6,9 +6,11 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { ComprehensiveActivityView } from '@/components/ComprehensiveActivityView';
 import { CalorieTracker } from '@/components/CalorieTracker';
 import { useApp } from '@/contexts/AppContext';
+import { useUserStats } from '@/contexts/UserStatsContext';
 
 const Activity = () => {
   const { userProfile } = useApp();
+  const { stats } = useUserStats();
   
   return (
     <div className="min-h-screen bg-[#F9F9F9] pb-32">
@@ -32,7 +34,7 @@ const Activity = () => {
 
       <div className="px-6 py-8 space-y-8">
         {/* Comprehensive Activity View */}
-        <ComprehensiveActivityView />
+        <ComprehensiveActivityView userStats={stats || { today_steps: 0 }} />
 
         {/* Calorie Tracker - Only if health data available */}
         {(userProfile.height && userProfile.weight && userProfile.age && userProfile.sex) && (
