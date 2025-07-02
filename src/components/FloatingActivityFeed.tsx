@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, X } from 'lucide-react';
 import { ActivityFeed } from './ActivityFeed';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +10,6 @@ import { useAuth } from '@/contexts/AuthContext';
 export const FloatingActivityFeed = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -86,41 +85,25 @@ export const FloatingActivityFeed = () => {
   }
 
   return (
-    <Card className={`fixed right-4 z-40 w-[calc(100vw-2rem)] max-w-md transition-all duration-300 shadow-xl rounded-2xl ${
-      isMinimized 
-        ? 'bottom-32 h-14' 
-        : 'bottom-32 top-20 md:top-auto h-[calc(100vh-12rem)] md:h-[600px]'
-    }`}>
+    <Card className="fixed right-4 bottom-32 top-20 md:top-auto z-40 w-[calc(100vw-2rem)] max-w-md h-[calc(100vh-12rem)] md:h-[600px] transition-all duration-300 shadow-xl rounded-2xl">
       <div className="flex items-center justify-between p-3 border-b bg-card">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
           <h3 className="font-semibold">Activity Feed</h3>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setIsMinimized(!isMinimized)}
-          >
-            {isMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setIsOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => setIsOpen(false)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
       
-      {!isMinimized && (
-        <div className="overflow-y-auto overflow-x-hidden h-[calc(100%-60px)] p-4 bg-card">
-          <ActivityFeed />
-        </div>
-      )}
+      <div className="overflow-y-auto overflow-x-hidden h-[calc(100%-60px)] p-4 bg-card">
+        <ActivityFeed />
+      </div>
     </Card>
   );
 };
