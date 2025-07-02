@@ -20,6 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ActiveUsersMonitor } from '@/components/ActiveUsersMonitor';
 import { DepartmentManagement } from '@/components/DepartmentManagement';
 import { TestFlagActivity } from '@/components/TestFlagActivity';
+import { FlaggedActivities } from '@/components/FlaggedActivities';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -294,6 +295,9 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Flagged Activities */}
+            <FlaggedActivities />
             
             {/* Test Flagging System */}
             <TestFlagActivity />
