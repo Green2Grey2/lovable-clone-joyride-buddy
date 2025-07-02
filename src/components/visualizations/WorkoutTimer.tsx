@@ -34,6 +34,8 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   const [isRunning, setIsRunning] = useState(autoStart);
   const [totalElapsed, setTotalElapsed] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isCountdown, setIsCountdown] = useState(false);
+  const [countdownValue, setCountdownValue] = useState(3);
   
   const animationFrameRef = useRef<number>();
   const lastTimeRef = useRef<number>(0);
@@ -74,6 +76,32 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       }
     };
   }, [isRunning, currentPhaseIndex]);
+
+  const startCountdown = () => {
+    setIsCountdown(true);
+    setCountdownValue(3);
+    
+    let count = 3;
+    const countdownInterval = setInterval(() => {
+      if (soundEnabled) {
+        playClick();
+      }
+      mediumTap();
+      
+      count--;
+      setCountdownValue(count);
+      
+      if (count === 0) {
+        clearInterval(countdownInterval);
+        setIsCountdown(false);
+        setIsRunning(true);
+        if (soundEnabled) {
+          playSuccess();
+        }
+        successPattern();
+      }
+    }, 1000);
+  };
 
   const announcePhase = (phase: WorkoutPhase) => {
     if (soundEnabled && 'speechSynthesis' in window) {
@@ -118,7 +146,11 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   };
 
   const toggleTimer = () => {
-    setIsRunning(!isRunning);
+    if (!isRunning && !isCountdown) {
+      startCountdown();
+    } else {
+      setIsRunning(!isRunning);
+    }
     mediumTap();
     if (soundEnabled) playClick();
   };
@@ -190,20 +222,37 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
           {/* Timer text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={currentPhase.name}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                className="text-center"
-              >
-                <h3 className={cn("text-lg font-semibold mb-1", currentPhase.color)}>
-                  {currentPhase.name}
-                </h3>
-                <p className="text-5xl font-bold text-foreground">
-                  {formatTime(timeRemaining)}
-                </p>
-              </motion.div>
+              {isCountdown ? (
+                <motion.div
+                  key="countdown"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 1.2, opacity: 0 }}
+                  className="text-center"
+                >
+                  <h3 className="text-lg font-semibold mb-1 text-orange-500">
+                    Get Ready
+                  </h3>
+                  <p className="text-6xl font-bold text-orange-500">
+                    {countdownValue}
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={currentPhase.name}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="text-center"
+                >
+                  <h3 className={cn("text-lg font-semibold mb-1", currentPhase.color)}>
+                    {currentPhase.name}
+                  </h3>
+                  <p className="text-5xl font-bold text-foreground">
+                    {formatTime(timeRemaining)}
+                  </p>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </div>
