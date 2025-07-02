@@ -608,19 +608,29 @@ export const ActivityHeatMap: React.FC = () => {
         </CardHeader>
         <CardContent>
           {!isExpanded ? (
-            // Compact week view skeleton
+            // Compact week view skeleton - match exact structure
             <div className="space-y-4">
               {/* Navigation skeleton */}
               <div className="flex items-center justify-between">
                 <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-6 w-32" />
+                <div className="text-center">
+                  <Skeleton className="h-4 w-32 mb-1" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
                 <Skeleton className="h-8 w-8 rounded-full" />
               </div>
               {/* Stats skeleton */}
               <div className="grid grid-cols-3 gap-3">
                 {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-16 rounded-xl" />
+                  <div key={i} className="p-3 glass dark:glass-dark rounded-xl">
+                    <Skeleton className="h-5 w-6 mb-1" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
                 ))}
+              </div>
+              {/* Instruction text skeleton */}
+              <div className="text-center">
+                <Skeleton className="h-3 w-48 mx-auto" />
               </div>
               {/* Week row skeleton */}
               <div className="grid grid-cols-7 gap-2">
