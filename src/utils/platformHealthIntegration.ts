@@ -38,11 +38,11 @@ export const getPlatformInfo = async (): Promise<PlatformInfo> => {
 };
 
 /**
- * Checks if health permissions are granted for the current platform
+ * Checks if user has any health data synced (for web users)
  */
-export const checkHealthPermissions = async (platform: string): Promise<boolean> => {
-  // This would be implemented with actual health plugins
-  // For now, return false to indicate permissions not implemented
+export const hasHealthDataSynced = async (): Promise<boolean> => {
+  // This would check if user has any activities/health data in Supabase
+  // For now, return false - will be implemented with actual Supabase query
   return false;
 };
 

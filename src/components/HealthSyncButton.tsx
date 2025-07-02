@@ -1,36 +1,31 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Smartphone, RefreshCw, CheckCircle, AlertCircle, Activity } from 'lucide-react';
-import { healthDataService } from '@/utils/healthDataService';
-import { useApp } from '@/contexts/AppContext';
+import { Smartphone, RefreshCw, CheckCircle, AlertCircle, Activity, Clock } from 'lucide-react';
+import { useHealthSync } from '@/hooks/useHealthSync';
 import { toast } from 'sonner';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { Capacitor } from '@capacitor/core';
 
 export const HealthSyncButton = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [lastSync, setLastSync] = useState<Date | null>(null);
-  const [permissions, setPermissions] = useState<any>(null);
-  const { updateUserStats } = useApp();
   const { playConfirm, playError } = useSoundEffects();
-
-  const platform = healthDataService.getPlatform();
-
-  useEffect(() => {
-    checkPermissions();
-  }, []);
-
-  const checkPermissions = async () => {
-    const perms = await healthDataService.checkPermissions();
-    setPermissions(perms);
-  };
+  
+  const {
+    canSync,
+    permissions,
+    hasHealthData,
+    healthStats,
+    platform,
+    requestPermissions,
+    syncHealthData,
+    canRequestPermissions,
+    showHealthStats
+  } = useHealthSync();
 
   const getPlatformName = () => {
     switch (platform) {
-      case 'healthkit': return 'Apple Health';
-      case 'samsung': return 'Samsung Health';
-      case 'googlefit': return 'Google Fit';
+      case 'ios': return 'Apple Health';
+      case 'android': return 'Google Fit';
       default: return 'Health App';
     }
   };
@@ -38,14 +33,13 @@ export const HealthSyncButton = () => {
   const handleRequestPermissions = async () => {
     setIsLoading(true);
     try {
-      const result = await healthDataService.requestPermissions();
-      setPermissions(result);
+      const granted = await requestPermissions();
       
-      if (result.granted) {
+      if (granted) {
         toast.success(`${getPlatformName()} access granted!`);
         playConfirm();
       } else {
-        toast.error(result.error || 'Permission denied');
+        toast.error('Permission denied');
         playError();
       }
     } catch (error) {
@@ -59,28 +53,13 @@ export const HealthSyncButton = () => {
   const handleSync = async () => {
     setIsLoading(true);
     try {
-      const data = await healthDataService.syncHealthData();
+      const success = await syncHealthData();
       
-      if (data && data.length > 0) {
-        // Calculate totals from all data points
-        const totalSteps = data.reduce((sum, dp) => sum + dp.steps, 0);
-        const avgHeartRate = data
-          .filter(dp => dp.heartRate)
-          .reduce((sum, dp, _, arr) => sum + (dp.heartRate || 0) / arr.length, 0);
-        const totalCalories = data.reduce((sum, dp) => sum + (dp.calories || 0), 0);
-        
-        // Update user stats with synced data
-        await updateUserStats({
-          todaySteps: totalSteps,
-          heartRate: Math.round(avgHeartRate) || 75,
-          calories: Math.round(totalCalories) || 0
-        });
-        
-        setLastSync(new Date());
-        toast.success(`Synced ${totalSteps} steps from ${getPlatformName()}`);
+      if (success) {
+        toast.success(`Health data synced from ${getPlatformName()}`);
         playConfirm();
       } else {
-        toast.error('No data available to sync from your device');
+        toast.error('No new data to sync');
         playError();
       }
     } catch (error) {
@@ -91,35 +70,91 @@ export const HealthSyncButton = () => {
     }
   };
 
-  if (!Capacitor.isNativePlatform()) {
+  // Show health stats if user has previously synced data (even on web)
+  if (showHealthStats && healthStats) {
+    const lastSyncDate = healthStats.lastSync ? new Date(healthStats.lastSync) : null;
+    
     return (
-      <div className="space-y-2">
-        <Button variant="outline" disabled className="w-full rounded-2xl">
-          <AlertCircle className="h-4 w-4 mr-2" />
-          Health Sync (Mobile Only)
-        </Button>
-        <p className="text-xs text-gray-500 text-center">
-          Install the mobile app to sync health data
-        </p>
+      <div className="space-y-3">
+        {/* Health Stats Display */}
+        <div className="grid grid-cols-2 gap-3 p-4 bg-muted/50 rounded-xl">
+          <div className="text-center">
+            <div className="text-lg font-semibold text-foreground">{healthStats.steps.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">Steps</div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-semibold text-foreground">{healthStats.calories}</div>
+            <div className="text-xs text-muted-foreground">Calories</div>
+          </div>
+        </div>
+
+        {/* Sync Button (only show on mobile) */}
+        {canSync && permissions.granted && (
+          <Button 
+            onClick={handleSync}
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl"
+            soundEnabled={false}
+          >
+            {isLoading ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <CheckCircle className="h-4 w-4 mr-2" />
+            )}
+            {isLoading ? 'Syncing...' : `Sync ${getPlatformName()}`}
+          </Button>
+        )}
+
+        {/* Web users see read-only message */}
+        {!canSync && (
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            {lastSyncDate 
+              ? `Last synced: ${lastSyncDate.toLocaleDateString()}`
+              : 'Synced from mobile app'
+            }
+          </div>
+        )}
+
+        {/* Permission request for mobile users */}
+        {canSync && canRequestPermissions && (
+          <Button 
+            onClick={handleRequestPermissions}
+            disabled={isLoading}
+            variant="outline"
+            className="w-full rounded-xl"
+            soundEnabled={false}
+          >
+            <Activity className="h-4 w-4 mr-2" />
+            {isLoading ? 'Requesting...' : `Update ${getPlatformName()} Access`}
+          </Button>
+        )}
       </div>
     );
   }
 
-  if (platform === 'none') {
+  // No health data - show appropriate message/button
+  if (!canSync) {
     return (
-      <Button variant="outline" disabled className="w-full rounded-2xl">
-        <AlertCircle className="h-4 w-4 mr-2" />
-        No Health App Detected
-      </Button>
+      <div className="space-y-2 p-4 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/30">
+        <div className="text-center">
+          <Smartphone className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+          <h3 className="font-medium text-foreground">Health Tracking</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Install the mobile app to sync health data from {getPlatformName()}
+          </p>
+        </div>
+      </div>
     );
   }
 
-  if (!permissions || !permissions.granted) {
+  // Mobile users without permissions
+  if (canRequestPermissions) {
     return (
       <Button 
         onClick={handleRequestPermissions}
         disabled={isLoading}
-        className="w-full bg-gradient-to-r from-[#735CF7] to-[#00A3FF] text-white rounded-2xl"
+        className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-xl"
         soundEnabled={false}
       >
         <Activity className="h-4 w-4 mr-2" />
@@ -128,27 +163,20 @@ export const HealthSyncButton = () => {
     );
   }
 
+  // Mobile users with permissions but no data yet
   return (
-    <div className="space-y-2">
-      <Button 
-        onClick={handleSync}
-        disabled={isLoading}
-        className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl"
-        soundEnabled={false}
-      >
-        {isLoading ? (
-          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-        ) : (
-          <CheckCircle className="h-4 w-4 mr-2" />
-        )}
-        {isLoading ? 'Syncing...' : `Sync ${getPlatformName()}`}
-      </Button>
-      
-      {lastSync && (
-        <p className="text-xs text-gray-500 text-center">
-          Last synced: {lastSync.toLocaleTimeString()}
-        </p>
+    <Button 
+      onClick={handleSync}
+      disabled={isLoading}
+      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl"
+      soundEnabled={false}
+    >
+      {isLoading ? (
+        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+      ) : (
+        <CheckCircle className="h-4 w-4 mr-2" />
       )}
-    </div>
+      {isLoading ? 'Syncing...' : `Sync ${getPlatformName()}`}
+    </Button>
   );
 };

@@ -158,10 +158,27 @@ class HealthDataService {
     return [];
   }
 
-  private async saveHealthDataToDatabase(dataPoints: HealthDataPoint[]) {
+  async saveHealthDataToDatabase(dataPoints: HealthDataPoint[]) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Save individual activity records for history
+      for (const dp of dataPoints) {
+        await supabase
+          .from('activities')
+          .insert({
+            user_id: user.id,
+            type: 'health_sync',
+            date: dp.timestamp.toISOString().split('T')[0],
+            steps: dp.steps,
+            calories_burned: dp.calories || 0,
+            heart_rate_avg: dp.heartRate || null,
+            distance: dp.distance || null,
+            duration: dp.activeMinutes || null,
+            is_manual_entry: false
+          });
+      }
 
       // Get the latest data point for today's stats
       const today = new Date();
@@ -186,7 +203,8 @@ class HealthDataService {
             today_steps: totalSteps,
             heart_rate: Math.round(avgHeartRate),
             calories_burned: Math.round(totalCalories),
-            last_sync: new Date().toISOString()
+            water_intake: todayData[todayData.length - 1]?.waterIntake || 0,
+            last_updated: new Date().toISOString()
           })
           .eq('user_id', user.id);
 
@@ -197,6 +215,57 @@ class HealthDataService {
     } catch (error) {
       console.error('Error saving health data:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Checks if user has any health data synced (for web users)
+   */
+  async hasHealthDataSynced(): Promise<boolean> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { data, error } = await supabase
+        .from('activities')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('type', 'health_sync')
+        .limit(1);
+
+      return !error && data && data.length > 0;
+    } catch (error) {
+      console.error('Failed to check health data:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Gets latest health stats for display (works on web)
+   */
+  async getLatestHealthStats() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: stats, error } = await supabase
+        .from('user_stats')
+        .select('today_steps, calories_burned, heart_rate, water_intake, last_updated')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error || !stats) return null;
+
+      return {
+        steps: stats.today_steps || 0,
+        calories: stats.calories_burned || 0,
+        heartRate: stats.heart_rate || 0,
+        water: stats.water_intake || 0,
+        lastSync: stats.last_updated
+      };
+    } catch (error) {
+      console.error('Failed to get health stats:', error);
+      return null;
     }
   }
 
