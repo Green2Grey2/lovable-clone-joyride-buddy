@@ -14,28 +14,28 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ userName, currentStreak, weeklyGoal, currentSteps }: DashboardHeaderProps) => {
   return (
-    <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-6 rounded-lg mb-6">
-      <div className="flex justify-between items-start">
+    <div className="glass dark:glass-dark backdrop-blur-xl border-b border-border/50 p-4 mb-6 animate-fade-in">
+      <div className="flex justify-between items-center">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold mb-2">
+          <h1 className="text-xl font-bold mb-1 text-foreground">
             Welcome back, {userName}! 👋
           </h1>
-          <p className="text-primary-foreground/80 mb-4">
+          <p className="text-muted-foreground text-sm mb-3">
             Ready to crush your fitness goals today?
           </p>
           
-          <div className="flex items-center space-x-4">
-            <div className="bg-background/20 backdrop-blur-sm rounded-lg px-3 py-2">
+          <div className="flex items-center space-x-3">
+            <div className="glass-subtle rounded-lg px-3 py-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Current Streak</span>
-                <span className="text-lg font-bold">{currentStreak} days 🔥</span>
+                <span className="text-xs text-muted-foreground">Current Streak</span>
+                <span className="text-sm font-bold text-foreground">{currentStreak} days 🔥</span>
               </div>
             </div>
             
-            <div className="bg-background/20 backdrop-blur-sm rounded-lg px-3 py-2">
+            <div className="glass-subtle rounded-lg px-3 py-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Weekly Progress</span>
-                <span className="text-lg font-bold">
+                <span className="text-xs text-muted-foreground">Weekly Progress</span>
+                <span className="text-sm font-bold text-foreground">
                   {currentSteps?.toLocaleString() || 0} / {weeklyGoal?.toLocaleString() || 0}
                 </span>
               </div>
@@ -43,7 +43,7 @@ export const DashboardHeader = ({ userName, currentStreak, weeklyGoal, currentSt
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 animate-fade-in">
           <GlobalSearch />
           <NotificationBell />
           <ProfileDropdown />
