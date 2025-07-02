@@ -129,9 +129,21 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
 
     if (currentPhaseIndex < phases.length - 1) {
       const nextPhaseIndex = currentPhaseIndex + 1;
+      const nextPhase = phases[nextPhaseIndex];
+      
       setCurrentPhaseIndex(nextPhaseIndex);
-      // Announce the next phase
-      setTimeout(() => announcePhase(phases[nextPhaseIndex]), 100);
+      
+      // Start countdown for work phases
+      if (nextPhase.type === 'work') {
+        setIsRunning(false);
+        setTimeout(() => {
+          announcePhase(nextPhase);
+          startCountdown();
+        }, 500);
+      } else {
+        // Announce non-work phases immediately
+        setTimeout(() => announcePhase(nextPhase), 100);
+      }
     } else {
       setIsRunning(false);
       if (onComplete) onComplete();
