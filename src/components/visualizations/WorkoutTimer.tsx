@@ -75,6 +75,15 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     };
   }, [isRunning, currentPhaseIndex]);
 
+  const announcePhase = (phase: WorkoutPhase) => {
+    if (soundEnabled && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(phase.name);
+      utterance.rate = 1.2;
+      utterance.volume = 0.8;
+      speechSynthesis.speak(utterance);
+    }
+  };
+
   const handlePhaseComplete = () => {
     if (soundEnabled) {
       if (currentPhase.type === 'work') {
@@ -91,11 +100,20 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     }
 
     if (currentPhaseIndex < phases.length - 1) {
-      setCurrentPhaseIndex(prev => prev + 1);
+      const nextPhaseIndex = currentPhaseIndex + 1;
+      setCurrentPhaseIndex(nextPhaseIndex);
+      // Announce the next phase
+      setTimeout(() => announcePhase(phases[nextPhaseIndex]), 100);
     } else {
       setIsRunning(false);
       if (onComplete) onComplete();
       errorPattern(); // Completion pattern
+      if (soundEnabled && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance('Workout Complete');
+        utterance.rate = 1.2;
+        utterance.volume = 0.8;
+        speechSynthesis.speak(utterance);
+      }
     }
   };
 
