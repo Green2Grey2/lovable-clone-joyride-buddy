@@ -14,7 +14,6 @@ import { ActivitySelector } from '@/components/ActivitySelector';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { FloatingActivityFeed } from '@/components/FloatingActivityFeed';
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveStack } from '@/components/layout/ResponsiveContainer';
-import { NavigationProvider } from '@/contexts/NavigationContext';
 import { useApp } from '@/contexts/AppContext';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useChallengeSettings } from '@/hooks/useChallengeSettings';
@@ -71,8 +70,7 @@ const Dashboard = () => {
 
   return (
     <ErrorBoundary>
-      <NavigationProvider>
-        <div className="min-h-screen bg-background pb-20 lg:pb-0">
+      <div className="min-h-screen bg-background pb-20 lg:pb-0">
         {/* Desktop Sidebar */}
         <aside className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-card border-r border-border/50 z-40">
           <div className="flex flex-col h-full">
@@ -296,8 +294,7 @@ const Dashboard = () => {
           isOpen={showActivitySelector}
           onClose={() => setShowActivitySelector(false)}
         />
-        </div>
-      </NavigationProvider>
+      </div>
     </ErrorBoundary>
   );
 };
