@@ -29,6 +29,7 @@ const Media = lazy(() => import("./pages/Media"));
 const Editorial = lazy(() => import("./pages/Editorial"));
 const SocialAdmin = lazy(() => import("./pages/SocialAdmin"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const WorkoutTimerPage = lazy(() => import("./pages/WorkoutTimer"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -143,6 +144,14 @@ const App = () => {
                           element={
                             <ProtectedRoute>
                               <Analytics />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/workout-timer"
+                          element={
+                            <ProtectedRoute>
+                              <WorkoutTimerPage />
                             </ProtectedRoute>
                           }
                         />

@@ -48,15 +48,31 @@ export const ActivitySelector = ({ isOpen, onClose }: ActivitySelectorProps) => 
       description: 'Flexibility and mindfulness',
       duration: '60 min',
       calories: '120 cal'
+    },
+    {
+      id: 'structured-workout',
+      name: 'Structured Workout',
+      icon: '⏱️',
+      description: 'Timed workout with intervals',
+      duration: 'Custom',
+      calories: 'Varies',
+      isTimer: true
     }
   ];
 
   const handleStartActivity = (activity: any) => {
     console.log(`Starting ${activity.name} activity`);
     playStartActivity();
-    startActivity(activity);
+    
+    if (activity.isTimer) {
+      // Navigate to timer workout page
+      navigate('/workout-timer');
+    } else {
+      // Start regular tracked activity
+      startActivity(activity);
+      navigate('/active-activity');
+    }
     onClose();
-    navigate('/active-activity');
   };
 
   const handleClose = () => {

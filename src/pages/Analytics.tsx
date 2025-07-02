@@ -14,14 +14,13 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 const Analytics = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'records' | 'timer' | 'zones' | 'social'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'records' | 'zones' | 'social'>('overview');
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: ChartBar },
     { id: 'records', label: 'Records', icon: Trophy },
     { id: 'zones', label: 'Zones', icon: Heart },
     { id: 'social', label: 'Social', icon: Users },
-    { id: 'timer', label: 'Timer', icon: Timer },
   ];
 
   return (
@@ -208,56 +207,6 @@ const Analytics = () => {
             </div>
           )}
 
-          {activeTab === 'timer' && (
-            <div className="space-y-6">
-              <WorkoutTimer />
-              
-              {/* Preset Workouts */}
-              <div className="card-modern glass dark:glass-dark p-6">
-                <h3 className="text-lg font-semibold mb-4">Quick Start Workouts</h3>
-                <div className="grid gap-3">
-                  {[
-                    {
-                      name: 'HIIT Express',
-                      phases: [
-                        { name: 'Warm Up', duration: 30, type: 'prepare', color: 'text-yellow-500' },
-                        { name: 'High Intensity', duration: 20, type: 'work', color: 'text-red-500' },
-                        { name: 'Recovery', duration: 10, type: 'rest', color: 'text-blue-500' },
-                      ]
-                    },
-                    {
-                      name: 'Tabata',
-                      phases: [
-                        { name: 'Work', duration: 20, type: 'work', color: 'text-green-500' },
-                        { name: 'Rest', duration: 10, type: 'rest', color: 'text-blue-500' },
-                      ]
-                    },
-                    {
-                      name: 'Strength Circuit',
-                      phases: [
-                        { name: 'Exercise', duration: 45, type: 'work', color: 'text-purple-500' },
-                        { name: 'Rest', duration: 15, type: 'rest', color: 'text-blue-500' },
-                      ]
-                    }
-                  ].map((workout, i) => (
-                    <Button
-                      key={i}
-                      variant="outline"
-                      className="justify-start h-auto p-4 hover:bg-accent/10"
-                      onClick={() => {/* Start workout */}}
-                    >
-                      <div className="text-left">
-                        <p className="font-medium">{workout.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {workout.phases.map(p => `${p.duration}s`).join(' • ')}
-                        </p>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </motion.div>
       </div>
 
