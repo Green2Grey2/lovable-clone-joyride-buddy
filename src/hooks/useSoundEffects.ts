@@ -1,7 +1,6 @@
 
 import { useRef, useCallback } from 'react';
 
-// Nintendo Switch-style sound effects with lower, more pleasant frequencies
 const SOUND_EFFECTS = {
   click: { frequency: 311, duration: 100, volume: 0.12, type: 'sine' }, // Based on cancel
   softClick: { frequency: 261, duration: 80, volume: 0.08, type: 'sine' }, // Lower variation
@@ -55,7 +54,7 @@ export const useSoundEffects = () => {
       lastSoundTimeRef.current = now;
 
       // Limit concurrent sounds to prevent audio system overload
-      if (activeSoundsRef.current.size >= 3) {
+      if (activeSoundsRef.current.size >= 5) {
         // Clean up oldest sounds
         const oldestSounds = Array.from(activeSoundsRef.current).slice(0, 2);
         oldestSounds.forEach(sound => {
