@@ -26,8 +26,8 @@ const Profile = () => {
 
   try {
     return (
-      <div className="min-h-screen bg-gray-50 pb-32">
-        <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <div className="min-h-screen bg-background pb-32">
+        <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <ProfileHeader onGoalsEditorOpen={handleGoalsEditorOpen} />
@@ -38,8 +38,8 @@ const Profile = () => {
           </div>
           
           {/* Health Sync Section */}
-          <div className="bg-white rounded-3xl p-6 shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
-            <h3 className="text-lg font-semibold text-[#1D244D] mb-4">Health Data Sync</h3>
+          <div className="card-modern glass dark:glass-dark p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Health Data Sync</h3>
             <HealthSyncButton />
           </div>
 
