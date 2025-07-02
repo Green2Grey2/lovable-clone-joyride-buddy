@@ -87,14 +87,22 @@ export const AIWorkoutInsights: React.FC = () => {
     try {
       setLoading(true);
       
+      // Get user's recent activity data to inform insights
+      const userStats = await activityTrackingService.getUserStats(user?.id!);
+      const weeklyHistory = await activityTrackingService.getActivityHistory(user?.id!, 7);
+      const weeklySummary = await activityTrackingService.getWeeklySummary(user?.id!);
+      
       // Get real workout insights from database
       const dbInsights = await activityTrackingService.getWorkoutInsights(user?.id!);
       
       // Get activity patterns from database
       const dbPatterns = await activityTrackingService.getActivityPatterns(user?.id!, 'week');
       
+      // Generate contextual insights based on actual user data
+      const contextualInsights = generateContextualInsights(userStats, weeklyHistory, weeklySummary);
+      
       // Transform database insights to component format
-      const transformedInsights = dbInsights.map((insight: any) => ({
+      const transformedDbInsights = dbInsights.map((insight: any) => ({
         id: insight.id,
         type: mapInsightType(insight.insight_type),
         title: insight.title,
@@ -110,18 +118,26 @@ export const AIWorkoutInsights: React.FC = () => {
         } : undefined
       }));
 
+      // Combine and prioritize insights
+      const allInsights = [...contextualInsights, ...transformedDbInsights]
+        .sort((a, b) => a.priority - b.priority)
+        .slice(0, 5); // Show top 5 insights
+
       // Transform database patterns to component format
       const transformedPatterns = dbPatterns.map((pattern: any) => ({
         name: pattern.pattern_type.charAt(0).toUpperCase() + pattern.pattern_type.slice(1),
-        score: pattern.score,
+        score: pattern.score || 0,
         trend: mapTrendFromDb(pattern.trend)
       }));
 
-      setInsights(transformedInsights);
+      setInsights(allInsights);
       setPatterns(transformedPatterns);
 
     } catch (error) {
       console.error('Error generating insights:', error);
+      // Generate fallback insights for new users
+      setInsights(generateNewUserInsights());
+      setPatterns([]);
     } finally {
       setLoading(false);
     }
@@ -163,6 +179,142 @@ export const AIWorkoutInsights: React.FC = () => {
       case 'needs_attention': return 'down';
       default: return 'stable';
     }
+  };
+
+  const generateContextualInsights = (userStats: any, weeklyHistory: any[], weeklySummary: any): Insight[] => {
+    const insights: Insight[] = [];
+    
+    // Handle completely new users (no data)
+    if (!userStats || (!weeklyHistory?.length && !weeklySummary?.totalSteps)) {
+      return [
+        {
+          id: 'welcome',
+          type: 'suggestion',
+          title: 'Welcome to Your Fitness Journey! 🌟',
+          description: 'Ready to start tracking your activities? Begin with a simple 10-minute walk today.',
+          icon: Sparkles,
+          color: 'text-blue-500',
+          actionable: true,
+          priority: 1,
+          metrics: { current: 0, target: 10, unit: 'min' }
+        },
+        {
+          id: 'goal-setting',
+          type: 'suggestion',
+          title: 'Set Your First Goal 🎯',
+          description: 'Start small with a daily step goal. Even 3,000 steps can make a difference!',
+          icon: Target,
+          color: 'text-blue-500',
+          actionable: true,
+          priority: 2,
+          metrics: { current: 0, target: 3000, unit: 'steps' }
+        }
+      ];
+    }
+
+    // Handle users with minimal activity
+    if (weeklySummary?.totalSteps < 5000) {
+      insights.push({
+        id: 'getting-started',
+        type: 'suggestion',
+        title: 'Every Step Counts! 👟',
+        description: 'You\'ve taken the first step! Try adding short walks throughout your day.',
+        icon: TrendingUp,
+        color: 'text-green-500',
+        actionable: true,
+        priority: 1,
+        metrics: { 
+          current: weeklySummary.totalSteps, 
+          target: 10000, 
+          unit: 'steps this week' 
+        }
+      });
+    }
+
+    // Handle users with some progress
+    if (weeklySummary?.totalSteps >= 5000 && weeklySummary?.totalSteps < 50000) {
+      insights.push({
+        id: 'building-momentum',
+        type: 'improvement',
+        title: 'Building Great Habits! 📈',
+        description: `You've logged ${weeklySummary.totalSteps.toLocaleString()} steps this week. Keep up the momentum!`,
+        icon: TrendingUp,
+        color: 'text-green-500',
+        actionable: true,
+        priority: 2,
+        metrics: { 
+          current: weeklySummary.totalSteps, 
+          target: 70000, 
+          unit: 'weekly goal' 
+        }
+      });
+    }
+
+    // Consistency insights
+    if (weeklySummary?.activeDays >= 3) {
+      insights.push({
+        id: 'consistency',
+        type: 'achievement',
+        title: `${weeklySummary.activeDays}-Day Activity Streak! 🔥`,
+        description: 'Consistency is key to building lasting habits. You\'re on the right track!',
+        icon: Sparkles,
+        color: 'text-orange-500',
+        actionable: false,
+        priority: 3,
+        metrics: { 
+          current: weeklySummary.activeDays, 
+          target: 7, 
+          unit: 'days active' 
+        }
+      });
+    }
+
+    // Encouragement for low activity
+    if (weeklySummary?.activeDays <= 2) {
+      insights.push({
+        id: 'motivation',
+        type: 'suggestion',
+        title: 'Let\'s Get Moving! 💪',
+        description: 'Small, consistent actions lead to big results. Try a 5-minute activity today.',
+        icon: Lightbulb,
+        color: 'text-blue-500',
+        actionable: true,
+        priority: 1,
+        metrics: { 
+          current: weeklySummary?.activeDays || 0, 
+          target: 5, 
+          unit: 'active days' 
+        }
+      });
+    }
+
+    return insights;
+  };
+
+  const generateNewUserInsights = (): Insight[] => {
+    return [
+      {
+        id: 'new-user-welcome',
+        type: 'suggestion',
+        title: 'Start Your Fitness Journey! 🚀',
+        description: 'Begin with tracking your daily walks. Every journey starts with a single step.',
+        icon: Sparkles,
+        color: 'text-blue-500',
+        actionable: true,
+        priority: 1,
+        metrics: { current: 0, target: 1, unit: 'activity logged' }
+      },
+      {
+        id: 'new-user-tips',
+        type: 'suggestion',
+        title: 'Quick Win Tips 💡',
+        description: 'Take the stairs, park further away, or walk during phone calls for easy activity.',
+        icon: Lightbulb,
+        color: 'text-blue-500',
+        actionable: true,
+        priority: 2
+      }
+    ];
   };
 
 
