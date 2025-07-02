@@ -14,39 +14,41 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ userName, currentStreak, weeklyGoal, currentSteps }: DashboardHeaderProps) => {
   return (
-    <div className="glass dark:glass-dark backdrop-blur-xl border-b border-border/50 p-4 mb-6 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <div className="flex-1">
-          <h1 className="text-xl font-bold mb-1 text-foreground">
-            Welcome back, {userName}! 👋
-          </h1>
-          <p className="text-muted-foreground text-sm mb-3">
-            Ready to crush your fitness goals today?
-          </p>
-          
-          <div className="flex items-center space-x-3">
-            <div className="glass-subtle rounded-lg px-3 py-1.5">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Current Streak</span>
-                <span className="text-sm font-bold text-foreground">{currentStreak} days 🔥</span>
-              </div>
-            </div>
+    <div className="glass dark:glass-dark backdrop-blur-xl sticky top-0 z-30 border-b border-border/50">
+      <div className="px-6 py-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground mb-1">
+              Welcome back, {userName}! 👋
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Ready to crush your fitness goals today?
+            </p>
             
-            <div className="glass-subtle rounded-lg px-3 py-1.5">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Weekly Progress</span>
-                <span className="text-sm font-bold text-foreground">
-                  {currentSteps?.toLocaleString() || 0} / {weeklyGoal?.toLocaleString() || 0}
-                </span>
+            <div className="flex items-center space-x-3 mt-3">
+              <div className="glass-subtle rounded-lg px-3 py-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Current Streak</span>
+                  <span className="text-sm font-bold text-foreground">{currentStreak} days 🔥</span>
+                </div>
+              </div>
+              
+              <div className="glass-subtle rounded-lg px-3 py-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Weekly Progress</span>
+                  <span className="text-sm font-bold text-foreground">
+                    {currentSteps?.toLocaleString() || 0} / {weeklyGoal?.toLocaleString() || 0}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center space-x-2 animate-fade-in">
-          <GlobalSearch />
-          <NotificationBell />
-          <ProfileDropdown />
+          
+          <div className="flex items-center gap-3">
+            <GlobalSearch />
+            <NotificationBell />
+            <ProfileDropdown />
+          </div>
         </div>
       </div>
     </div>
