@@ -132,13 +132,17 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     <Card className="card-modern glass dark:glass-dark overflow-hidden">
       <CardContent className="p-6">
         {/* Timer Display */}
-        <div className="relative w-full max-w-xs mx-auto mb-6">
+        <div className="relative w-80 h-80 max-w-xs max-h-xs mx-auto mb-6">
           {/* Background circle */}
-          <svg className="w-full h-full transform -rotate-90">
+          <svg 
+            className="w-full h-full transform -rotate-90" 
+            viewBox="0 0 200 200"
+            preserveAspectRatio="xMidYMid meet"
+          >
             <circle
-              cx="50%"
-              cy="50%"
-              r="45%"
+              cx="100"
+              cy="100"
+              r="90"
               fill="none"
               stroke="currentColor"
               strokeWidth="8"
@@ -146,17 +150,17 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
             />
             {/* Progress circle */}
             <motion.circle
-              cx="50%"
-              cy="50%"
-              r="45%"
+              cx="100"
+              cy="100"
+              r="90"
               fill="none"
               stroke="currentColor"
               strokeWidth="8"
               className={currentPhase.color}
               strokeLinecap="round"
-              strokeDasharray={`${2 * Math.PI * 45}`}
+              strokeDasharray={`${2 * Math.PI * 90}`}
               animate={{
-                strokeDashoffset: `${2 * Math.PI * 45 * (1 - progress / 100)}`
+                strokeDashoffset: `${2 * Math.PI * 90 * (1 - progress / 100)}`
               }}
               transition={{
                 duration: 0.5,
