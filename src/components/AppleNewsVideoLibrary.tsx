@@ -84,11 +84,11 @@ export const AppleNewsVideoLibrary = () => {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-[#1D244D]">Fitness Videos</h2>
+          <h2 className="text-2xl font-bold text-foreground">Fitness Videos</h2>
           <Button 
             variant="ghost" 
             size="sm"
-            className="text-[#735CF7] hover:bg-[#735CF7]/10 font-medium"
+            className="text-primary hover:bg-primary/10 font-medium"
             onClick={handleMoreClick}
             soundEnabled={false}
           >
@@ -96,7 +96,7 @@ export const AppleNewsVideoLibrary = () => {
             <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
-        <div className="text-center py-8 text-[#8A94A6]">
+        <div className="text-center py-8 text-muted-foreground">
           <p>No pinned videos available. Visit the editorial section to pin content to the home screen.</p>
         </div>
       </div>
@@ -106,11 +106,11 @@ export const AppleNewsVideoLibrary = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-[#1D244D]">Fitness Videos</h2>
+        <h2 className="text-2xl font-bold text-foreground">Fitness Videos</h2>
         <Button 
           variant="ghost" 
           size="sm"
-          className="text-[#735CF7] hover:bg-[#735CF7]/10 font-medium"
+          className="text-primary hover:bg-primary/10 font-medium"
           onClick={handleMoreClick}
           soundEnabled={false}
         >
@@ -122,7 +122,7 @@ export const AppleNewsVideoLibrary = () => {
       {/* Hero Video Card */}
       {heroVideo && (
         <Card 
-          className="relative w-full h-[280px] rounded-3xl overflow-hidden cursor-pointer group transition-all duration-500 hover:shadow-[0px_20px_40px_rgba(0,0,0,0.15)] hover:-translate-y-2"
+          className="card-modern glass dark:glass-dark relative w-full h-[280px] rounded-3xl overflow-hidden cursor-pointer group transition-all duration-500 hover:shadow-premium hover:-translate-y-2"
           onClick={() => handleVideoClick(heroVideo.id)}
         >
           <div className="relative w-full h-full">
@@ -135,27 +135,27 @@ export const AppleNewsVideoLibrary = () => {
             
             {/* Play Button */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110">
-                <Play className="h-8 w-8 text-white ml-1" fill="currentColor" />
+              <div className="bg-background/20 backdrop-blur-sm rounded-full p-4 group-hover:bg-background/30 transition-all duration-300 group-hover:scale-110">
+                <Play className="h-8 w-8 text-primary-foreground ml-1" fill="currentColor" />
               </div>
             </div>
             
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="flex items-center gap-3 mb-3">
-                <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                <span className="bg-background/20 backdrop-blur-sm text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-full uppercase tracking-wider">
                   {heroVideo.category}
                 </span>
-                <div className="flex items-center text-white/80 text-sm">
+                <div className="flex items-center text-primary-foreground/80 text-sm">
                   <Clock className="h-4 w-4 mr-1" />
                   {heroVideo.duration}
                 </div>
               </div>
               
-              <h3 className="text-white text-2xl font-bold leading-tight mb-2 group-hover:text-white/90 transition-colors duration-300">
+              <h3 className="text-primary-foreground text-2xl font-bold leading-tight mb-2 group-hover:text-primary-foreground/90 transition-colors duration-300">
                 {heroVideo.title}
               </h3>
               
-              <div className="flex items-center gap-3 text-white/80 text-sm">
+              <div className="flex items-center gap-3 text-primary-foreground/80 text-sm">
                 <span>with {heroVideo.instructor}</span>
                 <span>•</span>
                 <span>{heroVideo.difficulty}</span>
@@ -171,7 +171,7 @@ export const AppleNewsVideoLibrary = () => {
           {featuredVideos.map((video) => (
             <Card 
               key={video.id}
-              className="bg-white rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-[0px_15px_35px_rgba(0,0,0,0.12)] hover:-translate-y-1 border-0 shadow-[0px_8px_25px_rgba(0,0,0,0.08)]"
+              className="card-modern glass dark:glass-dark rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-medium hover:-translate-y-1 border-0"
               onClick={() => handleVideoClick(video.id)}
             >
               <div className="relative h-32 overflow-hidden">
@@ -182,12 +182,12 @@ export const AppleNewsVideoLibrary = () => {
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-white/80 backdrop-blur-sm rounded-full p-2 group-hover:bg-white transition-all duration-300">
-                    <Play className="h-4 w-4 text-[#735CF7] ml-0.5" fill="currentColor" />
+                  <div className="bg-background/80 backdrop-blur-sm rounded-full p-2 group-hover:bg-background transition-all duration-300">
+                    <Play className="h-4 w-4 text-primary ml-0.5" fill="currentColor" />
                   </div>
                 </div>
                 <div className="absolute top-2 left-2">
-                  <span className="bg-white/90 backdrop-blur-sm text-[#735CF7] text-xs font-semibold px-2 py-1 rounded-full uppercase tracking-wide">
+                  <span className="bg-background/90 backdrop-blur-sm text-primary text-xs font-semibold px-2 py-1 rounded-full uppercase tracking-wide">
                     {video.category}
                   </span>
                 </div>
@@ -195,19 +195,19 @@ export const AppleNewsVideoLibrary = () => {
               
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="flex items-center text-[#8A94A6] text-xs">
+                  <div className="flex items-center text-muted-foreground text-xs">
                     <Clock className="h-3 w-3 mr-1" />
                     {video.duration}
                   </div>
-                  <span className="text-[#8A94A6] text-xs">•</span>
-                  <span className="text-[#8A94A6] text-xs">{video.difficulty}</span>
+                  <span className="text-muted-foreground text-xs">•</span>
+                  <span className="text-muted-foreground text-xs">{video.difficulty}</span>
                 </div>
                 
-                <h4 className="text-[#1D244D] text-sm font-semibold leading-tight group-hover:text-[#735CF7] transition-colors duration-300 line-clamp-2">
+                <h4 className="text-foreground text-sm font-semibold leading-tight group-hover:text-primary transition-colors duration-300 line-clamp-2">
                   {video.title}
                 </h4>
                 
-                <p className="text-[#8A94A6] text-xs mt-1">
+                <p className="text-muted-foreground text-xs mt-1">
                   with {video.instructor}
                 </p>
               </CardContent>
@@ -222,7 +222,7 @@ export const AppleNewsVideoLibrary = () => {
           {standardVideos.map((video) => (
             <Card 
               key={video.id}
-              className="bg-white rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-[0px_10px_25px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 border-0 shadow-[0px_4px_15px_rgba(0,0,0,0.06)]"
+              className="card-modern glass dark:glass-dark rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-soft hover:-translate-y-0.5 border-0"
               onClick={() => handleVideoClick(video.id)}
             >
               <div className="relative h-20 overflow-hidden">
@@ -233,21 +233,21 @@ export const AppleNewsVideoLibrary = () => {
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-white/80 backdrop-blur-sm rounded-full p-1.5 group-hover:bg-white transition-all duration-300">
-                    <Play className="h-3 w-3 text-[#735CF7] ml-0.5" fill="currentColor" />
+                  <div className="bg-background/80 backdrop-blur-sm rounded-full p-1.5 group-hover:bg-background transition-all duration-300">
+                    <Play className="h-3 w-3 text-primary ml-0.5" fill="currentColor" />
                   </div>
                 </div>
               </div>
               
               <CardContent className="p-2">
                 <div className="flex items-center gap-1 mb-1">
-                  <div className="flex items-center text-[#8A94A6] text-xs">
+                  <div className="flex items-center text-muted-foreground text-xs">
                     <Clock className="h-2.5 w-2.5 mr-0.5" />
                     {video.duration}
                   </div>
                 </div>
                 
-                <h4 className="text-[#1D244D] text-xs font-semibold leading-tight group-hover:text-[#735CF7] transition-colors duration-300 line-clamp-2">
+                <h4 className="text-foreground text-xs font-semibold leading-tight group-hover:text-primary transition-colors duration-300 line-clamp-2">
                   {video.title}
                 </h4>
               </CardContent>
