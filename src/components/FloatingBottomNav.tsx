@@ -42,10 +42,9 @@ export const FloatingBottomNav = () => {
     setShowActivitySelector(true);
   };
 
-  // Build core navigation items (5 items for optimal layout)
+  // Build core navigation items (4 items for optimal layout)
   const navItems = [
     { icon: Home, label: 'Home', path: '/dashboard' },
-    { icon: Activity, label: 'Activity', path: '/activity' },
     { icon: Activity, label: 'Analytics', path: '/analytics' },
     { icon: BookOpen, label: 'Media', path: '/media' },
     { icon: Award, label: 'Awards', path: '/awards' },

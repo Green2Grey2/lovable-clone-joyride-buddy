@@ -83,14 +83,6 @@ const App = () => {
                           }
                         />
                         <Route
-                          path="/activity"
-                          element={
-                            <ProtectedRoute>
-                              <Activity />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
                           path="/active-activity"
                           element={
                             <ProtectedRoute>
