@@ -6,14 +6,12 @@ import { Users, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { ActivityFeed } from './ActivityFeed';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useBottomNavState } from '@/hooks/useBottomNavState';
 
 export const FloatingActivityFeed = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { isNavVisible } = useBottomNavState();
 
   useEffect(() => {
     if (user) {
@@ -73,9 +71,7 @@ export const FloatingActivityFeed = () => {
     return (
       <Button
         onClick={handleOpen}
-        className={`fixed right-4 z-40 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg hover:shadow-xl p-0 transition-all duration-300 ease-in-out transform ${
-          isNavVisible ? 'bottom-24 md:bottom-6' : 'bottom-6'
-        }`}
+        className="fixed right-4 bottom-24 md:bottom-6 z-40 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 p-0"
       >
         <Users className="h-6 w-6 text-white" />
         {unreadCount > 0 && (
@@ -90,10 +86,10 @@ export const FloatingActivityFeed = () => {
   }
 
   return (
-    <Card className={`fixed right-4 z-40 w-[calc(100vw-2rem)] max-w-md shadow-xl transition-all duration-300 ease-in-out transform ${
+    <Card className={`fixed right-4 z-40 w-[calc(100vw-2rem)] max-w-md transition-all duration-300 shadow-xl ${
       isMinimized 
-        ? `h-14 ${isNavVisible ? 'bottom-24 md:bottom-6' : 'bottom-6'}` 
-        : `top-20 md:top-auto h-[calc(100vh-8rem)] md:h-[600px] ${isNavVisible ? 'bottom-24 md:bottom-6' : 'bottom-6'}`
+        ? 'bottom-24 md:bottom-6 h-14' 
+        : 'bottom-24 md:bottom-6 top-20 md:top-auto h-[calc(100vh-8rem)] md:h-[600px]'
     }`}>
       <div className="flex items-center justify-between p-3 border-b bg-card">
         <div className="flex items-center gap-2">
@@ -121,10 +117,8 @@ export const FloatingActivityFeed = () => {
       </div>
       
       {!isMinimized && (
-        <div className="flex flex-col h-[calc(100%-60px)]">
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 bg-card">
-            <ActivityFeed />
-          </div>
+        <div className="overflow-y-auto overflow-x-hidden h-[calc(100%-60px)] p-4 bg-card">
+          <ActivityFeed />
         </div>
       )}
     </Card>

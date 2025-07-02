@@ -5,7 +5,6 @@ import { Home, Activity, Award, Plus, ArrowLeft, BookOpen } from 'lucide-react';
 import { ActivitySelector } from '@/components/ActivitySelector';
 import { useScrollDirection, useSwipe, useHapticFeedback } from '@/hooks/useGestures';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
-import { useBottomNavState } from '@/hooks/useBottomNavState';
 import { cn } from '@/lib/utils';
 
 export const FloatingBottomNav = () => {
@@ -16,7 +15,6 @@ export const FloatingBottomNav = () => {
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const { preferences } = useUserPreferences();
   const { lightTap, mediumTap } = useHapticFeedback();
-  const { setNavVisible } = useBottomNavState();
 
   const isActive = (path: string) => location.pathname === path;
   
@@ -55,14 +53,8 @@ export const FloatingBottomNav = () => {
   // Auto-hide navigation on scroll
   const { scrollDirection } = useScrollDirection({
     threshold: 20,
-    onScrollDown: () => {
-      setIsVisible(false);
-      setNavVisible(false);
-    },
-    onScrollUp: () => {
-      setIsVisible(true);
-      setNavVisible(true);
-    },
+    onScrollDown: () => setIsVisible(false),
+    onScrollUp: () => setIsVisible(true),
   });
 
   // Swipe gesture support
@@ -82,11 +74,9 @@ export const FloatingBottomNav = () => {
     },
     onSwipeUp: () => {
       setIsVisible(true);
-      setNavVisible(true);
     },
     onSwipeDown: () => {
       setIsVisible(false);
-      setNavVisible(false);
     },
   });
 
