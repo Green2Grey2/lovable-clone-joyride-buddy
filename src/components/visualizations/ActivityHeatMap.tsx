@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { activityTrackingService } from '@/utils/activityTrackingService';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Info, Activity, Clock, Flame, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Info, Activity, Clock, Flame, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSwipe, useHapticFeedback } from '@/hooks/useGestures';
@@ -291,6 +291,13 @@ export const ActivityHeatMap: React.FC = () => {
     }
     
     setIsExpanded(!isExpanded);
+  };
+
+  const handleGoToToday = () => {
+    playSoftClick();
+    mediumTap();
+    setWeekOffset(0);
+    setCurrentDate(new Date());
   };
 
   const getWeekData = () => {
@@ -704,7 +711,32 @@ export const ActivityHeatMap: React.FC = () => {
             )}
           </CardTitle>
           <div className="flex items-center gap-2">
-            {/* Expand/Collapse Toggle */}
+            {/* Today Button - Always visible */}
+            <button
+              onClick={handleGoToToday}
+              disabled={weekOffset === 0 && isSameMonth(currentDate, new Date())}
+              className={cn(
+                "flex items-center gap-1 text-xs px-2 py-1.5 rounded-full transition-all duration-200 hover-scale",
+                (weekOffset === 0 && isSameMonth(currentDate, new Date()))
+                  ? "bg-muted/30 opacity-50 cursor-not-allowed"
+                  : "bg-secondary/80 hover:bg-secondary"
+              )}
+            >
+              <Calendar className="h-3 w-3" />
+              <span>Today</span>
+            </button>
+
+            {/* Year View Toggle - Only show when expanded */}
+            {isExpanded && (
+              <button
+                onClick={() => setViewMode(viewMode === 'month' ? 'year' : 'month')}
+                className="text-xs px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+              >
+                {viewMode === 'month' ? 'Year View' : 'Month View'}
+              </button>
+            )}
+            
+            {/* Expand/Collapse Toggle - Always in the same position */}
             <button
               onClick={handleToggleExpand}
               className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-200 hover-scale"
@@ -721,17 +753,6 @@ export const ActivityHeatMap: React.FC = () => {
                 </>
               )}
             </button>
-            
-            {/* View Mode Toggle - Only show when expanded */}
-            {isExpanded && (
-              <button
-                onClick={() => setViewMode(viewMode === 'month' ? 'year' : 'month')}
-                className="text-xs px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
-              >
-                {viewMode === 'month' ? 'Year View' : 'Month View'}
-              </button>
-            )}
-            
           </div>
         </div>
       </CardHeader>
