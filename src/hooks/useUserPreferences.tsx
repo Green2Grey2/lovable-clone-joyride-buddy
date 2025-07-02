@@ -185,7 +185,7 @@ export const UserPreferencesProvider = ({ children }: { children: ReactNode }) =
 
       // Save to database for authenticated users
       if (user) {
-        await supabase
+        const { error } = await supabase
           .from('user_preferences')
           .upsert({
             user_id: user.id,
@@ -196,7 +196,13 @@ export const UserPreferencesProvider = ({ children }: { children: ReactNode }) =
             notifications_enabled: newPreferences.notifications.push,
             privacy_mode: !newPreferences.privacy.shareActivity,
             updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'user_id'
           });
+          
+        if (error) {
+          console.error('Error saving preferences:', error);
+        }
       }
     } catch (error) {
       console.error('Error updating preferences:', error);
