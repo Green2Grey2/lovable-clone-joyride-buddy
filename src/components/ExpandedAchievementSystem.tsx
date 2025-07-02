@@ -255,9 +255,9 @@ export const ExpandedAchievementSystem = () => {
 
       {/* Category Tabs */}
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-        <TabsList className="w-full grid grid-cols-3 lg:grid-cols-6">
+        <TabsList className="w-full grid grid-cols-3 lg:grid-cols-6 bg-white rounded-2xl p-1 shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
           {categories.map((category) => (
-            <TabsTrigger key={category.id} value={category.id} className="text-xs">
+            <TabsTrigger key={category.id} value={category.id} className="text-xs rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#735CF7] data-[state=active]:to-[#00A3FF] data-[state=active]:text-white">
               {category.name} ({category.count})
             </TabsTrigger>
           ))}

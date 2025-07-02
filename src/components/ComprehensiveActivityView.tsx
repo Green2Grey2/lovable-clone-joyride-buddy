@@ -397,7 +397,7 @@ export const ComprehensiveActivityView = () => {
                   className={`h-auto p-2 md:p-3 justify-start text-xs flex-col md:flex-row gap-1 md:gap-2 ${
                     selectedMetric === option.key 
                       ? 'bg-gradient-to-r from-[#735CF7] to-[#00A3FF] text-white' 
-                      : 'bg-white hover:bg-gray-50'
+                      : 'bg-white hover:bg-gray-50 text-[#1D244D] hover:text-[#1D244D]'
                   }`}
                 >
                   <IconComponent className="h-3 w-3 md:h-4 md:w-4" />
