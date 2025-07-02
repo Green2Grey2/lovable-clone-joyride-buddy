@@ -41,7 +41,7 @@ export const ActivityHeatMap: React.FC = () => {
 
       const { data, error } = await supabase
         .from('activities')
-        .select('date, duration, calories')
+        .select('date, duration, calories_burned')
         .eq('user_id', user?.id)
         .gte('date', format(startDate, 'yyyy-MM-dd'))
         .lte('date', format(endDate, 'yyyy-MM-dd'));
@@ -50,12 +50,12 @@ export const ActivityHeatMap: React.FC = () => {
 
       const processed: Record<string, ActivityData> = {};
       data?.forEach(activity => {
-        const intensity = calculateIntensity(activity.duration, activity.calories);
+        const intensity = calculateIntensity(activity.duration, activity.calories_burned);
         processed[activity.date] = {
           date: activity.date,
           intensity,
           minutes: activity.duration,
-          calories: activity.calories
+          calories: activity.calories_burned
         };
       });
 

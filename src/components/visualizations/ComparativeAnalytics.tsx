@@ -126,7 +126,7 @@ export const ComparativeAnalytics: React.FC = () => {
     if (!activities.length) return { avgCalories: 0, avgDuration: 0, avgIntensity: 0 };
     
     const total = activities.reduce((acc, act) => ({
-      calories: acc.calories + (act.calories || 0),
+      calories: acc.calories + (act.calories_burned || 0),
       duration: acc.duration + (act.duration || 0),
     }), { calories: 0, duration: 0 });
 
@@ -146,12 +146,12 @@ export const ComparativeAnalytics: React.FC = () => {
       
       const { data: activities } = await supabase
         .from('activities')
-        .select('calories')
+        .select('calories_burned')
         .eq('user_id', user?.id)
         .gte('date', format(weekStart, 'yyyy-MM-dd'))
         .lte('date', format(weekEnd, 'yyyy-MM-dd'));
 
-      const totalCalories = activities?.reduce((sum, act) => sum + (act.calories || 0), 0) || 0;
+      const totalCalories = activities?.reduce((sum, act) => sum + (act.calories_burned || 0), 0) || 0;
       
       weeks.push({
         week: format(weekStart, 'MMM d'),

@@ -72,13 +72,13 @@ export const SocialLeaderboard: React.FC = () => {
       // Get aggregated data for all users
       const { data: activities } = await supabase
         .from('activities')
-        .select('user_id, steps, calories, duration')
+        .select('user_id, steps, calories_burned, duration')
         .gte('date', startDate.toISOString());
 
       // Get user profiles and stats
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, username, avatar_url, department');
+        .select('user_id, name, avatar_url, department');
 
       const { data: stats } = await supabase
         .from('user_stats')
@@ -98,7 +98,7 @@ export const SocialLeaderboard: React.FC = () => {
         
         userMetrics.set(activity.user_id, {
           steps: current.steps + (activity.steps || 0),
-          calories: current.calories + (activity.calories || 0),
+          calories: current.calories + (activity.calories_burned || 0),
           duration: current.duration + (activity.duration || 0)
         });
       });
@@ -112,7 +112,7 @@ export const SocialLeaderboard: React.FC = () => {
           return {
             id: userId,
             user_id: userId,
-            username: profile?.username || 'Anonymous',
+            username: profile?.name || 'Anonymous',
             avatar_url: profile?.avatar_url,
             score: activeTab === 'streak' ? (userStats?.current_streak || 0) : metrics[activeTab],
             metric: activeTab,
