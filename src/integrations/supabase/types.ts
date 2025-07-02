@@ -276,6 +276,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          created_at: string
+          haptic_enabled: boolean | null
+          id: string
+          language: string | null
+          notifications_enabled: boolean | null
+          privacy_mode: boolean | null
+          sound_enabled: boolean | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          haptic_enabled?: boolean | null
+          id?: string
+          language?: string | null
+          notifications_enabled?: boolean | null
+          privacy_mode?: boolean | null
+          sound_enabled?: boolean | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          haptic_enabled?: boolean | null
+          id?: string
+          language?: string | null
+          notifications_enabled?: boolean | null
+          privacy_mode?: boolean | null
+          sound_enabled?: boolean | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -297,12 +336,51 @@ export type Database = {
         }
         Relationships: []
       }
-      user_stats: {
+      user_sessions: {
         Row: {
           created_at: string
+          id: string
+          ip_address: string | null
+          is_active: boolean
+          last_seen: string
+          page_path: string | null
+          session_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_seen?: string
+          page_path?: string | null
+          session_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_seen?: string
+          page_path?: string | null
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          calories_burned: number | null
+          created_at: string
           current_streak: number | null
+          heart_rate: number | null
           id: string
           last_activity_date: string | null
+          last_updated: string | null
           sleep_hours: number | null
           today_steps: number | null
           updated_at: string
@@ -311,10 +389,13 @@ export type Database = {
           weekly_steps: number | null
         }
         Insert: {
+          calories_burned?: number | null
           created_at?: string
           current_streak?: number | null
+          heart_rate?: number | null
           id?: string
           last_activity_date?: string | null
+          last_updated?: string | null
           sleep_hours?: number | null
           today_steps?: number | null
           updated_at?: string
@@ -323,10 +404,13 @@ export type Database = {
           weekly_steps?: number | null
         }
         Update: {
+          calories_burned?: number | null
           created_at?: string
           current_streak?: number | null
+          heart_rate?: number | null
           id?: string
           last_activity_date?: string | null
+          last_updated?: string | null
           sleep_hours?: number | null
           today_steps?: number | null
           updated_at?: string
@@ -347,6 +431,15 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      update_user_session: {
+        Args: {
+          _user_id: string
+          _session_id: string
+          _page_path: string
+          _user_agent: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
