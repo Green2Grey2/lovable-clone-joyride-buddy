@@ -539,13 +539,22 @@ export const ComprehensiveActivityView = () => {
       {/* Tabs for different time periods */}
       <Tabs defaultValue="today" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-white rounded-2xl p-1 shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
-          <TabsTrigger value="today" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#735CF7] data-[state=active]:to-[#00A3FF] data-[state=active]:text-white">
+          <TabsTrigger 
+            value="today" 
+            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#735CF7] data-[state=active]:to-[#00A3FF] data-[state=active]:text-white flex items-center justify-center px-4 py-2 min-h-[2.5rem]"
+          >
             Today
           </TabsTrigger>
-          <TabsTrigger value="weekly" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#735CF7] data-[state=active]:to-[#00A3FF] data-[state=active]:text-white">
+          <TabsTrigger 
+            value="weekly" 
+            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#735CF7] data-[state=active]:to-[#00A3FF] data-[state=active]:text-white flex items-center justify-center px-4 py-2 min-h-[2.5rem]"
+          >
             Weekly
           </TabsTrigger>
-          <TabsTrigger value="monthly" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#735CF7] data-[state=active]:to-[#00A3FF] data-[state=active]:text-white">
+          <TabsTrigger 
+            value="monthly" 
+            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#735CF7] data-[state=active]:to-[#00A3FF] data-[state=active]:text-white flex items-center justify-center px-4 py-2 min-h-[2.5rem]"
+          >
             Monthly
           </TabsTrigger>
         </TabsList>
