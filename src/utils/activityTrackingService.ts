@@ -25,6 +25,17 @@ export class ActivityTrackingService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
+      // Healthcare-appropriate validation limits
+      const validationResult = this.validateActivityLimits(activityData);
+      if (!validationResult.isValid) {
+        console.warn('Activity failed validation:', validationResult.reason);
+        toast.error(`Activity validation failed: ${validationResult.reason}`);
+        
+        // Flag suspicious activity for admin review
+        await this.flagSuspiciousActivity(user.id, activityData, validationResult.reason);
+        return false;
+      }
+
       // Insert activity record
       const { error: activityError } = await supabase
         .from('activities')
@@ -474,6 +485,95 @@ export class ActivityTrackingService {
     } catch (error) {
       console.error('Error updating activity patterns:', error);
       return false;
+    }
+  }
+
+  /**
+   * Validates activity limits for healthcare environment
+   */
+  private validateActivityLimits(activityData: ActivityData): { isValid: boolean; reason?: string } {
+    const { type, steps = 0, duration = 0, calories = 0 } = activityData;
+
+    // Healthcare-appropriate daily limits
+    const dailyLimits = {
+      walking: { steps: 40000, duration: 480, calories: 1200 }, // 8 hours
+      running: { steps: 25000, duration: 180, calories: 2500 }, // 3 hours
+      cycling: { steps: 0, duration: 150, calories: 1500 }, // 2.5 hours
+      yoga: { steps: 0, duration: 180, calories: 400 }, // 3 hours
+      'structured-workout': { steps: 0, duration: 120, calories: 800 } // 2 hours
+    };
+
+    const limits = dailyLimits[type as keyof typeof dailyLimits];
+    if (!limits) {
+      return { isValid: false, reason: 'Unknown activity type' };
+    }
+
+    // Check individual limits
+    if (steps > limits.steps && limits.steps > 0) {
+      return { isValid: false, reason: `Steps exceed daily limit (${limits.steps})` };
+    }
+    if (duration > limits.duration) {
+      return { isValid: false, reason: `Duration exceeds daily limit (${limits.duration} minutes)` };
+    }
+    if (calories > limits.calories) {
+      return { isValid: false, reason: `Calories exceed daily limit (${limits.calories})` };
+    }
+
+    // Pattern-based validation
+    if (this.detectSuspiciousPatterns(activityData)) {
+      return { isValid: false, reason: 'Suspicious activity pattern detected' };
+    }
+
+    return { isValid: true };
+  }
+
+  /**
+   * Detects suspicious patterns in activity data
+   */
+  private detectSuspiciousPatterns(activityData: ActivityData): boolean {
+    const { steps = 0, duration = 0, calories = 0 } = activityData;
+
+    // Check for perfect round numbers (potential manual manipulation)
+    if (steps > 0 && steps % 1000 === 0 && steps > 5000) return true;
+    if (duration > 0 && duration % 30 === 0 && duration > 60) return true;
+    if (calories > 0 && calories % 100 === 0 && calories > 200) return true;
+
+    // Check for unrealistic ratios
+    if (duration > 0 && calories / duration > 20) return true; // >20 cal/min is extreme
+    if (steps > 0 && duration > 0 && steps / duration > 200) return true; // >200 steps/min
+
+    return false;
+  }
+
+  /**
+   * Flags suspicious activity for admin review
+   */
+  private async flagSuspiciousActivity(userId: string, activityData: ActivityData, reason: string) {
+    try {
+      // Get admin users
+      const { data: adminUsers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+
+      if (!adminUsers || adminUsers.length === 0) return;
+
+      // Create notifications for all admins
+      const notifications = adminUsers.map(admin => ({
+        user_id: admin.user_id,
+        type: 'activity_flag',
+        title: 'Suspicious Activity Detected',
+        message: `User activity flagged: ${reason}. Activity: ${activityData.type}, ${activityData.duration}min, ${activityData.calories}cal`,
+        event_id: null
+      }));
+
+      await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      console.log('Suspicious activity flagged for admin review');
+    } catch (error) {
+      console.error('Error flagging suspicious activity:', error);
     }
   }
 }
