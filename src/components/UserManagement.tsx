@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole, AppRole } from '@/hooks/useUserRole';
-import { Users, Search, UserX, UserCheck, Filter } from 'lucide-react';
+import { Users, Search, UserX, UserCheck, Filter, Building2, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UserProfile {
@@ -24,10 +26,13 @@ interface UserProfile {
 export const UserManagement = () => {
   const { isAdmin } = useUserRole();
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [availableDepartments, setAvailableDepartments] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [newDepartment, setNewDepartment] = useState('');
 
   useEffect(() => {
     if (isAdmin()) {
@@ -50,6 +55,14 @@ export const UserManagement = () => {
 
       if (rolesError) throw rolesError;
 
+      // Get available departments
+      const { data: departmentSettings, error: deptError } = await supabase
+        .from('department_settings')
+        .select('department_name')
+        .eq('is_active', true);
+
+      if (deptError) throw deptError;
+
       const usersWithRoles = profiles?.map(profile => {
         const userRole = roles?.find(role => role.user_id === profile.id);
         return {
@@ -64,11 +77,56 @@ export const UserManagement = () => {
       }) || [];
 
       setUsers(usersWithRoles);
+      setAvailableDepartments(departmentSettings?.map(d => d.department_name) || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateUserDepartment = async (userId: string, newDept: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ department: newDept })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      // Update local state
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, department: newDept } : user
+      ));
+      
+      toast.success('User department updated successfully');
+      setEditingUser(null);
+      setNewDepartment('');
+    } catch (error) {
+      console.error('Error updating department:', error);
+      toast.error('Failed to update department');
+    }
+  };
+
+  const removeUserFromDepartment = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ department: null })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      // Update local state
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, department: 'No department' } : user
+      ));
+      
+      toast.success('User removed from department');
+    } catch (error) {
+      console.error('Error removing from department:', error);
+      toast.error('Failed to remove from department');
     }
   };
 
@@ -197,24 +255,102 @@ export const UserManagement = () => {
                     {new Date(user.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toggleUserStatus(user.id, user.isActive)}
-                      className="mr-2"
-                    >
-                      {user.isActive ? (
-                        <>
-                          <UserX className="h-4 w-4 mr-1" />
-                          Deactivate
-                        </>
-                      ) : (
-                        <>
-                          <UserCheck className="h-4 w-4 mr-1" />
-                          Activate
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleUserStatus(user.id, user.isActive)}
+                      >
+                        {user.isActive ? (
+                          <>
+                            <UserX className="h-4 w-4 mr-1" />
+                            Deactivate
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="h-4 w-4 mr-1" />
+                            Activate
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingUser(user);
+                              setNewDepartment(user.department === 'No department' ? '' : user.department);
+                            }}
+                          >
+                            <Building2 className="h-4 w-4 mr-1" />
+                            Dept
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Manage Department for {user.name}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Current Department</Label>
+                              <div className="text-lg font-semibold">{user.department}</div>
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="department-select">New Department</Label>
+                              <Select 
+                                value={newDepartment} 
+                                onValueChange={setNewDepartment}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availableDepartments.map(dept => (
+                                    <SelectItem key={dept} value={dept}>
+                                      {dept}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="flex justify-between">
+                              <Button
+                                variant="destructive"
+                                onClick={() => {
+                                  removeUserFromDepartment(user.id);
+                                  setEditingUser(null);
+                                }}
+                                disabled={user.department === 'No department'}
+                              >
+                                Remove from Department
+                              </Button>
+                              
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  onClick={() => {
+                                    setEditingUser(null);
+                                    setNewDepartment('');
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  onClick={() => updateUserDepartment(user.id, newDepartment)}
+                                  disabled={!newDepartment || newDepartment === user.department}
+                                >
+                                  Update Department
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
