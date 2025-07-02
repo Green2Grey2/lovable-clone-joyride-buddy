@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { activityTrackingService } from '@/utils/activityTrackingService';
 
 interface MetricComparison {
   metric: string;
@@ -32,6 +33,27 @@ export const ComparativeAnalytics: React.FC = () => {
   useEffect(() => {
     if (user) {
       loadAnalytics();
+      
+      // Set up real-time subscription for activities
+      const activitiesChannel = supabase
+        .channel('activities_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'activities',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            loadAnalytics(); // Refresh when new activities are recorded
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(activitiesChannel);
+      };
     }
   }, [user]);
 
@@ -67,8 +89,11 @@ export const ComparativeAnalytics: React.FC = () => {
         .eq('user_id', user?.id)
         .single();
 
-      // Process radar chart data
-      const metrics = processRadarData(thisWeekActivities || [], lastWeekActivities || [], stats);
+      // Get real percentiles from database
+      const percentiles = await activityTrackingService.getUserPercentiles(user?.id!, 'week');
+
+      // Process radar chart data with real percentiles
+      const metrics = processRadarData(thisWeekActivities || [], lastWeekActivities || [], stats, percentiles);
       setRadarData(metrics);
 
       // Process weekly comparison data
@@ -84,7 +109,7 @@ export const ComparativeAnalytics: React.FC = () => {
     }
   };
 
-  const processRadarData = (thisWeek: any[], lastWeek: any[], stats: any): MetricComparison[] => {
+  const processRadarData = (thisWeek: any[], lastWeek: any[], stats: any, percentiles: any): MetricComparison[] => {
     const thisWeekStats = calculateWeekStats(thisWeek);
     const lastWeekStats = calculateWeekStats(lastWeek);
 
@@ -93,31 +118,31 @@ export const ComparativeAnalytics: React.FC = () => {
         metric: 'Steps',
         thisWeek: Math.round((stats?.today_steps || 0) / 100),
         lastWeek: Math.round(lastWeekStats.avgSteps / 100),
-        percentile: 85
+        percentile: percentiles.steps
       },
       {
         metric: 'Calories',
         thisWeek: Math.round(thisWeekStats.avgCalories / 5),
         lastWeek: Math.round(lastWeekStats.avgCalories / 5),
-        percentile: 75
+        percentile: percentiles.calories
       },
       {
         metric: 'Duration',
         thisWeek: Math.round(thisWeekStats.avgDuration / 0.3),
         lastWeek: Math.round(lastWeekStats.avgDuration / 0.3),
-        percentile: 90
+        percentile: percentiles.duration
       },
       {
         metric: 'Consistency',
         thisWeek: Math.round((thisWeek.length / 7) * 100),
         lastWeek: Math.round((lastWeek.length / 7) * 100),
-        percentile: 80
+        percentile: percentiles.consistency
       },
       {
         metric: 'Intensity',
         thisWeek: Math.round(thisWeekStats.avgIntensity),
         lastWeek: Math.round(lastWeekStats.avgIntensity),
-        percentile: 70
+        percentile: percentiles.intensity
       }
     ];
   };

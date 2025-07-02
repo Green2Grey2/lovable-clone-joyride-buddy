@@ -337,6 +337,145 @@ export class ActivityTrackingService {
       return null;
     }
   }
+
+  /**
+   * Gets real user percentiles from database function
+   */
+  async getUserPercentiles(userId: string, timeframe: string = 'week') {
+    try {
+      const metrics = ['steps', 'calories', 'duration', 'consistency', 'intensity', 'recovery'];
+      const percentiles: { [key: string]: number } = {};
+
+      for (const metric of metrics) {
+        const { data, error } = await supabase.rpc('calculate_user_percentile', {
+          p_user_id: userId,
+          p_metric: metric,
+          p_timeframe: timeframe
+        });
+
+        if (error) {
+          console.error(`Error getting ${metric} percentile:`, error);
+          percentiles[metric] = 50; // Default fallback
+        } else {
+          percentiles[metric] = data || 50;
+        }
+      }
+
+      return percentiles;
+    } catch (error) {
+      console.error('Error getting user percentiles:', error);
+      return {
+        steps: 50,
+        calories: 50,
+        duration: 50,
+        consistency: 50,
+        intensity: 50,
+        recovery: 50
+      };
+    }
+  }
+
+  /**
+   * Gets workout insights from database
+   */
+  async getWorkoutInsights(userId: string) {
+    try {
+      const { data: insights, error } = await supabase
+        .from('workout_insights')
+        .select('*')
+        .eq('user_id', userId)
+        .or('expires_at.is.null,expires_at.gt.now()')
+        .order('priority', { ascending: true });
+
+      if (error) {
+        console.error('Error getting workout insights:', error);
+        return [];
+      }
+
+      return insights || [];
+    } catch (error) {
+      console.error('Error getting workout insights:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Gets activity patterns from database
+   */
+  async getActivityPatterns(userId: string, timeframe: string = 'week') {
+    try {
+      let dateFilter;
+      if (timeframe === 'week') {
+        dateFilter = new Date();
+        dateFilter.setDate(dateFilter.getDate() - 7);
+      } else if (timeframe === 'month') {
+        dateFilter = new Date();
+        dateFilter.setDate(dateFilter.getDate() - 30);
+      } else {
+        dateFilter = new Date();
+        dateFilter.setDate(dateFilter.getDate() - 7);
+      }
+
+      const { data: patterns, error } = await supabase
+        .from('activity_patterns')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('period_start', dateFilter.toISOString().split('T')[0])
+        .order('calculated_at', { ascending: false });
+
+      if (error) {
+        console.error('Error getting activity patterns:', error);
+        return [];
+      }
+
+      return patterns || [];
+    } catch (error) {
+      console.error('Error getting activity patterns:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Manually triggers insight generation for user
+   */
+  async generateInsights(userId: string) {
+    try {
+      const { error } = await supabase.rpc('generate_workout_insights', {
+        p_user_id: userId
+      });
+
+      if (error) {
+        console.error('Error generating insights:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error generating insights:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Manually triggers pattern update for user
+   */
+  async updateActivityPatterns(userId: string) {
+    try {
+      const { error } = await supabase.rpc('update_activity_patterns', {
+        p_user_id: userId
+      });
+
+      if (error) {
+        console.error('Error updating activity patterns:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error updating activity patterns:', error);
+      return false;
+    }
+  }
 }
 
 export const activityTrackingService = new ActivityTrackingService();

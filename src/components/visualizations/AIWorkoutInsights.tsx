@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { activityTrackingService } from '@/utils/activityTrackingService';
 
 interface Insight {
   id: string;
@@ -40,6 +41,45 @@ export const AIWorkoutInsights: React.FC = () => {
   useEffect(() => {
     if (user) {
       generateInsights();
+      
+      // Set up real-time subscriptions for workout insights
+      const insightsChannel = supabase
+        .channel('workout_insights_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'workout_insights',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            generateInsights(); // Refresh when new insights are generated
+          }
+        )
+        .subscribe();
+
+      // Set up real-time subscriptions for activity patterns
+      const patternsChannel = supabase
+        .channel('activity_patterns_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'activity_patterns',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            generateInsights(); // Refresh when patterns are updated
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(insightsChannel);
+        supabase.removeChannel(patternsChannel);
+      };
     }
   }, [user]);
 
@@ -47,30 +87,38 @@ export const AIWorkoutInsights: React.FC = () => {
     try {
       setLoading(true);
       
-      // Get recent activities
-      const { data: activities } = await supabase
-        .from('activities')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('date', { ascending: false })
-        .limit(30);
+      // Get real workout insights from database
+      const dbInsights = await activityTrackingService.getWorkoutInsights(user?.id!);
+      
+      // Get activity patterns from database
+      const dbPatterns = await activityTrackingService.getActivityPatterns(user?.id!, 'week');
+      
+      // Transform database insights to component format
+      const transformedInsights = dbInsights.map((insight: any) => ({
+        id: insight.id,
+        type: mapInsightType(insight.insight_type),
+        title: insight.title,
+        description: insight.description,
+        icon: getInsightIcon(insight.insight_type),
+        color: getInsightColor(insight.insight_type),
+        actionable: insight.actionable,
+        priority: insight.priority,
+        metrics: insight.metrics ? {
+          current: insight.metrics.current || 0,
+          target: insight.metrics.target || 100,
+          unit: insight.metrics.unit || '%'
+        } : undefined
+      }));
 
-      // Get user stats
-      const { data: stats } = await supabase
-        .from('user_stats')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
+      // Transform database patterns to component format
+      const transformedPatterns = dbPatterns.map((pattern: any) => ({
+        name: pattern.pattern_type.charAt(0).toUpperCase() + pattern.pattern_type.slice(1),
+        score: pattern.score,
+        trend: mapTrendFromDb(pattern.trend)
+      }));
 
-      if (!activities || !stats) return;
-
-      // Analyze patterns
-      const analyzedPatterns = analyzeWorkoutPatterns(activities);
-      setPatterns(analyzedPatterns);
-
-      // Generate AI insights
-      const generatedInsights = generateAIInsights(activities, stats, analyzedPatterns);
-      setInsights(generatedInsights);
+      setInsights(transformedInsights);
+      setPatterns(transformedPatterns);
 
     } catch (error) {
       console.error('Error generating insights:', error);
@@ -79,151 +127,44 @@ export const AIWorkoutInsights: React.FC = () => {
     }
   };
 
-  const analyzeWorkoutPatterns = (activities: any[]): WorkoutPattern[] => {
-    const patterns: WorkoutPattern[] = [];
-    
-    // Consistency pattern
-    const workoutDays = new Set(activities.map(a => new Date(a.date).toDateString())).size;
-    const consistencyScore = (workoutDays / 30) * 100;
-    patterns.push({
-      name: 'Consistency',
-      score: Math.round(consistencyScore),
-      trend: consistencyScore > 60 ? 'up' : consistencyScore > 40 ? 'stable' : 'down'
-    });
-
-    // Intensity pattern
-    const avgIntensity = activities.reduce((sum, a) => sum + (a.calories || 0), 0) / activities.length;
-    const recentIntensity = activities.slice(0, 7).reduce((sum, a) => sum + (a.calories || 0), 0) / 7;
-    patterns.push({
-      name: 'Intensity',
-      score: Math.round((recentIntensity / 500) * 100),
-      trend: recentIntensity > avgIntensity ? 'up' : recentIntensity < avgIntensity * 0.9 ? 'down' : 'stable'
-    });
-
-    // Volume pattern
-    const totalVolume = activities.reduce((sum, a) => sum + (a.duration || 0), 0);
-    const volumeScore = Math.min(100, (totalVolume / 600) * 100);
-    patterns.push({
-      name: 'Volume',
-      score: Math.round(volumeScore),
-      trend: totalVolume > 400 ? 'up' : totalVolume > 200 ? 'stable' : 'down'
-    });
-
-    // Recovery pattern
-    const restDays = 30 - workoutDays;
-    const recoveryScore = restDays >= 8 && restDays <= 12 ? 100 : Math.max(0, 100 - Math.abs(10 - restDays) * 10);
-    patterns.push({
-      name: 'Recovery',
-      score: Math.round(recoveryScore),
-      trend: recoveryScore > 80 ? 'up' : recoveryScore > 60 ? 'stable' : 'down'
-    });
-
-    return patterns;
+  // Helper functions to map database values to component format
+  const mapInsightType = (dbType: string): 'improvement' | 'warning' | 'suggestion' | 'achievement' => {
+    switch (dbType) {
+      case 'achievement': return 'achievement';
+      case 'warning': return 'warning';
+      case 'suggestion': return 'suggestion';
+      default: return 'improvement';
+    }
   };
 
-  const generateAIInsights = (activities: any[], stats: any, patterns: WorkoutPattern[]): Insight[] => {
-    const insights: Insight[] = [];
-    
-    // Consistency insight
-    const consistencyPattern = patterns.find(p => p.name === 'Consistency');
-    if (consistencyPattern && consistencyPattern.score < 50) {
-      insights.push({
-        id: '1',
-        type: 'warning',
-        title: 'Consistency Dropping',
-        description: 'Your workout frequency has decreased by 30% this week. Try setting daily reminders.',
-        icon: AlertCircle,
-        color: 'text-yellow-500',
-        actionable: true,
-        priority: 1,
-        metrics: {
-          current: consistencyPattern.score,
-          target: 80,
-          unit: '%'
-        }
-      });
+  const getInsightIcon = (type: string) => {
+    switch (type) {
+      case 'achievement': return Sparkles;
+      case 'warning': return AlertCircle;
+      case 'suggestion': return Lightbulb;
+      default: return TrendingUp;
     }
-
-    // Streak achievement
-    if (stats.current_streak >= 7) {
-      insights.push({
-        id: '2',
-        type: 'achievement',
-        title: `${stats.current_streak}-Day Streak! 🔥`,
-        description: 'Amazing consistency! You\'re building a strong habit. Keep it up!',
-        icon: Sparkles,
-        color: 'text-orange-500',
-        actionable: false,
-        priority: 2
-      });
-    }
-
-    // Improvement suggestion
-    const avgSteps = activities.reduce((sum, a) => sum + (a.steps || 0), 0) / activities.length;
-    if (avgSteps < 8000) {
-      insights.push({
-        id: '3',
-        type: 'suggestion',
-        title: 'Step Count Opportunity',
-        description: 'Adding a 15-minute walk after lunch could boost your daily steps by 2,000.',
-        icon: Lightbulb,
-        color: 'text-blue-500',
-        actionable: true,
-        priority: 3,
-        metrics: {
-          current: Math.round(avgSteps),
-          target: 10000,
-          unit: 'steps'
-        }
-      });
-    }
-
-    // Performance improvement
-    const intensityPattern = patterns.find(p => p.name === 'Intensity');
-    if (intensityPattern && intensityPattern.trend === 'up') {
-      insights.push({
-        id: '4',
-        type: 'improvement',
-        title: 'Fitness Level Rising',
-        description: 'Your workout intensity has increased 15% - your cardiovascular fitness is improving!',
-        icon: TrendingUp,
-        color: 'text-green-500',
-        actionable: false,
-        priority: 4
-      });
-    }
-
-    // Recovery warning
-    const recoveryPattern = patterns.find(p => p.name === 'Recovery');
-    if (recoveryPattern && recoveryPattern.score < 60) {
-      insights.push({
-        id: '5',
-        type: 'warning',
-        title: 'Recovery Time Needed',
-        description: 'You\'ve been training hard. Consider adding a rest day or light yoga session.',
-        icon: AlertCircle,
-        color: 'text-red-500',
-        actionable: true,
-        priority: 1
-      });
-    }
-
-    // Goal suggestion
-    if (!insights.some(i => i.type === 'suggestion')) {
-      insights.push({
-        id: '6',
-        type: 'suggestion',
-        title: 'Try Interval Training',
-        description: 'Based on your fitness level, HIIT workouts could help you break through plateaus.',
-        icon: Target,
-        color: 'text-purple-500',
-        actionable: true,
-        priority: 5
-      });
-    }
-
-    return insights.sort((a, b) => a.priority - b.priority);
   };
+
+  const getInsightColor = (type: string) => {
+    switch (type) {
+      case 'achievement': return 'text-orange-500';
+      case 'warning': return 'text-red-500';
+      case 'suggestion': return 'text-blue-500';
+      default: return 'text-green-500';
+    }
+  };
+
+  const mapTrendFromDb = (dbTrend: string): 'up' | 'down' | 'stable' => {
+    switch (dbTrend) {
+      case 'improving': return 'up';
+      case 'declining': return 'down';
+      case 'overtraining_risk': return 'down';
+      case 'needs_attention': return 'down';
+      default: return 'stable';
+    }
+  };
+
 
   const getInsightGradient = (type: Insight['type']) => {
     switch (type) {
