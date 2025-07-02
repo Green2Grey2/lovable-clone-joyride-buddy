@@ -1,15 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, subMonths, startOfYear, eachMonthOfInterval, isSameDay, startOfWeek, endOfWeek, subDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, subMonths, startOfYear, eachMonthOfInterval, isSameDay, startOfWeek, endOfWeek, subDays, addDays } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { activityTrackingService } from '@/utils/activityTrackingService';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Info, Activity, Clock, Flame, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Info, Activity, Clock, Flame, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSwipe, useHapticFeedback } from '@/hooks/useGestures';
 
 interface ActivityData {
   date: string;
@@ -23,6 +24,7 @@ export const ActivityHeatMap: React.FC = () => {
   const { user } = useAuth();
   const { playSoftClick } = useSoundEffects();
   const isMobile = useIsMobile();
+  const { lightTap, mediumTap } = useHapticFeedback();
   
   const [activityData, setActivityData] = useState<Record<string, ActivityData>>({});
   const [loading, setLoading] = useState(true);
@@ -31,9 +33,8 @@ export const ActivityHeatMap: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showTip, setShowTip] = useState(true);
-  const [clickCount, setClickCount] = useState(0);
-  const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [weekOffset, setWeekOffset] = useState(0); // For compact week navigation
 
   useEffect(() => {
     if (user) {
@@ -110,29 +111,53 @@ export const ActivityHeatMap: React.FC = () => {
     return patterns[Math.min(intensity, 4)];
   };
 
-  const handleDayClick = (dateStr: string, activity: ActivityData | undefined) => {
+  // Mobile-first interaction handler
+  const handleDayInteraction = useCallback((dateStr: string, activity: ActivityData | undefined) => {
     if (!activity) return;
     
     setSelectedDay(dateStr);
-    setClickCount(prev => prev + 1);
     
-    if (clickTimer) {
-      clearTimeout(clickTimer);
+    if (isMobile) {
+      // Mobile: Single tap shows modal directly
+      lightTap();
+      setShowDetailModal(true);
+    } else {
+      // Desktop: Double-click for modal
+      setShowDetailModal(true);
     }
+  }, [isMobile, lightTap]);
+
+  // Navigation handlers
+  const navigatePrevious = useCallback(() => {
+    playSoftClick();
+    mediumTap();
     
-    const timer = setTimeout(() => {
-      if (clickCount === 0) {
-        // Single click - show enhanced tooltip (already handled by hover)
-        setShowTip(false);
-      } else if (clickCount === 1) {
-        // Double click - show detailed modal
-        setShowDetailModal(true);
+    if (isExpanded) {
+      // Month navigation when expanded
+      setCurrentDate(prev => subMonths(prev, 1));
+    } else {
+      // Week navigation when compact
+      setWeekOffset(prev => prev + 7);
+    }
+  }, [isExpanded, playSoftClick, mediumTap]);
+
+  const navigateNext = useCallback(() => {
+    playSoftClick();
+    mediumTap();
+    
+    if (isExpanded) {
+      // Month navigation when expanded
+      const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+      if (nextMonth <= new Date()) {
+        setCurrentDate(nextMonth);
       }
-      setClickCount(0);
-    }, 300);
-    
-    setClickTimer(timer);
-  };
+    } else {
+      // Week navigation when compact
+      if (weekOffset > 0) {
+        setWeekOffset(prev => prev - 7);
+      }
+    }
+  }, [isExpanded, currentDate, weekOffset, playSoftClick, mediumTap]);
 
   const handleToggleExpand = () => {
     playSoftClick();
@@ -141,7 +166,8 @@ export const ActivityHeatMap: React.FC = () => {
 
   const getWeekData = () => {
     const today = new Date();
-    const weekDays = Array.from({ length: 7 }, (_, i) => subDays(today, 6 - i));
+    const baseDate = subDays(today, weekOffset);
+    const weekDays = Array.from({ length: 7 }, (_, i) => subDays(baseDate, 6 - i));
     return weekDays.map(day => {
       const dateStr = format(day, 'yyyy-MM-dd');
       return {
@@ -165,31 +191,86 @@ export const ActivityHeatMap: React.FC = () => {
     };
   };
 
+  // Swipe handlers for compact view
+  const compactSwipeRef = useSwipe({
+    onSwipeLeft: navigateNext,
+    onSwipeRight: navigatePrevious,
+    threshold: 50,
+    velocityThreshold: 0.3,
+  });
+
+  // Swipe handlers for expanded view
+  const expandedSwipeRef = useSwipe({
+    onSwipeLeft: navigateNext,
+    onSwipeRight: navigatePrevious,
+    threshold: 50,
+    velocityThreshold: 0.3,
+  });
+
   const renderCompactWeekView = () => {
     const weekData = getWeekData();
     const stats = getCompactStats();
     
     return (
-      <div className="space-y-4">
+      <div 
+        ref={compactSwipeRef as React.RefObject<HTMLDivElement>}
+        className="space-y-4 select-none"
+      >
+        {/* Navigation Header with Week Info */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={navigatePrevious}
+            className="p-2 rounded-full glass dark:glass-dark hover:bg-primary/10 transition-all duration-200 active:scale-95"
+            aria-label="Previous week"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          
+          <div className="text-center">
+            <div className="text-sm font-medium text-foreground">
+              {format(getWeekData()[0].date, 'MMM d')} - {format(getWeekData()[6].date, 'MMM d')}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {weekOffset === 0 ? 'This Week' : `${Math.ceil(weekOffset / 7)} week${weekOffset > 7 ? 's' : ''} ago`}
+            </div>
+          </div>
+          
+          <button
+            onClick={navigateNext}
+            disabled={weekOffset === 0}
+            className={cn(
+              "p-2 rounded-full glass dark:glass-dark transition-all duration-200 active:scale-95",
+              weekOffset === 0 
+                ? "opacity-50 cursor-not-allowed" 
+                : "hover:bg-primary/10"
+            )}
+            aria-label="Next week"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+
         {/* Mini Stats */}
         <div className="grid grid-cols-3 gap-3 text-center">
-          <div className="p-2 bg-muted/20 rounded-lg">
+          <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
             <div className="text-lg font-bold text-primary">{stats.activeDays}</div>
             <div className="text-xs text-muted-foreground">Active Days</div>
           </div>
-          <div className="p-2 bg-muted/20 rounded-lg">
+          <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
             <div className="text-lg font-bold text-foreground">{stats.todayMinutes}</div>
             <div className="text-xs text-muted-foreground">Today (min)</div>
           </div>
-          <div className="p-2 bg-muted/20 rounded-lg">
+          <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
             <div className="text-lg font-bold text-orange-500">{stats.todayCalories}</div>
             <div className="text-xs text-muted-foreground">Calories</div>
           </div>
         </div>
 
-        {/* Week Row */}
-        <div className="space-y-2">
-          <div className="text-xs text-muted-foreground text-center">Last 7 Days</div>
+        {/* Week Row with Enhanced Mobile Interactions */}
+        <div className="space-y-3">
+          <div className="text-xs text-muted-foreground text-center">
+            Swipe left/right to navigate • Tap for details
+          </div>
           <div className="grid grid-cols-7 gap-2">
             {weekData.map((day, index) => {
               const intensity = day.activity?.intensity || 0;
@@ -199,27 +280,29 @@ export const ActivityHeatMap: React.FC = () => {
                 <div
                   key={index}
                   className={cn(
-                    "aspect-square rounded-lg transition-all duration-300 hover:scale-110 relative group cursor-pointer",
+                    "aspect-square rounded-xl transition-all duration-300 relative group",
+                    "active:scale-95 select-none",
+                    hasActivity ? "cursor-pointer hover:scale-105" : "cursor-default",
                     getActivityColor(intensity),
-                    day.isToday && "ring-2 ring-primary ring-offset-1 ring-offset-background",
+                    day.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg",
                     getActivityPattern(intensity)
                   )}
-                  onClick={() => hasActivity && handleDayClick(day.dateStr, day.activity)}
+                  onClick={() => hasActivity && handleDayInteraction(day.dateStr, day.activity)}
                 >
                   {/* Day Letter */}
-                  <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground/70">
+                  <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-foreground/80">
                     {format(day.date, 'EEEEE')}
                   </span>
                   
                   {/* Activity indicator */}
                   {hasActivity && (
-                    <div className="absolute top-0.5 right-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                      <Plus className="h-2 w-2 text-primary animate-pulse" />
+                    <div className="absolute top-1 right-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     </div>
                   )}
                   
-                  {/* Compact Tooltip */}
-                  {day.activity && (
+                  {/* Mobile-optimized tooltip */}
+                  {day.activity && !isMobile && (
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none">
                       <div className="glass dark:glass-dark p-2 rounded-lg shadow-xl text-xs whitespace-nowrap">
                         <div className="font-semibold text-primary text-center">
@@ -257,39 +340,57 @@ export const ActivityHeatMap: React.FC = () => {
       weeks.push(allDays.slice(i, i + 7));
     }
 
-    const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const weekDays = isMobile ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
-      <>
+      <div 
+        ref={expandedSwipeRef as React.RefObject<HTMLDivElement>}
+        className="select-none"
+      >
+        {/* Month Navigation Header */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={navigatePrevious}
+            className="p-3 rounded-full glass dark:glass-dark hover:bg-primary/10 transition-all duration-200 active:scale-95"
+            aria-label="Previous month"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-foreground">
+              {format(currentDate, 'MMMM yyyy')}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Swipe to navigate months • {isMobile ? 'Tap' : 'Double-click'} for details
+            </p>
+          </div>
+          
+          <button
+            onClick={navigateNext}
+            disabled={isSameMonth(currentDate, new Date())}
+            className={cn(
+              "p-3 rounded-full glass dark:glass-dark transition-all duration-200 active:scale-95",
+              isSameMonth(currentDate, new Date()) 
+                ? "opacity-50 cursor-not-allowed" 
+                : "hover:bg-primary/10"
+            )}
+            aria-label="Next month"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+
         {/* Day labels */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 gap-1 mb-3">
           {weekDays.map((day, i) => (
-            <div key={i} className="text-xs text-muted-foreground text-center font-medium">
+            <div key={i} className="text-xs text-muted-foreground text-center font-semibold py-2">
               {day}
             </div>
           ))}
         </div>
-        
-        {/* User Education Tip */}
-        {showTip && viewMode === 'month' && (
-          <div className="mb-4 p-3 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
-            <div className="flex items-center gap-2 text-sm">
-              <Info className="h-4 w-4 text-primary animate-pulse" />
-              <span className="text-primary font-medium">💡 Tip:</span>
-              <span className="text-muted-foreground">
-                Tap days with activity for details, double-tap for full breakdown
-              </span>
-              <button 
-                onClick={() => setShowTip(false)}
-                className="ml-auto text-muted-foreground hover:text-foreground text-xs"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
 
-        {/* Calendar grid */}
+        {/* Calendar grid with enhanced mobile interactions */}
         <div className="space-y-1">
           {weeks.map((week, weekIndex) => (
             <div key={weekIndex} className="grid grid-cols-7 gap-1">
@@ -305,34 +406,29 @@ export const ActivityHeatMap: React.FC = () => {
                   <div
                     key={`${weekIndex}-${dayIndex}`}
                     className={cn(
-                      "aspect-square rounded-lg transition-all duration-300 hover:scale-110 relative group",
-                      isCurrentMonth ? getActivityColor(intensity) : 'bg-muted/10',
-                      hasActivity ? 'cursor-pointer' : 'cursor-default',
-                      isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background",
-                      // Add visual patterns
+                      "aspect-square rounded-xl transition-all duration-300 relative group select-none",
+                      "active:scale-95",
+                      isCurrentMonth ? getActivityColor(intensity) : 'bg-muted/5',
+                      hasActivity ? "cursor-pointer hover:scale-105" : "cursor-default",
+                      isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg",
                       isCurrentMonth && getActivityPattern(intensity)
                     )}
-                    onClick={() => hasActivity && handleDayClick(dateStr, activity)}
+                    onClick={() => hasActivity && handleDayInteraction(dateStr, activity)}
                   >
                     {/* Day number */}
-                    <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground/70">
+                    <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-foreground/80">
                       {isCurrentMonth && format(day, 'd')}
                     </span>
                     
-                    {/* Activity indicator (+ icon) */}
+                    {/* Activity indicator */}
                     {hasActivity && (
-                      <div className="absolute top-0.5 right-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                        <Plus className="h-2.5 w-2.5 text-primary animate-pulse" />
+                      <div className="absolute top-1 right-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                        <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm" />
                       </div>
                     )}
                     
-                    {/* Hover indicator for clickable days */}
-                    {hasActivity && (
-                      <div className="absolute inset-0 rounded-lg bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                    )}
-                    
-                    {/* Enhanced Tooltip */}
-                    {activity && (
+                    {/* Desktop tooltip only */}
+                    {activity && !isMobile && (
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none">
                         <div className="glass dark:glass-dark p-3 rounded-lg shadow-xl text-xs whitespace-nowrap min-w-[120px]">
                           <div className="font-semibold text-primary flex items-center gap-1">
@@ -355,7 +451,7 @@ export const ActivityHeatMap: React.FC = () => {
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground mt-2 border-t border-border/30 pt-1">
-                            Click for details • Double-click for more
+                            {isMobile ? 'Tap for details' : 'Double-click for details'}
                           </div>
                         </div>
                       </div>
@@ -366,7 +462,7 @@ export const ActivityHeatMap: React.FC = () => {
             </div>
           ))}
         </div>
-      </>
+      </div>
     );
   };
 
@@ -469,27 +565,6 @@ export const ActivityHeatMap: React.FC = () => {
               </button>
             )}
             
-            {/* Navigation - Only show when expanded and in month view */}
-            {isExpanded && viewMode === 'month' && (
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-                  className="p-1 hover:bg-accent/10 rounded transition-colors"
-                >
-                  ←
-                </button>
-                <span className="text-sm font-medium px-2">
-                  {format(currentDate, 'MMM yyyy')}
-                </span>
-                <button
-                  onClick={() => setCurrentDate(new Date())}
-                  className="p-1 hover:bg-accent/10 rounded transition-colors"
-                  disabled={isSameMonth(currentDate, new Date())}
-                >
-                  →
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </CardHeader>
