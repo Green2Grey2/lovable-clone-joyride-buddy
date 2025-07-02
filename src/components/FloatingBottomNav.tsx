@@ -112,7 +112,7 @@ export const FloatingBottomNav = () => {
             className="flex items-center gap-2 h-10 px-4 glass dark:glass-dark text-muted-foreground hover:text-primary rounded-full shadow-medium hover:shadow-strong transition-smooth"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm font-medium">Back</span>
+            
           </Button>
         </div>
       )}
