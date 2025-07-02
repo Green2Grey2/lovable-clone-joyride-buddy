@@ -19,29 +19,11 @@ export const DashboardHeader = ({ userName, currentStreak, weeklyGoal, currentSt
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-foreground mb-1">
-              Welcome back, {userName}! 👋
+              Welcome back, {userName}!
             </h1>
             <p className="text-muted-foreground text-sm">
               Ready to crush your fitness goals today?
             </p>
-            
-            <div className="flex items-center space-x-3 mt-3">
-              <div className="glass-subtle rounded-lg px-3 py-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Current Streak</span>
-                  <span className="text-sm font-bold text-foreground">{currentStreak} days 🔥</span>
-                </div>
-              </div>
-              
-              <div className="glass-subtle rounded-lg px-3 py-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Weekly Progress</span>
-                  <span className="text-sm font-bold text-foreground">
-                    {currentSteps?.toLocaleString() || 0} / {weeklyGoal?.toLocaleString() || 0}
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
           
           <div className="flex items-center gap-3">
