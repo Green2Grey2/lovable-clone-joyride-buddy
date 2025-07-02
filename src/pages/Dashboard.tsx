@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Home, Activity, BookOpen, Award, Settings, User, Trophy } from 'lucide-react';
 import { ActivityFeed } from '@/components/ActivityFeed';
 import { CollaborativeGoals } from '@/components/CollaborativeGoals';
 import { ModernHealthSummary } from '@/components/ModernHealthSummary';
@@ -20,6 +21,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { userProfile, userStats, activeActivity, getDashboardGreeting } = useApp();
   const { playSoftClick, playNavigation, playStartActivity } = useSoundEffects();
   const { challengeSettings } = useChallengeSettings();
@@ -68,130 +70,223 @@ const Dashboard = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-[#F9F9F9] pb-20 md:pb-0">
-        <DashboardHeader
-          userName={userProfile.name || 'User'}
-          currentStreak={userStats.currentStreak || 0}
-          weeklyGoal={userProfile.weeklyGoal || 10000}
-          currentSteps={userStats.todaySteps || 0}
-        />
-
-        <ResponsiveContainer maxWidth="2xl" padding="md" className="py-8">
-          <ResponsiveStack spacing="lg">
-            {/* Challenge Section - Full width on all screens */}
-            <div className="w-full">
-              {challengeHasStarted && userIsRegistered ? (
-                <ActiveChallengeWidget />
-              ) : (
-                <WalkingChallengeCountdown />
-              )}
+      <div className="min-h-screen bg-secondary pb-20 lg:pb-0">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-primary border-r border-border z-40">
+          <div className="flex flex-col h-full">
+            {/* Logo/Brand Section */}
+            <div className="p-6 border-b border-border">
+              <h2 className="text-xl font-bold text-primary">🏃‍♂️ Stride Fitness</h2>
+              <p className="text-sm text-secondary mt-1">Wellness Platform</p>
             </div>
 
-            {/* Main Content Area - Responsive Grid */}
-            <ResponsiveGrid 
-              cols={{ 
-                default: 1, 
-                lg: 3 
-              }} 
-              gap="lg"
-              className="items-start"
-            >
-              {/* Primary Content - Takes 2 columns on large screens */}
-              <div className="lg:col-span-2 space-y-8">
-                {/* Hero Action Card */}
-                <EnhancedHeroActionCard
-                  activeActivity={activeActivity}
-                  onPrimaryAction={handlePrimaryAction}
-                  todaySteps={userStats.todaySteps}
-                  stepGoal={stepGoal}
-                />
+            {/* Navigation */}
+            <nav className="flex-1 p-4 space-y-2">
+              <button
+                onClick={() => {
+                  playNavigation();
+                  navigate('/dashboard');
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                  location.pathname === '/dashboard'
+                    ? 'gradient-primary text-inverse shadow-brand'
+                    : 'text-secondary hover:bg-muted hover:text-primary'
+                }`}
+              >
+                <Home className="h-5 w-5" />
+                <span className="font-medium">Dashboard</span>
+              </button>
 
-                {/* Health Summary - Responsive Grid within */}
-                <ModernHealthSummary 
-                  steps={userStats.todaySteps}
-                  stepGoal={stepGoal}
-                  water={userStats.water}
-                  heartRate={userStats.heartRate}
-                  calories={userStats.calories}
-                  onViewMore={handleViewMoreActivity}
-                />
+              <button
+                onClick={() => {
+                  playNavigation();
+                  navigate('/activity');
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                  location.pathname === '/activity'
+                    ? 'gradient-primary text-inverse shadow-brand'
+                    : 'text-secondary hover:bg-muted hover:text-primary'
+                }`}
+              >
+                <Activity className="h-5 w-5" />
+                <span className="font-medium">Activity</span>
+              </button>
 
-                {/* Collaborative Goals */}
-                <CollaborativeGoals />
+              <button
+                onClick={() => {
+                  playNavigation();
+                  navigate('/media');
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                  location.pathname === '/media'
+                    ? 'gradient-primary text-inverse shadow-brand'
+                    : 'text-secondary hover:bg-muted hover:text-primary'
+                }`}
+              >
+                <BookOpen className="h-5 w-5" />
+                <span className="font-medium">Media</span>
+              </button>
 
-                {/* Video Library - Hidden on mobile, shown on tablet+ */}
-                <div className="hidden md:block">
-                  <AppleNewsVideoLibrary />
+              <button
+                onClick={() => {
+                  playNavigation();
+                  navigate('/awards');
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                  location.pathname === '/awards'
+                    ? 'gradient-primary text-inverse shadow-brand'
+                    : 'text-secondary hover:bg-muted hover:text-primary'
+                }`}
+              >
+                <Award className="h-5 w-5" />
+                <span className="font-medium">Awards</span>
+              </button>
+
+              {/* Admin/Manager Links */}
+              {(isManager() || isAdmin()) && (
+                <div className="pt-4 mt-4 border-t border-border">
+                  <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2 px-4">
+                    Management
+                  </p>
+                  <button
+                    onClick={() => {
+                      playNavigation();
+                      navigate(isAdmin() ? '/admin' : '/manager');
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 text-secondary hover:bg-muted hover:text-primary"
+                  >
+                    <Settings className="h-5 w-5" />
+                    <span className="font-medium">
+                      {isAdmin() ? 'Admin Panel' : 'Manager Tools'}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </nav>
+
+            {/* User Section */}
+            <div className="p-4 border-t border-border">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-muted">
+                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-inverse">
+                    {userProfile.name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-primary">
+                    {userProfile.name || 'User'}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {userStats.currentStreak} day streak 🔥
+                  </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </aside>
 
-              {/* Sidebar Content - 1 column on large screens */}
-              <div className="space-y-6">
-                {/* Social Feed - Static on desktop */}
-                <div className="hidden lg:block">
-                  <ActivityFeed />
+        {/* Main Content - Offset for sidebar on desktop */}
+        <div className="lg:ml-64">
+          <DashboardHeader
+            userName={userProfile.name || 'User'}
+            currentStreak={userStats.currentStreak || 0}
+            weeklyGoal={userProfile.weeklyGoal || 10000}
+            currentSteps={userStats.todaySteps || 0}
+          />
+
+          <ResponsiveContainer maxWidth="2xl" padding="md" className="py-8">
+            <ResponsiveStack spacing="lg">
+              {/* Challenge Section - Full width on all screens */}
+              <div className="w-full">
+                {challengeHasStarted && userIsRegistered ? (
+                  <ActiveChallengeWidget />
+                ) : (
+                  <WalkingChallengeCountdown />
+                )}
+              </div>
+
+              {/* Main Content Area - Responsive Grid */}
+              <ResponsiveGrid 
+                cols={{ 
+                  default: 1, 
+                  lg: 3 
+                }} 
+                gap="lg"
+                className="items-start"
+              >
+                {/* Primary Content - Takes 2 columns on large screens */}
+                <div className="lg:col-span-2 space-y-8">
+                  {/* Hero Action Card */}
+                  <EnhancedHeroActionCard
+                    activeActivity={activeActivity}
+                    onPrimaryAction={handlePrimaryAction}
+                    todaySteps={userStats.todaySteps}
+                    stepGoal={stepGoal}
+                  />
+
+                  {/* Health Summary - Responsive Grid within */}
+                  <ModernHealthSummary 
+                    steps={userStats.todaySteps}
+                    stepGoal={stepGoal}
+                    water={userStats.water}
+                    heartRate={userStats.heartRate}
+                    calories={userStats.calories}
+                    onViewMore={handleViewMoreActivity}
+                  />
+
+                  {/* Collaborative Goals */}
+                  <CollaborativeGoals />
+
+                  {/* Video Library - Hidden on mobile, shown on tablet+ */}
+                  <div className="hidden md:block">
+                    <AppleNewsVideoLibrary />
+                  </div>
                 </div>
-                
-                {/* Quick Actions for desktop */}
-                <div className="hidden lg:block">
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-                    <div className="space-y-3">
-                      <button 
-                        className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors"
-                        onClick={() => navigate('/profile')}
-                      >
-                        View Profile
-                      </button>
-                      <button 
-                        className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors"
-                        onClick={() => navigate('/awards')}
-                      >
-                        Check Awards
-                      </button>
-                      {(isManager() || isAdmin()) && (
+
+                {/* Sidebar Content - 1 column on large screens */}
+                <div className="space-y-6">
+                  {/* Social Feed - Static on desktop */}
+                  <div className="hidden lg:block">
+                    <ActivityFeed />
+                  </div>
+                  
+                  {/* Quick Actions for desktop */}
+                  <div className="hidden lg:block">
+                    <div className="card-elevated p-6">
+                      <h3 className="text-lg font-semibold mb-4 text-primary">Quick Actions</h3>
+                      <div className="space-y-3">
                         <button 
-                          className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors"
-                          onClick={() => navigate(isAdmin() ? '/admin' : '/manager')}
+                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-muted transition-colors text-secondary hover:text-primary"
+                          onClick={() => navigate('/profile')}
                         >
-                          {isAdmin() ? 'Admin Dashboard' : 'Manager Dashboard'}
+                          <User className="h-4 w-4 inline mr-3" />
+                          View Profile
                         </button>
-                      )}
+                        <button 
+                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-muted transition-colors text-secondary hover:text-primary"
+                          onClick={() => navigate('/awards')}
+                        >
+                          <Trophy className="h-4 w-4 inline mr-3" />
+                          Check Awards
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </ResponsiveGrid>
+              </ResponsiveGrid>
 
-            {/* Mobile-only Video Library */}
-            <div className="md:hidden">
-              <AppleNewsVideoLibrary />
-            </div>
-          </ResponsiveStack>
-        </ResponsiveContainer>
+              {/* Mobile-only Video Library */}
+              <div className="md:hidden">
+                <AppleNewsVideoLibrary />
+              </div>
+            </ResponsiveStack>
+          </ResponsiveContainer>
+        </div>
 
         {/* Mobile Navigation - Hidden on desktop */}
         <div className="lg:hidden">
           <FloatingActivityFeed />
           <FloatingBottomNav />
-        </div>
-
-        {/* Desktop Navigation - Fixed sidebar */}
-        <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 p-6">
-          <nav className="space-y-4 mt-20">
-            <a href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary">
-              <span>Dashboard</span>
-            </a>
-            <a href="/activity" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
-              <span>Activity</span>
-            </a>
-            <a href="/media" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
-              <span>Media</span>
-            </a>
-            <a href="/awards" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
-              <span>Awards</span>
-            </a>
-          </nav>
         </div>
 
         {/* Activity Selector Modal */}
