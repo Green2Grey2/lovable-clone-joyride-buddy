@@ -7,6 +7,7 @@ import { UserQRCode } from '@/components/UserQRCode';
 import { HealthSyncButton } from '@/components/HealthSyncButton';
 import { NotificationSettings } from '@/components/NotificationSettings';
 import { FeedbackButton } from '@/components/FeedbackButton';
+import { ProfileGoalSettings } from '@/components/ProfileGoalSettings';
 
 const Profile = () => {
   
@@ -42,6 +43,9 @@ const Profile = () => {
             <h3 className="text-lg font-semibold text-foreground mb-4">Health Data Sync</h3>
             <HealthSyncButton />
           </div>
+
+          {/* Goal Settings */}
+          <ProfileGoalSettings />
 
           {/* Notification Settings */}
           <NotificationSettings />
