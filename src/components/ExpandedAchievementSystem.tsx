@@ -1,11 +1,37 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Award, Star, Target, Zap, Crown, Medal, Calendar, Snowflake, Sun, Leaf, Flower } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'streak' | 'milestone' | 'challenge' | 'special';
+  criteria: any;
+  points: number;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface UserAchievement {
+  id: string;
+  user_id: string;
+  achievement_id: string;
+  earned_at: string;
+  progress: number;
+  data: any;
+  achievement: Achievement;
+}
 
 interface ExtendedAchievement {
   id: string;
@@ -27,167 +53,117 @@ interface ExtendedAchievement {
 
 export const ExpandedAchievementSystem = () => {
   const { userProfile } = useApp();
-  
-  const [achievements, setAchievements] = useState<ExtendedAchievement[]>([
-    // Milestone Achievements
-    {
-      id: '1',
-      name: 'First Steps',
-      description: 'Take your first 1,000 steps',
-      type: 'milestone',
-      category: 'steps',
-      rarity: 'common',
-      icon: 'Target',
-      earned: true,
-      earnedDate: '3 days ago',
-      color: 'from-green-400 to-green-600',
-      celebrationMessage: 'Every journey begins with a single step! 🎉',
-      points: 50
-    },
-    {
-      id: '2',
-      name: 'Century Club',
-      description: 'Reach 100,000 total steps',
-      type: 'milestone',
-      category: 'steps',
-      rarity: 'epic',
-      icon: 'Crown',
-      earned: false,
-      progress: 45670,
-      total: 100000,
-      color: 'from-purple-400 to-purple-600',
-      celebrationMessage: 'You are now royalty in the world of fitness! 👑',
-      points: 500
-    },
-    
-    // Streak Achievements
-    {
-      id: '3',
-      name: 'Weekend Warrior',
-      description: 'Stay active for 7 consecutive days',
-      type: 'streak',
-      category: 'consistency',
-      rarity: 'rare',
-      icon: 'Zap',
-      earned: true,
-      earnedDate: '1 week ago',
-      color: 'from-orange-400 to-red-500',
-      celebrationMessage: 'Your dedication is electric! ⚡',
-      points: 200
-    },
-    {
-      id: '4',
-      name: 'Unstoppable Force',
-      description: 'Maintain a 30-day activity streak',
-      type: 'streak',
-      category: 'consistency',
-      rarity: 'legendary',
-      icon: 'Medal',
-      earned: false,
-      progress: 12,
-      total: 30,
-      color: 'from-yellow-400 to-orange-500',
-      celebrationMessage: 'Nothing can stop you now! You are a force of nature! 🔥',
-      points: 1000
-    },
+  const { toast } = useToast();
+  const [achievements, setAchievements] = useState<ExtendedAchievement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    // Seasonal Achievements
-    {
-      id: '5',
-      name: 'New Year, New Me',
-      description: 'Complete 31 workouts in January',
-      type: 'seasonal',
-      category: 'workouts',
-      rarity: 'rare',
-      icon: 'Calendar',
-      earned: false,
-      progress: 8,
-      total: 31,
-      color: 'from-blue-400 to-cyan-500',
-      season: 'winter',
-      celebrationMessage: 'You crushed your New Year resolution! 🎊',
-      points: 300
-    },
-    {
-      id: '6',
-      name: 'Spring Into Action',
-      description: 'Walk 250,000 steps during spring season',
-      type: 'seasonal',
-      category: 'steps',
-      rarity: 'epic',
-      icon: 'Flower',
-      earned: false,
-      progress: 0,
-      total: 250000,
-      color: 'from-pink-400 to-rose-500',
-      season: 'spring',
-      celebrationMessage: 'You bloomed with activity this spring! 🌸',
-      points: 600
-    },
-    {
-      id: '7',
-      name: 'Summer Solstice Strider',
-      description: 'Hit your daily goal every day in June',
-      type: 'seasonal',
-      category: 'consistency',
-      rarity: 'legendary',
-      icon: 'Sun',
-      earned: false,
-      progress: 0,
-      total: 30,
-      color: 'from-yellow-300 to-orange-400',
-      season: 'summer',
-      celebrationMessage: 'You shined brighter than the summer sun! ☀️',
-      points: 1200
-    },
+  const fetchAchievements = async () => {
+    try {
+      // Get all achievements
+      const { data: allAchievements, error: achievementsError } = await supabase
+        .from('achievements')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
 
-    // Social Achievements
-    {
-      id: '8',
-      name: 'Team Player',
-      description: 'Complete 3 team challenges',
-      type: 'social',
-      category: 'social',
-      rarity: 'rare',
-      icon: 'Trophy',
-      earned: false,
-      progress: 1,
-      total: 3,
-      color: 'from-indigo-400 to-purple-500',
-      celebrationMessage: 'Teamwork makes the dream work! 🤝',
-      points: 250
-    },
-    {
-      id: '9',
-      name: 'Motivational Speaker',
-      description: 'Encourage 50 teammates in the activity feed',
-      type: 'social',
-      category: 'social',
-      rarity: 'epic',
-      icon: 'Star',
-      earned: false,
-      progress: 12,
-      total: 50,
-      color: 'from-cyan-400 to-blue-500',
-      celebrationMessage: 'Your positivity lifts everyone up! 🌟',
-      points: 400
-    },
+      if (achievementsError) throw achievementsError;
 
-    // Special Event Achievements
-    {
-      id: '10',
-      name: 'Department Champion',
-      description: 'Lead your department to victory in a challenge',
-      type: 'special',
-      category: 'special_events',
-      rarity: 'legendary',
-      icon: 'Crown',
-      earned: false,
-      color: 'from-gold to-yellow-600',
-      celebrationMessage: 'You are the champion your department needed! 🏆',
-      points: 1500
+      // Get user's earned achievements
+      const { data: userAchievements, error: userAchievementsError } = await supabase
+        .from('user_achievements')
+        .select(`
+          *,
+          achievement:achievements(*)
+        `)
+        .eq('user_id', userProfile.id);
+
+      if (userAchievementsError) throw userAchievementsError;
+
+      // Create a map of earned achievements
+      const earnedMap = new Map(
+        userAchievements?.map(ua => [ua.achievement_id, ua]) || []
+      );
+
+      // Transform achievements to ExtendedAchievement format
+      const transformedAchievements = allAchievements?.map(achievement => {
+        const userAchievement = earnedMap.get(achievement.id);
+        const isEarned = !!userAchievement;
+        
+        // Map category to our extended categories
+        let extendedCategory: 'steps' | 'workouts' | 'social' | 'consistency' | 'special_events';
+        switch (achievement.category) {
+          case 'streak':
+            extendedCategory = 'consistency';
+            break;
+          case 'milestone':
+            extendedCategory = 'steps';
+            break;
+          case 'special':
+            extendedCategory = 'social';
+            break;
+          default:
+            extendedCategory = 'special_events';
+        }
+
+        // Get rarity based on points
+        let rarity: 'common' | 'rare' | 'epic' | 'legendary';
+        if (achievement.points <= 20) rarity = 'common';
+        else if (achievement.points <= 50) rarity = 'rare';
+        else if (achievement.points <= 200) rarity = 'epic';
+        else rarity = 'legendary';
+
+        // Get color based on category
+        let color: string;
+        switch (achievement.category) {
+          case 'streak':
+            color = 'from-orange-400 to-red-500';
+            break;
+          case 'milestone':
+            color = 'from-green-400 to-green-600';
+            break;
+          case 'special':
+            color = 'from-purple-400 to-purple-600';
+            break;
+          default:
+            color = 'from-blue-400 to-blue-600';
+        }
+
+        return {
+          id: achievement.id,
+          name: achievement.name,
+          description: achievement.description,
+          type: achievement.category as any,
+          category: extendedCategory,
+          rarity,
+          icon: achievement.icon,
+          earned: isEarned,
+          earnedDate: isEarned ? new Date(userAchievement.earned_at).toLocaleDateString() : undefined,
+          progress: userAchievement?.progress || 0,
+          total: achievement.criteria?.value || 100,
+          color,
+          celebrationMessage: isEarned ? `Congratulations on earning ${achievement.name}! 🎉` : undefined,
+          points: achievement.points
+        };
+      }) || [];
+
+      setAchievements(transformedAchievements);
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load achievements. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    if (userProfile.id) {
+      fetchAchievements();
+    }
+  }, [userProfile.id]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
@@ -209,7 +185,7 @@ export const ExpandedAchievementSystem = () => {
 
   const iconMap: { [key: string]: any } = {
     Target, Trophy, Award, Star, Zap, Crown, Medal, Calendar, 
-    Snowflake, Sun, Leaf, Flower
+    Snowflake, Sun, Leaf, Flower, ...LucideIcons
   };
 
   const getRarityColor = (rarity: string) => {
@@ -231,6 +207,24 @@ export const ExpandedAchievementSystem = () => {
       default: return null;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="bg-white border-0 rounded-3xl shadow-lg">
+              <CardContent className="p-4 text-center">
+                <div className="h-8 w-8 mx-auto mb-2 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-6 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -272,7 +266,7 @@ export const ExpandedAchievementSystem = () => {
         <TabsContent value={selectedCategory} className="mt-6">
           <div className="grid gap-4">
             {filteredAchievements.map((achievement) => {
-              const IconComponent = iconMap[achievement.icon] || Award;
+              const IconComponent = iconMap[achievement.icon] || iconMap['award'] || Award;
               const progressPercentage = achievement.total ? (achievement.progress || 0) / achievement.total * 100 : 0;
               
               return (
