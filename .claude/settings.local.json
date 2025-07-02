@@ -6,7 +6,10 @@
       "Bash(npm install)",
       "Bash(npx tsc:*)",
       "Bash(find:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
