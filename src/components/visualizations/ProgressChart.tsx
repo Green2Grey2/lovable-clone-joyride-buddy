@@ -66,7 +66,7 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({
       // Get user stats for steps data
       const { data: stats } = await supabase
         .from('user_stats')
-        .select('today_steps, date')
+        .select('today_steps')
         .eq('user_id', user?.id)
         .single();
 
