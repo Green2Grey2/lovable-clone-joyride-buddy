@@ -84,6 +84,35 @@ export type Database = {
         }
         Relationships: []
       }
+      activity_likes: {
+        Row: {
+          activity_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_likes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "social_activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_participants: {
         Row: {
           challenge_id: string
@@ -375,6 +404,39 @@ export type Database = {
         }
         Relationships: []
       }
+      social_activities: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          description: string | null
+          id: string
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          description?: string | null
+          id?: string
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          description?: string | null
+          id?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -609,6 +671,22 @@ export type Database = {
       check_and_award_achievement: {
         Args: { p_user_id: string; p_achievement_name: string; p_data?: Json }
         Returns: boolean
+      }
+      get_social_feed: {
+        Args: { p_user_id?: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          id: string
+          user_id: string
+          type: string
+          title: string
+          description: string
+          data: Json
+          created_at: string
+          user_name: string
+          user_department: string
+          like_count: number
+          liked_by_me: boolean
+        }[]
       }
       get_user_achievement_summary: {
         Args: { p_user_id: string }
