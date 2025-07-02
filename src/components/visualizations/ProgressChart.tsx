@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { activityTrackingService } from '@/utils/activityTrackingService';
 import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -46,29 +46,13 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({
   const loadChartData = async () => {
     try {
       setLoading(true);
-      const endDate = new Date();
-      const startDate = period === 'week' 
-        ? subDays(endDate, 7)
-        : period === 'month' 
-        ? subDays(endDate, 30)
-        : subDays(endDate, 365);
-
-      const { data: activities, error } = await supabase
-        .from('activities')
-        .select('date, duration, calories_burned')
-        .eq('user_id', user?.id)
-        .gte('date', format(startDate, 'yyyy-MM-dd'))
-        .lte('date', format(endDate, 'yyyy-MM-dd'))
-        .order('date', { ascending: true });
-
-      if (error) throw error;
-
-      // Get user stats for steps data
-      const { data: stats } = await supabase
-        .from('user_stats')
-        .select('today_steps')
-        .eq('user_id', user?.id)
-        .single();
+      const days = period === 'week' ? 7 : period === 'month' ? 30 : 365;
+      
+      // Get activity history using the new service
+      const activities = await activityTrackingService.getActivityHistory(user?.id!, days);
+      
+      // Get user stats
+      const stats = await activityTrackingService.getUserStats(user?.id!);
 
       // Process data based on metric
       const processedData = processDataByMetric(activities || [], stats, metric, period);
@@ -99,11 +83,14 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({
       };
     }
 
-    // Fill with actual data
+    // Fill with actual data from activities
     activities.forEach(activity => {
       const key = format(new Date(activity.date), dateFormat);
       if (grouped[key]) {
         switch (metric) {
+          case 'steps':
+            grouped[key].value += activity.steps || 0;
+            break;
           case 'calories':
             grouped[key].value += activity.calories_burned || 0;
             break;
@@ -111,13 +98,13 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({
             grouped[key].value += activity.duration || 0;
             break;
           case 'distance':
-            grouped[key].value += (activity.duration || 0) * 0.1; // Rough estimate
+            grouped[key].value += activity.distance || 0;
             break;
         }
       }
     });
 
-    // Add today's steps if metric is steps
+    // Use today's steps from stats for current day
     if (metric === 'steps' && stats?.today_steps) {
       const todayKey = format(new Date(), dateFormat);
       if (grouped[todayKey]) {
