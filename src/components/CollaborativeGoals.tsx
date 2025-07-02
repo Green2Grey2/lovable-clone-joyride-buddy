@@ -231,10 +231,10 @@ export const CollaborativeGoals = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Department Goals</h2>
+        <h2 className="text-2xl font-bold text-primary">Department Goals</h2>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
+            <Button size="sm" className="gap-2 gradient-primary text-inverse border-0 hover:shadow-brand-hover">
               <Plus className="h-4 w-4" />
               Create Goal
             </Button>
@@ -306,7 +306,7 @@ export const CollaborativeGoals = () => {
                   max="90"
                 />
               </div>
-              <Button onClick={handleCreateGoal} className="w-full">
+              <Button onClick={handleCreateGoal} className="w-full gradient-primary text-inverse border-0 hover:shadow-brand-hover">
                 Create Goal
               </Button>
             </div>
@@ -338,7 +338,7 @@ export const CollaborativeGoals = () => {
                   </CardTitle>
                   <CardDescription>{goal.description}</CardDescription>
                 </div>
-                <Badge variant="secondary">
+                <Badge variant="secondary" className="bg-muted text-primary border border-border">
                   {getDaysRemaining(goal.end_date)} days left
                 </Badge>
               </div>
@@ -367,7 +367,7 @@ export const CollaborativeGoals = () => {
                       Goal Achieved!
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="gap-1">
+                    <Badge variant="outline" className="gap-1 badge-visible">
                       <TrendingUp className="h-3 w-3" />
                       {getProgressPercentage(goal).toFixed(0)}%
                     </Badge>
