@@ -130,7 +130,7 @@ export const ensureFocusVisible = () => {
   try {
     document.querySelector(':focus-visible');
   } catch (e) {
-    // Polyfill :focus-visible
-    import('focus-visible');
+    // Polyfill :focus-visible - commented out for now
+    // import('focus-visible');
   }
 };

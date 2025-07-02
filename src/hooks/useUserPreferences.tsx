@@ -101,12 +101,20 @@ export const UserPreferencesProvider = ({ children }: { children: ReactNode }) =
         if (user) {
           const { data, error } = await supabase
             .from('user_preferences')
-            .select('preferences')
+            .select('*')
             .eq('user_id', user.id)
             .single();
 
-          if (data && !error) {
-            setPreferences({ ...defaultPreferences, ...systemPreferences, ...data.preferences });
+          if (data && !error && typeof data === 'object') {
+            // Map database fields to our preference structure
+            const dbPrefs = {
+              theme: (data.theme as 'light' | 'dark' | 'system') || 'system',
+              language: data.language || 'en',
+              soundEnabled: data.sound_enabled ?? true,
+              hapticEnabled: data.haptic_enabled ?? true,
+              // Keep other preferences from defaults/system
+            };
+            setPreferences({ ...defaultPreferences, ...systemPreferences, ...dbPrefs });
           }
         }
       } catch (error) {

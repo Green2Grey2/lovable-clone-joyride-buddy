@@ -13,9 +13,10 @@ export const useUserActivity = () => {
     const updateSession = async () => {
       try {
         await supabase.rpc('update_user_session', {
-          p_user_id: user.id,
-          p_user_agent: navigator.userAgent,
-          p_page_path: window.location.pathname
+          _user_id: user.id,
+          _session_id: 'web-session',
+          _page_path: window.location.pathname,
+          _user_agent: navigator.userAgent
         });
       } catch (error) {
         console.error('Error updating user session:', error);

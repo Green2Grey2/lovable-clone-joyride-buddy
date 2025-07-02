@@ -213,9 +213,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         email: data.email || '',
         department: data.department || 'Fitness',
         weeklyGoal: data.weekly_goal || 70000, // Default to 10 miles per day * 7 days
-        height: data.height || 0,
-        weight: data.weight || 0,
-        age: 25,
+        height: Number(data.height) || 0,
+        weight: Number(data.weight) || 0,
+        age: Number(data.age) || 25,
         sex: 'male',
         joinDate: data.join_date || 'January 2024'
       });
@@ -235,8 +235,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           email: updates.email,
           department: updates.department,
           weekly_goal: updates.weeklyGoal,
-          height: updates.height,
-          weight: updates.weight
+          height: String(updates.height || 0),
+          weight: String(updates.weight || 0)
         })
         .eq('id', user.id);
 

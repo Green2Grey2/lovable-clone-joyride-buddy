@@ -29,7 +29,7 @@ export const useUserRole = () => {
           console.error('Error fetching user role:', error);
           setRole('user'); // Default to user role if error
         } else {
-          setRole(data?.role || 'user');
+          setRole((data?.role as AppRole) || 'user');
         }
       } catch (error) {
         console.error('Error fetching user role:', error);

@@ -457,6 +457,7 @@ export const useCelebration = () => {
   const celebrate = (config: Omit<CelebrationProps, 'isVisible' | 'onComplete'>) => {
     setCelebration({
       isVisible: true,
+      type: config.type || 'achievement',
       ...config
     });
   };
