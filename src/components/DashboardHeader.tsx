@@ -15,8 +15,8 @@ interface DashboardHeaderProps {
 export const DashboardHeader = ({ userName, currentStreak, weeklyGoal, currentSteps }: DashboardHeaderProps) => {
   return (
     <div className="glass dark:glass-dark backdrop-blur-xl sticky top-0 z-30 border-b border-border/50">
-      <div className="px-6 py-6">
-        <div className="flex justify-between items-center">
+      <div className="px-6 py-4">
+        <div className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground mb-1">
               Welcome back, {userName}!
