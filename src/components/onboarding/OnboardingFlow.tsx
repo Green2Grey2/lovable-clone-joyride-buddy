@@ -180,7 +180,7 @@ const PersonalInfoStep: React.FC<OnboardingStepProps> = ({ data, updateData, onN
               id="height"
               value={data.personalInfo.height}
               onChange={(e) => updateData('personalInfo', { height: e.target.value })}
-              placeholder="5'8\""
+              placeholder="5'8&quot;"
             />
           </div>
           <div>
