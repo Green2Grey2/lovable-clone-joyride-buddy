@@ -112,20 +112,20 @@ export const ExpandedAchievementSystem = () => {
         else if (achievement.points <= 200) rarity = 'epic';
         else rarity = 'legendary';
 
-        // Get color based on category
+        // Get color based on category using semantic tokens
         let color: string;
         switch (achievement.category) {
           case 'streak':
-            color = 'from-orange-400 to-red-500';
+            color = 'from-destructive/80 to-destructive';
             break;
           case 'milestone':
-            color = 'from-green-400 to-green-600';
+            color = 'from-primary/60 to-primary';
             break;
           case 'special':
-            color = 'from-purple-400 to-purple-600';
+            color = 'from-secondary/60 to-secondary';
             break;
           default:
-            color = 'from-blue-400 to-blue-600';
+            color = 'from-accent/60 to-accent';
         }
 
         return {
@@ -190,11 +190,11 @@ export const ExpandedAchievementSystem = () => {
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'common': return 'bg-gray-100 text-gray-800 border-gray-300';
-      case 'rare': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'epic': return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'legendary': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'common': return 'bg-muted text-muted-foreground border-border';
+      case 'rare': return 'bg-primary/10 text-primary border-primary/20';
+      case 'epic': return 'bg-secondary/10 text-secondary border-secondary/20';
+      case 'legendary': return 'bg-accent/10 text-accent-foreground border-accent/20';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -230,21 +230,21 @@ export const ExpandedAchievementSystem = () => {
     <div className="space-y-6">
       {/* Header Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-[#735CF7] to-[#00A3FF] text-white border-0">
+        <Card className="gradient-primary text-white border-0 shadow-premium">
           <CardContent className="p-4 text-center">
             <Trophy className="h-8 w-8 mx-auto mb-2 opacity-80" />
             <div className="text-2xl font-bold">{earnedCount}</div>
             <div className="text-sm opacity-90">Earned</div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-[#FFD700] to-[#FFA500] text-white border-0">
+        <Card className="gradient-accent text-white border-0 shadow-premium">
           <CardContent className="p-4 text-center">
             <Star className="h-8 w-8 mx-auto mb-2 opacity-80" />
             <div className="text-2xl font-bold">{totalPoints}</div>
             <div className="text-sm opacity-90">Points</div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-[#FF7B5A] to-[#FF6B4A] text-white border-0">
+        <Card className="gradient-secondary text-white border-0 shadow-premium">
           <CardContent className="p-4 text-center">
             <Target className="h-8 w-8 mx-auto mb-2 opacity-80" />
             <div className="text-2xl font-bold">{achievements.length - earnedCount}</div>
@@ -255,12 +255,12 @@ export const ExpandedAchievementSystem = () => {
 
       {/* Category Tabs */}
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-        <TabsList className="w-full grid grid-cols-3 lg:grid-cols-6 bg-white rounded-2xl p-1 shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+        <TabsList className="w-full grid grid-cols-3 lg:grid-cols-6 glass dark:glass-dark rounded-2xl p-1 shadow-premium">
           {categories.map((category) => (
             <TabsTrigger 
               key={category.id} 
               value={category.id} 
-              className="text-xs rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#735CF7] data-[state=active]:to-[#00A3FF] data-[state=active]:text-white flex items-center justify-center px-2 py-1.5 min-h-[2.5rem] text-center"
+              className="text-xs rounded-xl data-[state=active]:gradient-primary data-[state=active]:text-white flex items-center justify-center px-2 py-1.5 min-h-[2.5rem] text-center"
             >
               <span className="whitespace-nowrap">{category.name} ({category.count})</span>
             </TabsTrigger>
@@ -276,10 +276,10 @@ export const ExpandedAchievementSystem = () => {
               return (
                 <Card 
                   key={achievement.id} 
-                  className={`bg-white border-0 rounded-3xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)] transition-all duration-300 ${
+                  className={`card-modern glass dark:glass-dark transition-all duration-300 ${
                     achievement.earned 
-                      ? 'ring-2 ring-green-200 hover:ring-green-300' 
-                      : 'hover:shadow-[0px_15px_35px_rgba(115,92,247,0.15)]'
+                      ? 'ring-2 ring-primary/30 hover:ring-primary/50' 
+                      : 'hover:shadow-premium'
                   }`}
                 >
                   <CardContent className="p-6">
@@ -293,7 +293,7 @@ export const ExpandedAchievementSystem = () => {
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h3 className="font-bold text-[#1D244D] mb-1 flex items-center gap-2">
+                            <h3 className="font-bold text-foreground mb-1 flex items-center gap-2">
                               {achievement.name}
                               {achievement.season && getSeasonIcon(achievement.season)}
                             </h3>
@@ -304,7 +304,7 @@ export const ExpandedAchievementSystem = () => {
                               {achievement.rarity}
                             </Badge>
                             {achievement.earned && (
-                              <Badge className="bg-green-500/20 text-green-500 dark:text-green-400 text-xs">
+                              <Badge className="bg-primary/20 text-primary dark:text-primary text-xs">
                                 ✓ Earned
                               </Badge>
                             )}
@@ -313,12 +313,12 @@ export const ExpandedAchievementSystem = () => {
 
                         {achievement.earned ? (
                           <div className="space-y-2">
-                            <p className="text-xs text-green-500 dark:text-green-400 font-medium">
+                            <p className="text-xs text-primary font-medium">
                               🎉 Earned {achievement.earnedDate} • +{achievement.points} points
                             </p>
                             {achievement.celebrationMessage && (
-                              <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                                <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                              <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                                <p className="text-sm text-primary font-medium">
                                   {achievement.celebrationMessage}
                                 </p>
                               </div>
