@@ -764,11 +764,17 @@ export const ActivityHeatMap: React.FC = () => {
       </CardHeader>
       
       <CardContent className="pt-0">
-        {/* Content with accordion animation */}
-        <div className={cn(
-          "transition-all duration-300 ease-out",
-          isExpanded ? "animate-accordion-down" : "animate-accordion-up"
-        )}>
+        {/* Content with smooth height transitions */}
+        <div 
+          className={cn(
+            "overflow-hidden transition-all duration-500 ease-in-out",
+            isExpanded ? "animate-in slide-in-from-top-2" : "animate-in slide-in-from-bottom-2"
+          )}
+          style={{
+            minHeight: isExpanded ? '400px' : '280px',
+            maxHeight: isExpanded ? 'none' : '400px'
+          }}
+        >
           {!isExpanded ? (
             /* Compact Week View */
             renderCompactWeekView()
