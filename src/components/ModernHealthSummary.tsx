@@ -30,16 +30,16 @@ export const ModernHealthSummary = ({
   const remainingMiles = (remainingSteps / 2000).toFixed(1);
 
   return (
-    <Card className="bg-white border-0 rounded-3xl shadow-[0px_10px_30px_rgba(115,92,247,0.1)]">
+    <Card className="card-modern glass dark:glass-dark rounded-2xl shadow-soft hover:shadow-medium transition-smooth">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-[#1D244D] text-xl font-semibold">Today's Summary</CardTitle>
+          <CardTitle className="text-foreground text-xl font-semibold">Today's Summary</CardTitle>
           {onViewMore && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onViewMore}
-              className="text-[#735CF7] hover:bg-[#735CF7]/10 p-2 h-auto"
+              className="text-primary hover:bg-primary/10 p-2 h-auto transition-smooth"
             >
               <span className="text-sm font-medium mr-1">More info</span>
               <ChevronRight className="h-4 w-4" />
@@ -51,11 +51,11 @@ export const ModernHealthSummary = ({
         {/* Steps Progress */}
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-[#8A94A6] font-medium">Steps ({todayMiles} mi)</span>
-            <span className="text-2xl font-bold text-[#1D244D]">{steps.toLocaleString()}</span>
+            <span className="text-muted-foreground font-medium">Steps ({todayMiles} mi)</span>
+            <span className="text-2xl font-bold text-foreground">{steps.toLocaleString()}</span>
           </div>
-          <Progress value={stepProgress} className="h-3 bg-gray-100" />
-          <p className="text-sm text-[#8A94A6]">
+          <Progress value={stepProgress} className="h-3 bg-muted" />
+          <p className="text-sm text-muted-foreground">
             {remainingSteps > 0 
               ? `${remainingMiles} miles to reach your goal`
               : 'Goal achieved! 🎉'
@@ -66,25 +66,25 @@ export const ModernHealthSummary = ({
         {/* Health Metrics Grid */}
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
-              <Droplets className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 gradient-health rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-primary">
+              <Droplets className="h-6 w-6 text-primary-foreground" />
             </div>
-            <p className="text-2xl font-bold text-[#1D244D]">{water}</p>
-            <p className="text-xs text-[#8A94A6]">glasses water</p>
+            <p className="text-2xl font-bold text-foreground">{water}</p>
+            <p className="text-xs text-muted-foreground">glasses water</p>
           </div>
           <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-2">
               <Heart className="h-6 w-6 text-white" />
             </div>
-            <p className="text-2xl font-bold text-[#1D244D]">{heartRate}</p>
-            <p className="text-xs text-[#8A94A6]">avg BPM</p>
+            <p className="text-2xl font-bold text-foreground">{heartRate}</p>
+            <p className="text-xs text-muted-foreground">avg BPM</p>
           </div>
           <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-2">
               <Flame className="h-6 w-6 text-white" />
             </div>
-            <p className="text-2xl font-bold text-[#1D244D]">{calories}</p>
-            <p className="text-xs text-[#8A94A6]">calories burned</p>
+            <p className="text-2xl font-bold text-foreground">{calories}</p>
+            <p className="text-xs text-muted-foreground">calories burned</p>
           </div>
         </div>
       </CardContent>

@@ -238,7 +238,7 @@ export const ActivityFeed = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-3"
+                className="h-8 px-3 hover:bg-accent/10 transition-smooth"
                 onClick={() => handleLike(activity.id, activity.liked_by_me || false)}
               >
                 <Heart
@@ -251,7 +251,7 @@ export const ActivityFeed = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-3"
+                className="h-8 px-3 hover:bg-accent/10 transition-smooth"
                 disabled
               >
                 <MessageCircle className="h-4 w-4 mr-1" />

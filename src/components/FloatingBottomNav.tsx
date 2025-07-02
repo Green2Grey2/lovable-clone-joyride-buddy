@@ -109,7 +109,7 @@ export const FloatingBottomNav = () => {
             variant="ghost"
             size="sm"
             onClick={handleBack}
-            className="flex items-center gap-2 h-10 px-4 bg-white/90 backdrop-blur-sm text-muted-foreground hover:text-primary rounded-full shadow-lg border border-border/50 hover:bg-white transition-all duration-200"
+            className="flex items-center gap-2 h-10 px-4 glass dark:glass-dark text-muted-foreground hover:text-primary rounded-full shadow-medium hover:shadow-strong transition-smooth"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Back</span>
@@ -124,10 +124,10 @@ export const FloatingBottomNav = () => {
           isVisible ? "translate-y-0" : "translate-y-full"
         )}
       >
-        <div className="bg-card/95 backdrop-blur-lg border-t border-border mx-4 mb-4 rounded-2xl shadow-lg">
+        <div className="glass dark:glass-dark mx-4 mb-4 rounded-2xl shadow-premium">
           <div className="relative">
             {/* Swipe indicator */}
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-gray-300 rounded-full" />
+            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-muted-foreground/30 rounded-full" />
 
             {/* Navigation Grid */}
             <div className={`grid ${gridCols} gap-1 px-4 py-3 pt-5`}>
@@ -139,16 +139,22 @@ export const FloatingBottomNav = () => {
                   size="sm"
                   onClick={() => handleNavigation(item.path, index)}
                   className={cn(
-                    "flex flex-col items-center gap-1 h-auto py-2 px-2 transition-all duration-200 touch-manipulation",
+                    "flex flex-col items-center gap-1 h-auto py-2 px-2 transition-smooth touch-manipulation relative overflow-hidden",
                     isActive(item.path)
-                      ? 'text-inverse gradient-primary scale-105'
-                      : 'text-muted-foreground hover:text-primary'
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                   aria-label={`Navigate to ${item.label}`}
                   aria-current={isActive(item.path) ? 'page' : undefined}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className={cn(
+                    "h-5 w-5 transition-smooth",
+                    isActive(item.path) && "drop-shadow-[0_0_8px_rgba(34,191,253,0.5)]"
+                  )} />
                   <span className="text-xs font-medium">{item.label}</span>
+                  {isActive(item.path) && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-primary rounded-full" />
+                  )}
                 </Button>
               ))}
 
@@ -156,7 +162,7 @@ export const FloatingBottomNav = () => {
               <div className="flex justify-center items-center">
                 <Button
                   onClick={handlePlusClick}
-                  className="h-12 w-12 rounded-full bg-gradient-to-r from-[#735CF7] to-[#8B5FE6] hover:from-[#6B4FF5] hover:to-[#7A4FE3] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation"
+                  className="h-12 w-12 rounded-full gradient-health text-neutral-950 shadow-primary hover:shadow-xl transition-smooth hover:scale-105 active:scale-95 touch-manipulation glow-primary"
                   size="icon"
                   aria-label="Start new activity"
                 >
@@ -172,16 +178,22 @@ export const FloatingBottomNav = () => {
                   size="sm"
                   onClick={() => handleNavigation(item.path, index + 2)}
                   className={cn(
-                    "flex flex-col items-center gap-1 h-auto py-2 px-2 transition-all duration-200 touch-manipulation",
+                    "flex flex-col items-center gap-1 h-auto py-2 px-2 transition-smooth touch-manipulation relative overflow-hidden",
                     isActive(item.path)
-                      ? 'text-inverse gradient-primary scale-105'
-                      : 'text-muted-foreground hover:text-primary'
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                   aria-label={`Navigate to ${item.label}`}
                   aria-current={isActive(item.path) ? 'page' : undefined}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className={cn(
+                    "h-5 w-5 transition-smooth",
+                    isActive(item.path) && "drop-shadow-[0_0_8px_rgba(34,191,253,0.5)]"
+                  )} />
                   <span className="text-xs font-medium">{item.label}</span>
+                  {isActive(item.path) && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-primary rounded-full" />
+                  )}
                 </Button>
               ))}
             </div>

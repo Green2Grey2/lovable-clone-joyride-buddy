@@ -70,14 +70,14 @@ const Dashboard = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-secondary pb-20 lg:pb-0">
+      <div className="min-h-screen bg-background pb-20 lg:pb-0">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-primary border-r border-border z-40">
+        <aside className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-card border-r border-border/50 z-40">
           <div className="flex flex-col h-full">
             {/* Logo/Brand Section */}
             <div className="p-6 border-b border-border">
-              <h2 className="text-xl font-bold text-primary">🏃‍♂️ Stride Fitness</h2>
-              <p className="text-sm text-secondary mt-1">Wellness Platform</p>
+              <h2 className="text-xl font-bold text-foreground">🏃‍♂️ Joyride Buddy</h2>
+              <p className="text-sm text-muted-foreground mt-1">Wellness Platform</p>
             </div>
 
             {/* Navigation */}
@@ -87,10 +87,10 @@ const Dashboard = () => {
                   playNavigation();
                   navigate('/dashboard');
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-smooth ${
                   location.pathname === '/dashboard'
-                    ? 'gradient-primary text-inverse shadow-brand'
-                    : 'text-secondary hover:bg-muted hover:text-primary'
+                    ? 'bg-primary text-primary-foreground shadow-primary'
+                    : 'text-muted-foreground hover:bg-accent/10 hover:text-foreground'
                 }`}
               >
                 <Home className="h-5 w-5" />
@@ -153,7 +153,7 @@ const Dashboard = () => {
                       playNavigation();
                       navigate(isAdmin() ? '/admin' : '/manager');
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 text-secondary hover:bg-muted hover:text-primary"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-smooth text-muted-foreground hover:bg-accent/10 hover:text-foreground"
                   >
                     <Settings className="h-5 w-5" />
                     <span className="font-medium">
@@ -166,17 +166,17 @@ const Dashboard = () => {
 
             {/* User Section */}
             <div className="p-4 border-t border-border">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-muted">
-                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-inverse">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
+                <div className="w-8 h-8 gradient-health rounded-full flex items-center justify-center shadow-primary">
+                  <span className="text-sm font-bold text-primary-foreground">
                     {userProfile.name?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-primary">
+                  <p className="text-sm font-medium text-foreground">
                     {userProfile.name || 'User'}
                   </p>
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-muted-foreground">
                     {userStats.currentStreak} day streak 🔥
                   </p>
                 </div>
@@ -252,18 +252,18 @@ const Dashboard = () => {
                   
                   {/* Quick Actions for desktop */}
                   <div className="hidden lg:block">
-                    <div className="card-elevated p-6">
-                      <h3 className="text-lg font-semibold mb-4 text-primary">Quick Actions</h3>
+                    <div className="card-modern glass dark:glass-dark p-6">
+                      <h3 className="text-lg font-semibold mb-4 text-foreground">Quick Actions</h3>
                       <div className="space-y-3">
                         <button 
-                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-muted transition-colors text-secondary hover:text-primary"
+                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-accent/10 transition-smooth text-muted-foreground hover:text-foreground btn-modern"
                           onClick={() => navigate('/profile')}
                         >
                           <User className="h-4 w-4 inline mr-3" />
                           View Profile
                         </button>
                         <button 
-                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-muted transition-colors text-secondary hover:text-primary"
+                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-accent/10 transition-smooth text-muted-foreground hover:text-foreground btn-modern"
                           onClick={() => navigate('/awards')}
                         >
                           <Trophy className="h-4 w-4 inline mr-3" />

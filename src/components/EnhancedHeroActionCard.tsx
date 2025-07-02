@@ -75,7 +75,7 @@ export const EnhancedHeroActionCard = ({
           
           <Progress value={stepProgress} className="h-4 mb-3 bg-gray-100" />
           
-          <p className="text-sm text-[#8A94A6]">
+          <p className="text-sm text-muted-foreground">
             {remainingSteps > 0 
               ? `${remainingMiles} miles to reach your daily goal`
               : 'Daily goal achieved! 🎉'
