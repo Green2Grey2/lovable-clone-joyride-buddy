@@ -28,6 +28,7 @@ export const ActivityHeatMap: React.FC = () => {
   
   const [activityData, setActivityData] = useState<Record<string, ActivityData>>({});
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'month' | 'year'>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -35,13 +36,20 @@ export const ActivityHeatMap: React.FC = () => {
   const [showTip, setShowTip] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0); // For compact week navigation
+  const [dataCache, setDataCache] = useState<Map<string, Record<string, ActivityData>>>(new Map());
+  const [preloadedWeeks, setPreloadedWeeks] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (user) {
-      loadActivityData();
+      if (isExpanded) {
+        loadActivityData();
+      } else {
+        loadWeekData();
+      }
     }
-  }, [user, currentDate, viewMode]);
+  }, [user, currentDate, viewMode, weekOffset, isExpanded]);
 
+  // Load data for expanded month/year view
   const loadActivityData = async () => {
     try {
       setLoading(true);
@@ -52,6 +60,15 @@ export const ActivityHeatMap: React.FC = () => {
       const endDate = viewMode === 'month'
         ? endOfMonth(currentDate)
         : new Date();
+
+      const cacheKey = `${viewMode}-${format(startDate, 'yyyy-MM-dd')}-${format(endDate, 'yyyy-MM-dd')}`;
+      
+      // Check cache first
+      if (dataCache.has(cacheKey)) {
+        setActivityData(dataCache.get(cacheKey)!);
+        setLoading(false);
+        return;
+      }
 
       const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
       const activities = await activityTrackingService.getActivityHistory(user?.id!, days);
@@ -71,6 +88,8 @@ export const ActivityHeatMap: React.FC = () => {
         }
       });
 
+      // Cache the data
+      setDataCache(prev => new Map(prev).set(cacheKey, processed));
       setActivityData(processed);
     } catch (error) {
       console.error('Error loading activity data:', error);
@@ -78,6 +97,79 @@ export const ActivityHeatMap: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Load data for compact week view with preloading
+  const loadWeekData = async (targetWeekOffset = weekOffset, isPreload = false) => {
+    try {
+      if (!isPreload) setLoading(true);
+      
+      const today = new Date();
+      const baseDate = subDays(today, targetWeekOffset);
+      const weekStart = subDays(baseDate, 6);
+      const weekEnd = baseDate;
+      
+      const cacheKey = `week-${targetWeekOffset}`;
+      
+      // Check cache first
+      if (dataCache.has(cacheKey)) {
+        if (!isPreload) {
+          setActivityData(dataCache.get(cacheKey)!);
+        }
+        if (!isPreload) setLoading(false);
+        return;
+      }
+
+      const days = 7;
+      const activities = await activityTrackingService.getActivityHistory(user?.id!, Math.abs(targetWeekOffset) + 14);
+
+      const processed: Record<string, ActivityData> = {};
+      activities?.forEach(activity => {
+        if (activity.date >= format(weekStart, 'yyyy-MM-dd') && 
+            activity.date <= format(weekEnd, 'yyyy-MM-dd')) {
+          const intensity = calculateIntensity(activity.duration || 0, activity.calories_burned || 0);
+          processed[activity.date] = {
+            date: activity.date,
+            intensity,
+            minutes: activity.duration || 0,
+            calories: activity.calories_burned || 0,
+            steps: activity.steps || 0
+          };
+        }
+      });
+
+      // Cache the data
+      setDataCache(prev => new Map(prev).set(cacheKey, processed));
+      setPreloadedWeeks(prev => new Set(prev).add(targetWeekOffset));
+      
+      if (!isPreload) {
+        setActivityData(processed);
+      }
+    } catch (error) {
+      console.error('Error loading week data:', error);
+    } finally {
+      if (!isPreload) setLoading(false);
+    }
+  };
+
+  // Preload adjacent weeks for smooth navigation
+  const preloadAdjacentWeeks = useCallback(async (currentOffset: number) => {
+    const weeksToPrefetch = [-1, 1].map(delta => currentOffset + (delta * 7));
+    
+    for (const weekOffset of weeksToPrefetch) {
+      if (!preloadedWeeks.has(weekOffset) && weekOffset >= 0) {
+        setBackgroundLoading(true);
+        await loadWeekData(weekOffset, true);
+        setBackgroundLoading(false);
+      }
+    }
+  }, [preloadedWeeks]);
+
+  // Initial preloading effect
+  useEffect(() => {
+    if (user && !isExpanded && weekOffset >= 0) {
+      preloadAdjacentWeeks(weekOffset);
+    }
+  }, [user, weekOffset, isExpanded, preloadAdjacentWeeks]);
 
   const calculateIntensity = (duration: number, calories: number): number => {
     const score = (duration / 30) + (calories / 300);
@@ -533,8 +625,11 @@ export const ActivityHeatMap: React.FC = () => {
     <Card className="card-modern glass dark:glass-dark overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <CardTitle className="text-lg font-semibold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
             Activity Heat Map
+            {backgroundLoading && (
+              <div className="w-3 h-3 rounded-full bg-primary/60 animate-pulse" />
+            )}
           </CardTitle>
           <div className="flex items-center gap-2">
             {/* Expand/Collapse Toggle */}
