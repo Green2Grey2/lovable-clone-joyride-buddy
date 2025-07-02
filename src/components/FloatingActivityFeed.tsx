@@ -73,9 +73,9 @@ export const FloatingActivityFeed = () => {
     return (
       <Button
         onClick={handleOpen}
-        className={`fixed right-4 z-40 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 p-0 ${
-          isNavVisible ? 'bottom-24' : 'bottom-6'
-        } md:bottom-6`}
+        className={`fixed right-4 z-40 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg hover:shadow-xl p-0 transition-all duration-300 ease-in-out transform ${
+          isNavVisible ? 'bottom-24 md:bottom-6' : 'bottom-6'
+        }`}
       >
         <Users className="h-6 w-6 text-white" />
         {unreadCount > 0 && (
@@ -90,10 +90,10 @@ export const FloatingActivityFeed = () => {
   }
 
   return (
-    <Card className={`fixed right-4 z-40 w-[calc(100vw-2rem)] max-w-md transition-all duration-300 shadow-xl ${
+    <Card className={`fixed right-4 z-40 w-[calc(100vw-2rem)] max-w-md shadow-xl transition-all duration-300 ease-in-out transform ${
       isMinimized 
-        ? `${isNavVisible ? 'bottom-24' : 'bottom-6'} md:bottom-6 h-14` 
-        : `${isNavVisible ? 'bottom-24' : 'bottom-6'} md:bottom-6 top-20 md:top-auto h-[calc(100vh-8rem)] md:h-[600px]`
+        ? `h-14 ${isNavVisible ? 'bottom-24 md:bottom-6' : 'bottom-6'}` 
+        : `top-20 md:top-auto h-[calc(100vh-8rem)] md:h-[600px] ${isNavVisible ? 'bottom-24 md:bottom-6' : 'bottom-6'}`
     }`}>
       <div className="flex items-center justify-between p-3 border-b bg-card">
         <div className="flex items-center gap-2">
@@ -121,8 +121,10 @@ export const FloatingActivityFeed = () => {
       </div>
       
       {!isMinimized && (
-        <div className="overflow-y-auto overflow-x-hidden h-[calc(100%-60px)] p-4 bg-card">
-          <ActivityFeed />
+        <div className="flex flex-col h-[calc(100%-60px)]">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 bg-card">
+            <ActivityFeed />
+          </div>
         </div>
       )}
     </Card>
