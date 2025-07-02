@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { activityTrackingService } from '@/utils/activityTrackingService';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { Plus, Info, Activity, Clock, Flame, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -327,6 +328,15 @@ export const ActivityHeatMap: React.FC = () => {
     };
   };
 
+  const getExpandedStats = () => {
+    const dataValues = Object.values(activityData);
+    return {
+      activeDays: dataValues.filter(a => a.intensity > 0).length,
+      avgIntensity: Math.round(dataValues.reduce((sum, a) => sum + a.intensity, 0) / dataValues.length) || 0,
+      bestDay: Math.max(...dataValues.map(a => a.intensity), 0)
+    };
+  };
+
   // Swipe handlers for compact view
   const compactSwipeRef = useSwipe({
     onSwipeLeft: navigateNext,
@@ -399,15 +409,15 @@ export const ActivityHeatMap: React.FC = () => {
         {/* Mini Stats */}
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
-            <div className="text-lg font-bold text-primary">{stats.activeDays}</div>
+            <AnimatedCounter value={stats.activeDays} className="text-lg font-bold text-primary" />
             <div className="text-xs text-muted-foreground">Active Days</div>
           </div>
           <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
-            <div className="text-lg font-bold text-foreground">{stats.todayMinutes}</div>
+            <AnimatedCounter value={stats.todayMinutes} className="text-lg font-bold text-foreground" />
             <div className="text-xs text-muted-foreground">Today (min)</div>
           </div>
           <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
-            <div className="text-lg font-bold text-orange-500">{stats.todayCalories}</div>
+            <AnimatedCounter value={stats.todayCalories} className="text-lg font-bold text-orange-500" />
             <div className="text-xs text-muted-foreground">Calories</div>
           </div>
         </div>
@@ -722,117 +732,251 @@ export const ActivityHeatMap: React.FC = () => {
           }}
         >
           {!isExpanded ? (
-            /* Compact Week View with inline loading */
-            loading ? (
-              <div className="space-y-4">
-                {/* Navigation skeleton - matches actual navigation */}
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <div className="flex flex-col items-center gap-1">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-24" />
+            /* Compact Week View - Static Elements Always Visible */
+            <div className="space-y-4 select-none">
+              {/* Navigation Header - Always Static */}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={navigatePrevious}
+                  className="p-2 rounded-full glass dark:glass-dark hover:bg-primary/10 transition-all duration-200 active:scale-95"
+                  aria-label="Previous week"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                
+                <div className="flex flex-col items-center gap-1">
+                  <div className="text-sm font-medium text-foreground">
+                    {loading ? (
+                      <Skeleton className="h-4 w-32" />
+                    ) : (
+                      `${format(getWeekData()[0].date, 'MMM d')} - ${format(getWeekData()[6].date, 'MMM d')}`
+                    )}
                   </div>
-                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <div className="text-xs text-muted-foreground">
+                    {weekOffset === 0 ? 'This Week' : `${Math.ceil(weekOffset / 7)} week${weekOffset > 7 ? 's' : ''} ago`}
+                  </div>
+                  {/* Today button - Always static when applicable */}
+                  {weekOffset > 0 && (
+                    <button
+                      onClick={handleGoToToday}
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors mt-1"
+                    >
+                      <Calendar className="h-3 w-3" />
+                      <span>Today</span>
+                    </button>
+                  )}
                 </div>
-                {/* Stats skeleton */}
-                <div className="grid grid-cols-3 gap-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="p-3 glass dark:glass-dark rounded-xl">
-                      <Skeleton className="h-5 w-6 mb-1" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                  ))}
+                
+                <button
+                  onClick={navigateNext}
+                  disabled={weekOffset === 0}
+                  className={cn(
+                    "p-2 rounded-full glass dark:glass-dark transition-all duration-200 active:scale-95",
+                    weekOffset === 0 
+                      ? "opacity-50 cursor-not-allowed" 
+                      : "hover:bg-primary/10"
+                  )}
+                  aria-label="Next week"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Mini Stats - Always visible with animated counters */}
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
+                  <AnimatedCounter value={getCompactStats().activeDays} className="text-lg font-bold text-primary" />
+                  <div className="text-xs text-muted-foreground">Active Days</div>
                 </div>
-                {/* Instruction text skeleton */}
-                <div className="text-center">
-                  <Skeleton className="h-3 w-48 mx-auto" />
+                <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
+                  <AnimatedCounter value={getCompactStats().todayMinutes} className="text-lg font-bold text-foreground" />
+                  <div className="text-xs text-muted-foreground">Today (min)</div>
                 </div>
-                {/* Week row skeleton */}
-                <div className="grid grid-cols-7 gap-2">
-                  {[1, 2, 3, 4, 5, 6, 7].map(j => (
-                    <Skeleton key={j} className="aspect-square rounded-xl" />
-                  ))}
+                <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
+                  <AnimatedCounter value={getCompactStats().todayCalories} className="text-lg font-bold text-orange-500" />
+                  <div className="text-xs text-muted-foreground">Calories</div>
                 </div>
               </div>
-            ) : (
-              renderCompactWeekView()
-            )
+
+              {/* Instructions - Always static */}
+              <div className="space-y-3">
+                <div className="text-xs text-muted-foreground text-center">
+                  Swipe left/right to navigate • Tap for details
+                </div>
+                
+                {/* Week Row - Only this shows skeleton */}
+                {loading ? (
+                  <div className="grid grid-cols-7 gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7].map(j => (
+                      <Skeleton key={j} className="aspect-square rounded-xl" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-7 gap-2">
+                    {getWeekData().map((day, index) => {
+                      const intensity = day.activity?.intensity || 0;
+                      const hasActivity = day.activity && intensity > 0;
+                      
+                      return (
+                        <div
+                          key={index}
+                          className={cn(
+                            "aspect-square rounded-xl transition-all duration-300 relative group",
+                            "active:scale-95 select-none",
+                            hasActivity ? "cursor-pointer hover:scale-105" : "cursor-default",
+                            getActivityColor(intensity),
+                            day.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg",
+                            getActivityPattern(intensity)
+                          )}
+                          onClick={() => hasActivity && handleDayInteraction(day.dateStr, day.activity)}
+                        >
+                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-foreground/80">
+                            {format(day.date, 'EEEEE')}
+                          </span>
+                          
+                          {hasActivity && (
+                            <div className="absolute top-1 right-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                            </div>
+                          )}
+                          
+                          {day.activity && !isMobile && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none">
+                              <div className="glass dark:glass-dark p-2 rounded-lg shadow-xl text-xs whitespace-nowrap">
+                                <div className="font-semibold text-primary text-center">
+                                  {format(day.date, 'MMM d')}
+                                </div>
+                                <div className="text-center text-muted-foreground">
+                                  {day.activity.minutes}m • {day.activity.calories}cal
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
-            /* Full View with inline loading */
+            /* Expanded View - Static Elements Always Visible */
             <div className="space-y-6">
-              {loading ? (
-                // Expanded view skeleton
-                <div className="space-y-4">
-                  {/* Navigation skeleton */}
-                  <div className="flex items-center justify-between mb-4">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex flex-col items-center gap-1">
+              {/* Month Navigation Header - Always Static */}
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={navigatePrevious}
+                  className="p-3 rounded-full glass dark:glass-dark hover:bg-primary/10 transition-all duration-200 active:scale-95"
+                  aria-label="Previous month"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                <div className="flex flex-col items-center gap-1">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {loading ? (
                       <Skeleton className="h-6 w-32" />
-                      <Skeleton className="h-3 w-48" />
+                    ) : (
+                      format(currentDate, 'MMMM yyyy')
+                    )}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Swipe to navigate months • {isMobile ? 'Tap' : 'Double-click'} for details
+                  </p>
+                  {/* Today button - Always static when applicable */}
+                  {!isSameMonth(currentDate, new Date()) && (
+                    <button
+                      onClick={handleGoToToday}
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors mt-1"
+                    >
+                      <Calendar className="h-3 w-3" />
+                      <span>Today</span>
+                    </button>
+                  )}
+                </div>
+                
+                <button
+                  onClick={navigateNext}
+                  disabled={isSameMonth(currentDate, new Date())}
+                  className={cn(
+                    "p-3 rounded-full glass dark:glass-dark transition-all duration-200 active:scale-95",
+                    isSameMonth(currentDate, new Date()) 
+                      ? "opacity-50 cursor-not-allowed" 
+                      : "hover:bg-primary/10"
+                  )}
+                  aria-label="Next month"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Day labels - Always static */}
+              <div className="grid grid-cols-7 gap-1 mb-3">
+                {(isMobile ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map((day, i) => (
+                  <div key={i} className="text-xs text-muted-foreground text-center font-semibold py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar grid - Only this shows skeleton when loading */}
+              {loading ? (
+                <div className="space-y-1">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="grid grid-cols-7 gap-1">
+                      {[1, 2, 3, 4, 5, 6, 7].map(j => (
+                        <Skeleton key={j} className="aspect-square rounded-xl" />
+                      ))}
                     </div>
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                  </div>
-                  {/* Day labels skeleton */}
-                  <div className="grid grid-cols-7 gap-1 mb-3">
-                    {[1, 2, 3, 4, 5, 6, 7].map(i => (
-                      <Skeleton key={i} className="h-6 w-full" />
-                    ))}
-                  </div>
-                  {/* Calendar grid skeleton */}
-                  <div className="space-y-1">
-                    {[1, 2, 3, 4, 5].map(i => (
-                      <div key={i} className="grid grid-cols-7 gap-1">
-                        {[1, 2, 3, 4, 5, 6, 7].map(j => (
-                          <Skeleton key={j} className="aspect-square rounded-xl" />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
               ) : (
                 <>
                   {viewMode === 'month' ? renderMonthView() : renderYearView()}
-                  
-                  {/* Legend - Only in expanded view */}
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Less</span>
-                    <div className="flex gap-1">
-                      {[0, 1, 2, 3, 4].map(level => (
-                        <div
-                          key={level}
-                          className={cn(
-                            "w-4 h-4 rounded transition-all duration-300 hover:scale-110",
-                            getActivityColor(level)
-                          )}
-                        />
-                      ))}
-                    </div>
-                    <span>More</span>
-                  </div>
-                  
-                  {/* Stats summary - Only in expanded view */}
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-foreground">
-                        {Object.values(activityData).filter(a => a.intensity > 0).length}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Active Days</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">
-                        {Math.round(Object.values(activityData).reduce((sum, a) => sum + a.intensity, 0) / Object.values(activityData).length) || 0}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Avg Intensity</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-foreground">
-                        {Math.max(...Object.values(activityData).map(a => a.intensity), 0)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Best Day</div>
-                    </div>
-                  </div>
                 </>
               )}
+              
+              {/* Legend - Always visible in expanded view */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Less</span>
+                <div className="flex gap-1">
+                  {[0, 1, 2, 3, 4].map(level => (
+                    <div
+                      key={level}
+                      className={cn(
+                        "w-4 h-4 rounded transition-all duration-300 hover:scale-110",
+                        getActivityColor(level)
+                      )}
+                    />
+                  ))}
+                </div>
+                <span>More</span>
+              </div>
+              
+              {/* Stats summary - Always visible with animated counters */}
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
+                <div className="text-center">
+                  <AnimatedCounter 
+                    value={getExpandedStats().activeDays} 
+                    className="text-2xl font-bold text-foreground"
+                  />
+                  <div className="text-xs text-muted-foreground">Active Days</div>
+                </div>
+                <div className="text-center">
+                  <AnimatedCounter 
+                    value={getExpandedStats().avgIntensity} 
+                    className="text-2xl font-bold text-primary"
+                  />
+                  <div className="text-xs text-muted-foreground">Avg Intensity</div>
+                </div>
+                <div className="text-center">
+                  <AnimatedCounter 
+                    value={getExpandedStats().bestDay} 
+                    className="text-2xl font-bold text-foreground"
+                  />
+                  <div className="text-xs text-muted-foreground">Best Day</div>
+                </div>
+              </div>
             </div>
           )}
         </div>
