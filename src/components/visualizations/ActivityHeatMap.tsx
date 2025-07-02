@@ -2,12 +2,14 @@ import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, subMonths, startOfYear, eachMonthOfInterval, isSameDay } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, subMonths, startOfYear, eachMonthOfInterval, isSameDay, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { activityTrackingService } from '@/utils/activityTrackingService';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Info, Activity, Clock, Flame } from 'lucide-react';
+import { Plus, Info, Activity, Clock, Flame, ChevronDown, ChevronUp } from 'lucide-react';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ActivityData {
   date: string;
@@ -19,6 +21,9 @@ interface ActivityData {
 
 export const ActivityHeatMap: React.FC = () => {
   const { user } = useAuth();
+  const { playSoftClick } = useSoundEffects();
+  const isMobile = useIsMobile();
+  
   const [activityData, setActivityData] = useState<Record<string, ActivityData>>({});
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'month' | 'year'>('month');
@@ -28,6 +33,7 @@ export const ActivityHeatMap: React.FC = () => {
   const [showTip, setShowTip] = useState(true);
   const [clickCount, setClickCount] = useState(0);
   const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -126,6 +132,112 @@ export const ActivityHeatMap: React.FC = () => {
     }, 300);
     
     setClickTimer(timer);
+  };
+
+  const handleToggleExpand = () => {
+    playSoftClick();
+    setIsExpanded(!isExpanded);
+  };
+
+  const getWeekData = () => {
+    const today = new Date();
+    const weekDays = Array.from({ length: 7 }, (_, i) => subDays(today, 6 - i));
+    return weekDays.map(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      return {
+        date: day,
+        dateStr,
+        activity: activityData[dateStr],
+        isToday: isSameDay(day, today)
+      };
+    });
+  };
+
+  const getCompactStats = () => {
+    const weekData = getWeekData();
+    const activeDays = weekData.filter(d => d.activity && d.activity.intensity > 0).length;
+    const todayActivity = activityData[format(new Date(), 'yyyy-MM-dd')];
+    
+    return {
+      activeDays,
+      todayMinutes: todayActivity?.minutes || 0,
+      todayCalories: todayActivity?.calories || 0
+    };
+  };
+
+  const renderCompactWeekView = () => {
+    const weekData = getWeekData();
+    const stats = getCompactStats();
+    
+    return (
+      <div className="space-y-4">
+        {/* Mini Stats */}
+        <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="p-2 bg-muted/20 rounded-lg">
+            <div className="text-lg font-bold text-primary">{stats.activeDays}</div>
+            <div className="text-xs text-muted-foreground">Active Days</div>
+          </div>
+          <div className="p-2 bg-muted/20 rounded-lg">
+            <div className="text-lg font-bold text-foreground">{stats.todayMinutes}</div>
+            <div className="text-xs text-muted-foreground">Today (min)</div>
+          </div>
+          <div className="p-2 bg-muted/20 rounded-lg">
+            <div className="text-lg font-bold text-orange-500">{stats.todayCalories}</div>
+            <div className="text-xs text-muted-foreground">Calories</div>
+          </div>
+        </div>
+
+        {/* Week Row */}
+        <div className="space-y-2">
+          <div className="text-xs text-muted-foreground text-center">Last 7 Days</div>
+          <div className="grid grid-cols-7 gap-2">
+            {weekData.map((day, index) => {
+              const intensity = day.activity?.intensity || 0;
+              const hasActivity = day.activity && intensity > 0;
+              
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    "aspect-square rounded-lg transition-all duration-300 hover:scale-110 relative group cursor-pointer",
+                    getActivityColor(intensity),
+                    day.isToday && "ring-2 ring-primary ring-offset-1 ring-offset-background",
+                    getActivityPattern(intensity)
+                  )}
+                  onClick={() => hasActivity && handleDayClick(day.dateStr, day.activity)}
+                >
+                  {/* Day Letter */}
+                  <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-foreground/70">
+                    {format(day.date, 'EEEEE')}
+                  </span>
+                  
+                  {/* Activity indicator */}
+                  {hasActivity && (
+                    <div className="absolute top-0.5 right-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                      <Plus className="h-2 w-2 text-primary animate-pulse" />
+                    </div>
+                  )}
+                  
+                  {/* Compact Tooltip */}
+                  {day.activity && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none">
+                      <div className="glass dark:glass-dark p-2 rounded-lg shadow-xl text-xs whitespace-nowrap">
+                        <div className="font-semibold text-primary text-center">
+                          {format(day.date, 'MMM d')}
+                        </div>
+                        <div className="text-center text-muted-foreground">
+                          {day.activity.minutes}m • {day.activity.calories}cal
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderMonthView = () => {
@@ -323,19 +435,42 @@ export const ActivityHeatMap: React.FC = () => {
 
   return (
     <Card className="card-modern glass dark:glass-dark overflow-hidden">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Activity Heat Map
           </CardTitle>
           <div className="flex items-center gap-2">
+            {/* Expand/Collapse Toggle */}
             <button
-              onClick={() => setViewMode(viewMode === 'month' ? 'year' : 'month')}
-              className="text-xs px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+              onClick={handleToggleExpand}
+              className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-200 hover-scale"
             >
-              {viewMode === 'month' ? 'Year View' : 'Month View'}
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="h-3 w-3" />
+                  <span>Compact</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3 w-3" />
+                  <span>Expand</span>
+                </>
+              )}
             </button>
-            {viewMode === 'month' && (
+            
+            {/* View Mode Toggle - Only show when expanded */}
+            {isExpanded && (
+              <button
+                onClick={() => setViewMode(viewMode === 'month' ? 'year' : 'month')}
+                className="text-xs px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+              >
+                {viewMode === 'month' ? 'Year View' : 'Month View'}
+              </button>
+            )}
+            
+            {/* Navigation - Only show when expanded and in month view */}
+            {isExpanded && viewMode === 'month' && (
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setCurrentDate(subMonths(currentDate, 1))}
@@ -358,46 +493,61 @@ export const ActivityHeatMap: React.FC = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        {viewMode === 'month' ? renderMonthView() : renderYearView()}
-        
-        {/* Legend */}
-        <div className="flex items-center justify-between mt-6 text-xs text-muted-foreground">
-          <span>Less</span>
-          <div className="flex gap-1">
-            {[0, 1, 2, 3, 4].map(level => (
-              <div
-                key={level}
-                className={cn(
-                  "w-4 h-4 rounded transition-all duration-300 hover:scale-110",
-                  getActivityColor(level)
-                )}
-              />
-            ))}
-          </div>
-          <span>More</span>
-        </div>
-        
-        {/* Stats summary */}
-        <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-border/50">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-foreground">
-              {Object.values(activityData).filter(a => a.intensity > 0).length}
+      
+      <CardContent className="pt-0">
+        {/* Content with accordion animation */}
+        <div className={cn(
+          "transition-all duration-300 ease-out",
+          isExpanded ? "animate-accordion-down" : "animate-accordion-up"
+        )}>
+          {!isExpanded ? (
+            /* Compact Week View */
+            renderCompactWeekView()
+          ) : (
+            /* Full View */
+            <div className="space-y-6">
+              {viewMode === 'month' ? renderMonthView() : renderYearView()}
+              
+              {/* Legend - Only in expanded view */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Less</span>
+                <div className="flex gap-1">
+                  {[0, 1, 2, 3, 4].map(level => (
+                    <div
+                      key={level}
+                      className={cn(
+                        "w-4 h-4 rounded transition-all duration-300 hover:scale-110",
+                        getActivityColor(level)
+                      )}
+                    />
+                  ))}
+                </div>
+                <span>More</span>
+              </div>
+              
+              {/* Stats summary - Only in expanded view */}
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-foreground">
+                    {Object.values(activityData).filter(a => a.intensity > 0).length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Active Days</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {Math.round(Object.values(activityData).reduce((sum, a) => sum + a.intensity, 0) / Object.values(activityData).length) || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Avg Intensity</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-foreground">
+                    {Math.max(...Object.values(activityData).map(a => a.intensity), 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Best Day</div>
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground">Active Days</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
-              {Math.round(Object.values(activityData).reduce((sum, a) => sum + a.intensity, 0) / Object.values(activityData).length) || 0}
-            </div>
-            <div className="text-xs text-muted-foreground">Avg Intensity</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-foreground">
-              {Math.max(...Object.values(activityData).map(a => a.intensity), 0)}
-            </div>
-            <div className="text-xs text-muted-foreground">Best Day</div>
-          </div>
+          )}
         </div>
       </CardContent>
 
