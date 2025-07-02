@@ -55,10 +55,16 @@ export type Database = {
           date: string
           distance: number | null
           duration: number | null
+          elevation_gain: number | null
+          heart_rate_avg: number | null
+          heart_rate_max: number | null
           id: string
+          is_manual_entry: boolean | null
+          notes: string | null
           steps: number | null
           type: string
           user_id: string
+          weather_conditions: Json | null
         }
         Insert: {
           calories_burned?: number | null
@@ -66,10 +72,16 @@ export type Database = {
           date?: string
           distance?: number | null
           duration?: number | null
+          elevation_gain?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
           id?: string
+          is_manual_entry?: boolean | null
+          notes?: string | null
           steps?: number | null
           type: string
           user_id: string
+          weather_conditions?: Json | null
         }
         Update: {
           calories_burned?: number | null
@@ -77,10 +89,16 @@ export type Database = {
           date?: string
           distance?: number | null
           duration?: number | null
+          elevation_gain?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
           id?: string
+          is_manual_entry?: boolean | null
+          notes?: string | null
           steps?: number | null
           type?: string
           user_id?: string
+          weather_conditions?: Json | null
         }
         Relationships: []
       }
@@ -112,6 +130,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      activity_patterns: {
+        Row: {
+          calculated_at: string | null
+          id: string
+          pattern_type: string
+          period_end: string
+          period_start: string
+          score: number | null
+          trend: string | null
+          user_id: string
+        }
+        Insert: {
+          calculated_at?: string | null
+          id?: string
+          pattern_type: string
+          period_end: string
+          period_start: string
+          score?: number | null
+          trend?: string | null
+          user_id: string
+        }
+        Update: {
+          calculated_at?: string | null
+          id?: string
+          pattern_type?: string
+          period_end?: string
+          period_start?: string
+          score?: number | null
+          trend?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       challenge_participants: {
         Row: {
@@ -418,6 +469,44 @@ export type Database = {
           },
         ]
       }
+      heart_rate_data: {
+        Row: {
+          activity_id: string | null
+          created_at: string | null
+          heart_rate: number
+          id: string
+          timestamp: string
+          user_id: string
+          zone: string | null
+        }
+        Insert: {
+          activity_id?: string | null
+          created_at?: string | null
+          heart_rate: number
+          id?: string
+          timestamp: string
+          user_id: string
+          zone?: string | null
+        }
+        Update: {
+          activity_id?: string | null
+          created_at?: string | null
+          heart_rate?: number
+          id?: string
+          timestamp?: string
+          user_id?: string
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heart_rate_data_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -464,49 +553,67 @@ export type Database = {
           age: number | null
           avatar_url: string | null
           created_at: string
+          date_of_birth: string | null
           department: string | null
           email: string | null
           fitness_level: string | null
           height: string | null
+          height_cm: number | null
           id: string
           join_date: string | null
+          max_heart_rate: number | null
           name: string | null
+          notification_preferences: Json | null
+          privacy_settings: Json | null
           updated_at: string
           user_id: string
           weekly_goal: number | null
           weight: string | null
+          weight_kg: number | null
         }
         Insert: {
           age?: number | null
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string | null
           email?: string | null
           fitness_level?: string | null
           height?: string | null
+          height_cm?: number | null
           id?: string
           join_date?: string | null
+          max_heart_rate?: number | null
           name?: string | null
+          notification_preferences?: Json | null
+          privacy_settings?: Json | null
           updated_at?: string
           user_id: string
           weekly_goal?: number | null
           weight?: string | null
+          weight_kg?: number | null
         }
         Update: {
           age?: number | null
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string | null
           email?: string | null
           fitness_level?: string | null
           height?: string | null
+          height_cm?: number | null
           id?: string
           join_date?: string | null
+          max_heart_rate?: number | null
           name?: string | null
+          notification_preferences?: Json | null
+          privacy_settings?: Json | null
           updated_at?: string
           user_id?: string
           weekly_goal?: number | null
           weight?: string | null
+          weight_kg?: number | null
         }
         Relationships: []
       }
@@ -679,46 +786,100 @@ export type Database = {
           calories_burned: number | null
           created_at: string
           current_streak: number | null
+          fitness_level: string | null
           heart_rate: number | null
           id: string
           last_activity_date: string | null
           last_updated: string | null
+          preferred_workout_time: string | null
           sleep_hours: number | null
           today_steps: number | null
           updated_at: string
           user_id: string
           water_intake: number | null
+          weekly_goal_calories: number | null
+          weekly_goal_duration: number | null
+          weekly_goal_steps: number | null
           weekly_steps: number | null
         }
         Insert: {
           calories_burned?: number | null
           created_at?: string
           current_streak?: number | null
+          fitness_level?: string | null
           heart_rate?: number | null
           id?: string
           last_activity_date?: string | null
           last_updated?: string | null
+          preferred_workout_time?: string | null
           sleep_hours?: number | null
           today_steps?: number | null
           updated_at?: string
           user_id: string
           water_intake?: number | null
+          weekly_goal_calories?: number | null
+          weekly_goal_duration?: number | null
+          weekly_goal_steps?: number | null
           weekly_steps?: number | null
         }
         Update: {
           calories_burned?: number | null
           created_at?: string
           current_streak?: number | null
+          fitness_level?: string | null
           heart_rate?: number | null
           id?: string
           last_activity_date?: string | null
           last_updated?: string | null
+          preferred_workout_time?: string | null
           sleep_hours?: number | null
           today_steps?: number | null
           updated_at?: string
           user_id?: string
           water_intake?: number | null
+          weekly_goal_calories?: number | null
+          weekly_goal_duration?: number | null
+          weekly_goal_steps?: number | null
           weekly_steps?: number | null
+        }
+        Relationships: []
+      }
+      workout_insights: {
+        Row: {
+          actionable: boolean | null
+          created_at: string | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          insight_type: string
+          metrics: Json | null
+          priority: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          actionable?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          insight_type: string
+          metrics?: Json | null
+          priority?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          actionable?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          insight_type?: string
+          metrics?: Json | null
+          priority?: number | null
+          title?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -774,9 +935,17 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_user_percentile: {
+        Args: { p_user_id: string; p_metric: string; p_timeframe?: string }
+        Returns: number
+      }
       check_and_award_achievement: {
         Args: { p_user_id: string; p_achievement_name: string; p_data?: Json }
         Returns: boolean
+      }
+      generate_workout_insights: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
       get_social_feed: {
         Args: { p_user_id?: string; p_limit?: number; p_offset?: number }
@@ -817,6 +986,10 @@ export type Database = {
       }
       publish_media: {
         Args: { media_id: string }
+        Returns: undefined
+      }
+      update_activity_patterns: {
+        Args: { p_user_id: string }
         Returns: undefined
       }
       update_user_session: {
