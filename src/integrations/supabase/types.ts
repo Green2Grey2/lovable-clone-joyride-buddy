@@ -235,6 +235,7 @@ export type Database = {
           fitness_level: string | null
           height: string | null
           id: string
+          join_date: string | null
           name: string | null
           updated_at: string
           user_id: string
@@ -250,6 +251,7 @@ export type Database = {
           fitness_level?: string | null
           height?: string | null
           id?: string
+          join_date?: string | null
           name?: string | null
           updated_at?: string
           user_id: string
@@ -265,6 +267,7 @@ export type Database = {
           fitness_level?: string | null
           height?: string | null
           id?: string
+          join_date?: string | null
           name?: string | null
           updated_at?: string
           user_id?: string
@@ -291,6 +294,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          created_at: string
+          current_streak: number | null
+          id: string
+          last_activity_date: string | null
+          sleep_hours: number | null
+          today_steps: number | null
+          updated_at: string
+          user_id: string
+          water_intake: number | null
+          weekly_steps: number | null
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string | null
+          sleep_hours?: number | null
+          today_steps?: number | null
+          updated_at?: string
+          user_id: string
+          water_intake?: number | null
+          weekly_steps?: number | null
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string | null
+          sleep_hours?: number | null
+          today_steps?: number | null
+          updated_at?: string
+          user_id?: string
+          water_intake?: number | null
+          weekly_steps?: number | null
         }
         Relationships: []
       }
