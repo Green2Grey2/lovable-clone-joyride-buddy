@@ -98,7 +98,7 @@ export const HealthDataForm = ({ onSave }: HealthDataFormProps) => {
         
         <Button 
           onClick={handleSave}
-          className="w-full bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-xl">
+          className="w-full bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-xl"
           soundEnabled={false}
         >
           Save Health Data

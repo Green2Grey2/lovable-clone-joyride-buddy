@@ -82,8 +82,8 @@ export const ProfileEditor = ({ isOpen, onClose }: ProfileEditorProps) => {
             Cancel
           </Button>
           <Button 
-            className="flex-1 bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-2xl transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-lg">
             onClick={handleSave}
+            className="flex-1 bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-2xl transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-lg"
           >
             Save Changes
           </Button>

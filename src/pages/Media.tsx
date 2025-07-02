@@ -235,7 +235,7 @@ Many people confuse circuit training with true HIIT. If you can hold a conversat
     const article = articleData[selectedArticle as keyof typeof articleData];
     
     return (
-      <div className={`min-h-screen bg-[#F7F7F7] transition-all duration-300 ${isTransitioning ? 'opacity-95 scale-98' : 'opacity-100 scale-100'}`}>
+      <div className={`min-h-screen bg-background transition-all duration-300 ${isTransitioning ? 'opacity-95 scale-98' : 'opacity-100 scale-100'}`}>
         <div 
           ref={scrollContainerRef}
           className="min-h-screen overflow-y-auto pb-24"
@@ -249,19 +249,19 @@ Many people confuse circuit training with true HIIT. If you can hold a conversat
           />
 
           {/* Article Content */}
-          <div className="relative bg-white rounded-t-3xl -mt-6 z-10 min-h-screen transition-all duration-500 animate-slide-up">
+          <div className="relative bg-card rounded-t-3xl -mt-6 z-10 min-h-screen transition-all duration-500 animate-slide-up">
             <div className="px-8 py-12 max-w-2xl mx-auto">
               <div className="prose prose-lg prose-gray max-w-none">
                 {article.content.split('\n\n').map((paragraph, index) => {
                   if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                     return (
-                      <h3 key={index} className="text-2xl font-bold text-[#1D244D] mt-8 mb-4">
+                      <h3 key={index} className="text-2xl font-bold text-foreground mt-8 mb-4">
                         {paragraph.replace(/\*\*/g, '')}
                       </h3>
                     );
                   }
                   return (
-                    <p key={index} className="text-[#1D244D] text-lg leading-relaxed mb-6">
+                    <p key={index} className="text-foreground text-lg leading-relaxed mb-6">
                       {paragraph}
                     </p>
                   );
@@ -285,22 +285,22 @@ Many people confuse circuit training with true HIIT. If you can hold a conversat
 
   // Main Feed View
   return (
-    <div className={`min-h-screen bg-[#F7F7F7] transition-all duration-300 ${isTransitioning ? 'opacity-95 scale-98' : 'opacity-100 scale-100'}`}>
+    <div className={`min-h-screen bg-background transition-all duration-300 ${isTransitioning ? 'opacity-95 scale-98' : 'opacity-100 scale-100'}`}>
       {/* Enhanced Header with Apple News styling */}
-      <div className="bg-white/95 backdrop-blur-xl sticky top-0 z-30 border-b border-gray-100/50">
+      <div className="glass dark:glass-dark backdrop-blur-xl sticky top-0 z-30 border-b border-border/50">
         <div className="px-6 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-[#1D244D] mb-1 tracking-tight">
+              <h1 className="text-3xl font-bold text-foreground mb-1 tracking-tight">
                 Today
               </h1>
-              <p className="text-[#8A94A6] text-sm font-medium">Sunday, June 29</p>
+              <p className="text-muted-foreground text-sm font-medium">Sunday, June 29</p>
             </div>
             <div className="flex items-center gap-3">
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="relative text-[#8A94A6] hover:bg-gray-50 w-10 h-10 p-0 rounded-full transition-all duration-200 hover:scale-110"
+                className="relative text-muted-foreground hover:bg-muted w-10 h-10 p-0 rounded-full transition-all duration-200 hover:scale-110"
                 onClick={handleSearch}
                 soundEnabled={false}
               >
@@ -309,12 +309,12 @@ Many people confuse circuit training with true HIIT. If you can hold a conversat
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="relative text-[#8A94A6] hover:bg-gray-50 w-10 h-10 p-0 rounded-full transition-all duration-200 hover:scale-110"
+                className="relative text-muted-foreground hover:bg-muted w-10 h-10 p-0 rounded-full transition-all duration-200 hover:scale-110"
                 onClick={handleNotifications}
                 soundEnabled={false}
               >
                 <Bell className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FF7B5A] rounded-full animate-pulse"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
               </Button>
               <ProfileDropdown />
             </div>
