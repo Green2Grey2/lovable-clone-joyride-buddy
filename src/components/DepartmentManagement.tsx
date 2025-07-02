@@ -58,14 +58,15 @@ export const DepartmentManagement = () => {
         return acc;
       }, {}) || {};
 
-      // Get department settings (this table needs to be created)
+      // Get department settings
       const { data: settingsData, error: settingsError } = await supabase
         .from('department_settings')
         .select('*')
         .eq('is_active', true);
 
-      if (settingsError && settingsError.code !== 'PGRST116') {
+      if (settingsError) {
         console.error('Department settings error:', settingsError);
+        throw settingsError;
       }
 
       // Merge department data with settings

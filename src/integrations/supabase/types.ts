@@ -274,6 +274,33 @@ export type Database = {
         }
         Relationships: []
       }
+      department_settings: {
+        Row: {
+          created_at: string
+          department_name: string
+          id: string
+          is_active: boolean
+          max_size: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_name: string
+          id?: string
+          is_active?: boolean
+          max_size?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_name?: string
+          id?: string
+          is_active?: boolean
+          max_size?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       editorial_media: {
         Row: {
           author: string

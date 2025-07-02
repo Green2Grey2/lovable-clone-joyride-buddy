@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, LogOut, Activity, Shield, UserCog, Settings, Calendar, QrCode, Database } from 'lucide-react';
+import { Users, LogOut, Activity, Shield, UserCog, Settings, Calendar, QrCode, Database, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +18,7 @@ import { SystemHealthCheck } from '@/components/SystemHealthCheck';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { ActiveUsersMonitor } from '@/components/ActiveUsersMonitor';
+import { DepartmentManagement } from '@/components/DepartmentManagement';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -150,7 +151,7 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="glass dark:glass-dark p-1 rounded-lg shadow-premium grid w-full grid-cols-3 sm:grid-cols-7">
+          <TabsList className="glass dark:glass-dark p-1 rounded-lg shadow-premium grid w-full grid-cols-3 sm:grid-cols-8">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -158,6 +159,10 @@ const Admin = () => {
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="departments" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Departments</span>
             </TabsTrigger>
             <TabsTrigger value="events" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -300,6 +305,11 @@ const Admin = () => {
                 <UserManagement />
               </div>
             </div>
+          </TabsContent>
+
+          {/* Departments Tab */}
+          <TabsContent value="departments" className="space-y-6">
+            <DepartmentManagement />
           </TabsContent>
 
           {/* Events Tab */}
