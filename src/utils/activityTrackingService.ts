@@ -18,6 +18,45 @@ export interface ActivityData {
 export class ActivityTrackingService {
   
   /**
+   * Records quick step entry without validation (for healthcare workers)
+   */
+  async recordQuickSteps(steps: number): Promise<boolean> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      // Skip validation for quick entries - healthcare workers can have 20k-30k steps
+      const { error } = await supabase
+        .from('activities')
+        .insert({
+          user_id: user.id,
+          type: 'walking',
+          steps: steps,
+          entry_method: 'quick_entry',
+          date: new Date().toISOString().split('T')[0],
+          duration: Math.round(steps / 100), // Rough estimate: 100 steps per minute
+          calories_burned: Math.round(steps * 0.04), // Rough estimate: 0.04 calories per step
+          is_manual_entry: true
+        });
+
+      if (error) {
+        console.error('Failed to record quick steps:', error);
+        return false;
+      }
+
+      // Update all user stats from activities
+      await healthDataService.updateUserStatsFromActivities();
+
+      toast.success('Steps logged successfully!');
+      return true;
+    } catch (error) {
+      console.error('Error recording quick steps:', error);
+      toast.error('Failed to log steps');
+      return false;
+    }
+  }
+
+  /**
    * Records a new activity and updates all user stats
    */
   async recordActivity(activityData: ActivityData): Promise<boolean> {

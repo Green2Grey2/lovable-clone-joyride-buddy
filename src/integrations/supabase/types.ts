@@ -56,6 +56,7 @@ export type Database = {
           distance: number | null
           duration: number | null
           elevation_gain: number | null
+          entry_method: string | null
           heart_rate_avg: number | null
           heart_rate_max: number | null
           id: string
@@ -73,6 +74,7 @@ export type Database = {
           distance?: number | null
           duration?: number | null
           elevation_gain?: number | null
+          entry_method?: string | null
           heart_rate_avg?: number | null
           heart_rate_max?: number | null
           id?: string
@@ -90,6 +92,7 @@ export type Database = {
           distance?: number | null
           duration?: number | null
           elevation_gain?: number | null
+          entry_method?: string | null
           heart_rate_avg?: number | null
           heart_rate_max?: number | null
           id?: string

@@ -17,19 +17,11 @@ export const QuickStepEntry = () => {
     }
     
     setIsLogging(true);
-    try {
-      await activityTrackingService.recordActivity({
-        type: 'walking',
-        steps: stepCount,
-        duration: Math.round(stepCount / 100), // Rough estimate: 100 steps per minute
-        calories: Math.round(stepCount * 0.04) // Rough estimate: 0.04 calories per step
-      });
+    const success = await activityTrackingService.recordQuickSteps(stepCount);
+    if (success) {
       setSteps('');
-    } catch (error) {
-      toast.error('Failed to log steps');
-    } finally {
-      setIsLogging(false);
     }
+    setIsLogging(false);
   };
 
   const handlePresetClick = (preset: number) => {
