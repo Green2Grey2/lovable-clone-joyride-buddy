@@ -18,12 +18,22 @@ export interface ActivityData {
 export class ActivityTrackingService {
   
   /**
-   * Records quick step entry without validation (for healthcare workers)
+   * Records quick step entry with trust-based auto-verification
    */
   async recordQuickSteps(steps: number): Promise<boolean> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
+
+      // Check if user has auto-verify enabled based on trust score
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('auto_verify_enabled, trust_score')
+        .eq('user_id', user.id)
+        .single();
+
+      const verificationStatus = profile?.auto_verify_enabled ? 'verified' : 'pending';
+      const verificationRequired = !profile?.auto_verify_enabled;
 
       // Skip validation for quick entries - healthcare workers can have 20k-30k steps
       const { error } = await supabase
@@ -33,8 +43,10 @@ export class ActivityTrackingService {
           type: 'walking',
           steps: steps,
           entry_method: 'quick_entry',
-          verification_status: 'pending',
-          verification_required: true,
+          verification_status: verificationStatus,
+          verification_required: verificationRequired,
+          verified_at: verificationStatus === 'verified' ? new Date().toISOString() : null,
+          verified_by: verificationStatus === 'verified' ? user.id : null,
           date: new Date().toISOString().split('T')[0],
           duration: Math.round(steps / 100), // Rough estimate: 100 steps per minute
           calories_burned: Math.round(steps * 0.04), // Rough estimate: 0.04 calories per step
@@ -49,7 +61,11 @@ export class ActivityTrackingService {
       // Update pending steps tracking
       await this.updatePendingSteps(user.id);
       
-      toast.info('Steps logged! Upload a screenshot to verify.');
+      if (verificationStatus === 'verified') {
+        toast.success(`Steps logged! (Auto-verified - Trust Score: ${profile?.trust_score || 0})`);
+      } else {
+        toast.info('Steps logged! Upload a screenshot to verify.');
+      }
       return true;
     } catch (error) {
       console.error('Error recording quick steps:', error);

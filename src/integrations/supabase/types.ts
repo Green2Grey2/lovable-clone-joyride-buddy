@@ -596,6 +596,7 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          auto_verify_enabled: boolean | null
           avatar_url: string | null
           created_at: string
           daily_step_goal: number | null
@@ -612,8 +613,10 @@ export type Database = {
           name: string | null
           notification_preferences: Json | null
           privacy_settings: Json | null
+          trust_score: number | null
           updated_at: string
           user_id: string
+          verifications_completed: number | null
           weekly_goal: number | null
           weekly_step_goal: number | null
           weight: string | null
@@ -621,6 +624,7 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          auto_verify_enabled?: boolean | null
           avatar_url?: string | null
           created_at?: string
           daily_step_goal?: number | null
@@ -637,8 +641,10 @@ export type Database = {
           name?: string | null
           notification_preferences?: Json | null
           privacy_settings?: Json | null
+          trust_score?: number | null
           updated_at?: string
           user_id: string
+          verifications_completed?: number | null
           weekly_goal?: number | null
           weekly_step_goal?: number | null
           weight?: string | null
@@ -646,6 +652,7 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          auto_verify_enabled?: boolean | null
           avatar_url?: string | null
           created_at?: string
           daily_step_goal?: number | null
@@ -662,8 +669,10 @@ export type Database = {
           name?: string | null
           notification_preferences?: Json | null
           privacy_settings?: Json | null
+          trust_score?: number | null
           updated_at?: string
           user_id?: string
+          verifications_completed?: number | null
           weekly_goal?: number | null
           weekly_step_goal?: number | null
           weight?: string | null
@@ -1053,6 +1062,10 @@ export type Database = {
     Functions: {
       calculate_user_percentile: {
         Args: { p_user_id: string; p_metric: string; p_timeframe?: string }
+        Returns: number
+      }
+      calculate_user_trust_score: {
+        Args: { p_user_id: string }
         Returns: number
       }
       check_and_award_achievement: {
