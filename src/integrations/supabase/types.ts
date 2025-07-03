@@ -65,8 +65,11 @@ export type Database = {
           steps: number | null
           type: string
           user_id: string
+          verification_image_url: string | null
           verification_required: boolean | null
           verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
           weather_conditions: Json | null
         }
         Insert: {
@@ -85,8 +88,11 @@ export type Database = {
           steps?: number | null
           type: string
           user_id: string
+          verification_image_url?: string | null
           verification_required?: boolean | null
           verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
           weather_conditions?: Json | null
         }
         Update: {
@@ -105,8 +111,11 @@ export type Database = {
           steps?: number | null
           type?: string
           user_id?: string
+          verification_image_url?: string | null
           verification_required?: boolean | null
           verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
           weather_conditions?: Json | null
         }
         Relationships: []
@@ -912,6 +921,44 @@ export type Database = {
           yearly_steps?: number | null
         }
         Relationships: []
+      }
+      verification_history: {
+        Row: {
+          action: string | null
+          activity_id: string | null
+          created_at: string | null
+          id: string
+          image_url: string | null
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          action?: string | null
+          activity_id?: string | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string | null
+          activity_id?: string | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_history_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_insights: {
         Row: {
