@@ -18,68 +18,94 @@ export interface ActivityData {
 export class ActivityTrackingService {
   
   /**
-   * Records quick steps without validation - for trusted users
+   * Records quick step entry with trust-based auto-verification
    */
   async recordQuickSteps(steps: number): Promise<boolean> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Please sign in to log your steps');
-        return false;
-      }
+      if (!user) return false;
 
-      if (!steps || steps <= 0) {
-        toast.error('Please enter valid steps');
-        return false;
-      }
+      // Check if user has auto-verify enabled based on trust score
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('auto_verify_enabled, trust_score')
+        .eq('user_id', user.id)
+        .single();
 
-      // Insert activity record without validation
-      const { error: activityError } = await supabase
+      const verificationStatus = profile?.auto_verify_enabled ? 'verified' : 'pending';
+      const verificationRequired = !profile?.auto_verify_enabled;
+
+      // Skip validation for quick entries - healthcare workers can have 20k-30k steps
+      const { error } = await supabase
         .from('activities')
         .insert({
           user_id: user.id,
           type: 'walking',
-          date: new Date().toISOString().split('T')[0],
           steps: steps,
-          duration: 0,
-          calories_burned: 0,
-          distance: null,
-          heart_rate_avg: null,
-          notes: null,
-          is_manual_entry: true,
           entry_method: 'quick_entry',
-          verification_status: 'verified',
-          verification_required: false
+          verification_status: verificationStatus,
+          verification_required: verificationRequired,
+          verified_at: verificationStatus === 'verified' ? new Date().toISOString() : null,
+          verified_by: verificationStatus === 'verified' ? user.id : null,
+          date: new Date().toISOString().split('T')[0],
+          duration: Math.round(steps / 100), // Rough estimate: 100 steps per minute
+          calories_burned: Math.round(steps * 0.04), // Rough estimate: 0.04 calories per step
+          is_manual_entry: true
         });
 
-      if (activityError) {
-        console.error('Failed to record quick steps:', activityError);
-        toast.error('Failed to log steps');
+      if (error) {
+        console.error('Failed to record quick steps:', error);
         return false;
       }
 
-      // Log success for debugging
-      console.log('Activity successfully inserted, updating user stats...');
+      // Update pending steps tracking
+      await this.updatePendingSteps(user.id);
       
-      // Update all user stats from activities
-      await healthDataService.updateUserStatsFromActivities();
-
-      // Create social activity for step milestones
-      if (steps >= 10000) {
-        await this.createSocialActivity(user.id, { 
-          type: 'walking', 
-          steps,
-          duration: 0,
-          calories: 0 
-        });
+      if (verificationStatus === 'verified') {
+        toast.success(`Steps logged! (Auto-verified - Trust Score: ${profile?.trust_score || 0})`);
+      } else {
+        toast.info('Steps logged! Upload a screenshot to verify.');
       }
-
-      toast.success('Steps logged successfully!');
       return true;
     } catch (error) {
       console.error('Error recording quick steps:', error);
       toast.error('Failed to log steps');
       return false;
+    }
+  }
+
+  /**
+   * Updates pending and verified steps for today
+   */
+  async updatePendingSteps(userId: string) {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: activities } = await supabase
+        .from('activities')
+        .select('steps, verification_status')
+        .eq('user_id', userId)
+        .eq('date', today);
+
+      const pending = activities
+        ?.filter(a => a.verification_status === 'pending')
+        .reduce((sum, a) => sum + (a.steps || 0), 0) || 0;
+        
+      const verified = activities
+        ?.filter(a => a.verification_status === 'verified')
+        .reduce((sum, a) => sum + (a.steps || 0), 0) || 0;
+
+      await supabase
+        .from('user_stats')
+        .update({
+          pending_steps: pending,
+          verified_steps: verified,
+          today_steps: pending + verified // Total for display
+        })
+        .eq('user_id', userId);
+        
+    } catch (error) {
+      console.error('Error updating pending steps:', error);
     }
   }
 
@@ -113,11 +139,10 @@ export class ActivityTrackingService {
           duration: activityData.duration || 0,
           calories_burned: activityData.calories || 0,
           distance: activityData.distance || null,
-           heart_rate_avg: activityData.heartRate || null,
-           notes: activityData.notes || null,
-           is_manual_entry: true,
-           entry_method: 'manual'
-         });
+          heart_rate_avg: activityData.heartRate || null,
+          notes: activityData.notes || null,
+          is_manual_entry: true
+        });
 
       if (activityError) {
         console.error('Failed to record activity:', activityError);

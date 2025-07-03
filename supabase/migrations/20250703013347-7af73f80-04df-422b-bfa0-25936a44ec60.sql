@@ -1,10 +1,16 @@
--- Create the missing calculate_user_trust_score function
-CREATE OR REPLACE FUNCTION public.calculate_user_trust_score(p_user_id uuid)
-RETURNS integer
+-- Phase 4: Add trust score system to profiles
+ALTER TABLE profiles
+ADD COLUMN trust_score INTEGER DEFAULT 0,
+ADD COLUMN verifications_completed INTEGER DEFAULT 0,
+ADD COLUMN auto_verify_enabled BOOLEAN DEFAULT false;
+
+-- Create trust score calculation function
+CREATE OR REPLACE FUNCTION calculate_user_trust_score(p_user_id UUID)
+RETURNS INTEGER 
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path TO ''
-AS $function$
+SET search_path = ''
+AS $$
 DECLARE
   verified_count INTEGER;
   rejected_count INTEGER;
@@ -34,15 +40,15 @@ BEGIN
   
   RETURN calculated_trust_score;
 END;
-$function$;
+$$;
 
--- Create the trigger function for updating trust scores
-CREATE OR REPLACE FUNCTION public.update_trust_score_trigger()
-RETURNS trigger
+-- Create trigger to update trust score when activities are updated
+CREATE OR REPLACE FUNCTION update_trust_score_trigger()
+RETURNS TRIGGER 
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path TO ''
-AS $function$
+SET search_path = ''
+AS $$
 BEGIN
   -- Update trust score when verification status changes
   IF (TG_OP = 'UPDATE' AND OLD.verification_status != NEW.verification_status) OR
@@ -52,11 +58,10 @@ BEGIN
   
   RETURN COALESCE(NEW, OLD);
 END;
-$function$;
+$$;
 
 -- Create the trigger
-DROP TRIGGER IF EXISTS update_trust_score_on_activity_change ON public.activities;
-CREATE TRIGGER update_trust_score_on_activity_change
+CREATE TRIGGER activities_trust_score_update
   AFTER INSERT OR UPDATE ON public.activities
   FOR EACH ROW
-  EXECUTE FUNCTION public.update_trust_score_trigger();
+  EXECUTE FUNCTION update_trust_score_trigger();

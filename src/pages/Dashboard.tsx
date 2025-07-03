@@ -14,13 +14,13 @@ import { ActivitySelector } from '@/components/ActivitySelector';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { FloatingActivityFeed } from '@/components/FloatingActivityFeed';
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveStack } from '@/components/layout/ResponsiveContainer';
+import { QuickStepEntry } from '@/components/QuickStepEntry';
 import { useApp } from '@/contexts/AppContext';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useChallengeSettings } from '@/hooks/useChallengeSettings';
 import { useUserRole } from '@/hooks/useUserRole';
 
 import { TestFlagActivity } from '@/components/TestFlagActivity';
-import { QuickStepEntry } from '@/components/QuickStepEntry';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -219,6 +219,9 @@ const Dashboard = () => {
               >
                 {/* Primary Content - Takes 2 columns on large screens */}
                 <div className="lg:col-span-2 space-y-8">
+                  {/* Quick Step Entry - Prominent placement */}
+                  <QuickStepEntry />
+
                   {/* Hero Action Card */}
                   <EnhancedHeroActionCard
                     activeActivity={activeActivity}
@@ -236,9 +239,6 @@ const Dashboard = () => {
                     calories={userStats.calories}
                     onViewMore={handleViewMoreActivity}
                   />
-
-                  {/* Quick Step Entry */}
-                  <QuickStepEntry />
 
                   {/* Collaborative Goals */}
                   <CollaborativeGoals />

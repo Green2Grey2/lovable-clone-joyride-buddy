@@ -1,67 +1,71 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { activityTrackingService } from '@/utils/activityTrackingService';
 import { toast } from 'sonner';
-import { Footprints } from 'lucide-react';
 
 export const QuickStepEntry = () => {
   const [steps, setSteps] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async () => {
-    if (!steps || Number(steps) <= 0) {
-      toast.error('Please enter valid steps');
+  const [isLogging, setIsLogging] = useState(false);
+  
+  const handleLogSteps = async () => {
+    const stepCount = Number(steps);
+    if (stepCount <= 0) {
+      toast.error('Please enter a valid number of steps');
       return;
     }
-
-    setLoading(true);
-    const success = await activityTrackingService.recordQuickSteps(Number(steps));
+    
+    setIsLogging(true);
+    const success = await activityTrackingService.recordQuickSteps(stepCount);
     if (success) {
       setSteps('');
     }
-    setLoading(false);
+    setIsLogging(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !loading) {
-      handleSubmit();
-    }
+  const handlePresetClick = (preset: number) => {
+    setSteps(preset.toString());
   };
 
   return (
-    <Card className="card-modern glass dark:glass-dark">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Footprints className="h-5 w-5 text-primary" />
-          Quick Step Entry
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          <Input
-            type="number"
-            placeholder="Enter today's steps"
+    <Card className="gradient-primary border-0 shadow-brand">
+      <CardContent className="p-6">
+        <h3 className="text-lg font-semibold mb-4 text-inverse">Quick Step Entry</h3>
+        <div className="flex gap-3">
+          <Input 
+            type="number" 
+            placeholder="Today's steps"
             value={steps}
             onChange={(e) => setSteps(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={loading}
-            className="flex-1"
-            min="1"
-            max="100000"
+            className="text-2xl font-bold h-14 bg-background/90 border-white/20 text-foreground placeholder:text-muted-foreground"
           />
           <Button 
-            onClick={handleSubmit} 
-            disabled={loading || !steps}
-            className="btn-modern"
+            size="lg"
+            onClick={handleLogSteps}
+            disabled={isLogging || !steps}
+            loading={isLogging}
+            loadingText="Logging..."
+            className="px-8 bg-background/10 text-inverse border-white/20 hover:bg-background/20"
           >
-            {loading ? 'Logging...' : 'Log Steps'}
+            Log Steps
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Quick entry bypasses validation - use for trusted step counts
-        </p>
+        
+        {/* Quick preset buttons */}
+        <div className="flex gap-2 mt-4">
+          {[5000, 8000, 10000, 12000].map(preset => (
+            <Button
+              key={preset}
+              variant="outline"
+              size="sm"
+              onClick={() => handlePresetClick(preset)}
+              className="bg-background/10 text-inverse border-white/20 hover:bg-background/20"
+            >
+              {preset.toLocaleString()}
+            </Button>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
