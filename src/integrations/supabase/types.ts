@@ -1058,6 +1058,18 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_analytics: {
+        Row: {
+          auto_verified_count: number | null
+          avg_verification_time_hours: number | null
+          date: string | null
+          pending_count: number | null
+          rejected_count: number | null
+          total_entries: number | null
+          verified_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_user_percentile: {
