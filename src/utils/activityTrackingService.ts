@@ -23,7 +23,10 @@ export class ActivityTrackingService {
   async recordQuickSteps(steps: number): Promise<boolean> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      if (!user) {
+        toast.error('Please sign in to log your steps');
+        return false;
+      }
 
       if (!steps || steps <= 0) {
         toast.error('Please enter valid steps');
