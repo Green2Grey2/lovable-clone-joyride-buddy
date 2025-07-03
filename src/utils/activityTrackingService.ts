@@ -23,10 +23,7 @@ export class ActivityTrackingService {
   async recordQuickSteps(steps: number): Promise<boolean> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Please sign in to log your steps');
-        return false;
-      }
+      if (!user) return false;
 
       // Check if user has auto-verify enabled based on trust score
       const { data: profile } = await supabase
