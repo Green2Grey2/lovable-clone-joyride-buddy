@@ -14,7 +14,6 @@ import { ActivitySelector } from '@/components/ActivitySelector';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { FloatingActivityFeed } from '@/components/FloatingActivityFeed';
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveStack } from '@/components/layout/ResponsiveContainer';
-import { QuickStepEntry } from '@/components/QuickStepEntry';
 import { useApp } from '@/contexts/AppContext';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useChallengeSettings } from '@/hooks/useChallengeSettings';
@@ -219,9 +218,6 @@ const Dashboard = () => {
               >
                 {/* Primary Content - Takes 2 columns on large screens */}
                 <div className="lg:col-span-2 space-y-8">
-                  {/* Quick Step Entry - Prominent placement */}
-                  <QuickStepEntry />
-
                   {/* Hero Action Card */}
                   <EnhancedHeroActionCard
                     activeActivity={activeActivity}

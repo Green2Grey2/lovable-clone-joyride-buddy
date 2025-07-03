@@ -56,7 +56,6 @@ export type Database = {
           distance: number | null
           duration: number | null
           elevation_gain: number | null
-          entry_method: string | null
           heart_rate_avg: number | null
           heart_rate_max: number | null
           id: string
@@ -65,11 +64,6 @@ export type Database = {
           steps: number | null
           type: string
           user_id: string
-          verification_image_url: string | null
-          verification_required: boolean | null
-          verification_status: string | null
-          verified_at: string | null
-          verified_by: string | null
           weather_conditions: Json | null
         }
         Insert: {
@@ -79,7 +73,6 @@ export type Database = {
           distance?: number | null
           duration?: number | null
           elevation_gain?: number | null
-          entry_method?: string | null
           heart_rate_avg?: number | null
           heart_rate_max?: number | null
           id?: string
@@ -88,11 +81,6 @@ export type Database = {
           steps?: number | null
           type: string
           user_id: string
-          verification_image_url?: string | null
-          verification_required?: boolean | null
-          verification_status?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
           weather_conditions?: Json | null
         }
         Update: {
@@ -102,7 +90,6 @@ export type Database = {
           distance?: number | null
           duration?: number | null
           elevation_gain?: number | null
-          entry_method?: string | null
           heart_rate_avg?: number | null
           heart_rate_max?: number | null
           id?: string
@@ -111,11 +98,6 @@ export type Database = {
           steps?: number | null
           type?: string
           user_id?: string
-          verification_image_url?: string | null
-          verification_required?: boolean | null
-          verification_status?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
           weather_conditions?: Json | null
         }
         Relationships: []
@@ -596,7 +578,6 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
-          auto_verify_enabled: boolean | null
           avatar_url: string | null
           created_at: string
           daily_step_goal: number | null
@@ -613,10 +594,8 @@ export type Database = {
           name: string | null
           notification_preferences: Json | null
           privacy_settings: Json | null
-          trust_score: number | null
           updated_at: string
           user_id: string
-          verifications_completed: number | null
           weekly_goal: number | null
           weekly_step_goal: number | null
           weight: string | null
@@ -624,7 +603,6 @@ export type Database = {
         }
         Insert: {
           age?: number | null
-          auto_verify_enabled?: boolean | null
           avatar_url?: string | null
           created_at?: string
           daily_step_goal?: number | null
@@ -641,10 +619,8 @@ export type Database = {
           name?: string | null
           notification_preferences?: Json | null
           privacy_settings?: Json | null
-          trust_score?: number | null
           updated_at?: string
           user_id: string
-          verifications_completed?: number | null
           weekly_goal?: number | null
           weekly_step_goal?: number | null
           weight?: string | null
@@ -652,7 +628,6 @@ export type Database = {
         }
         Update: {
           age?: number | null
-          auto_verify_enabled?: boolean | null
           avatar_url?: string | null
           created_at?: string
           daily_step_goal?: number | null
@@ -669,10 +644,8 @@ export type Database = {
           name?: string | null
           notification_preferences?: Json | null
           privacy_settings?: Json | null
-          trust_score?: number | null
           updated_at?: string
           user_id?: string
-          verifications_completed?: number | null
           weekly_goal?: number | null
           weekly_step_goal?: number | null
           weight?: string | null
@@ -858,14 +831,12 @@ export type Database = {
           lifetime_steps: number | null
           longest_streak: number | null
           monthly_steps: number | null
-          pending_steps: number | null
           preferred_workout_time: string | null
           sleep_hours: number | null
           streak_resets: number | null
           today_steps: number | null
           updated_at: string
           user_id: string
-          verified_steps: number | null
           water_intake: number | null
           weekly_goal_calories: number | null
           weekly_goal_duration: number | null
@@ -886,14 +857,12 @@ export type Database = {
           lifetime_steps?: number | null
           longest_streak?: number | null
           monthly_steps?: number | null
-          pending_steps?: number | null
           preferred_workout_time?: string | null
           sleep_hours?: number | null
           streak_resets?: number | null
           today_steps?: number | null
           updated_at?: string
           user_id: string
-          verified_steps?: number | null
           water_intake?: number | null
           weekly_goal_calories?: number | null
           weekly_goal_duration?: number | null
@@ -914,14 +883,12 @@ export type Database = {
           lifetime_steps?: number | null
           longest_streak?: number | null
           monthly_steps?: number | null
-          pending_steps?: number | null
           preferred_workout_time?: string | null
           sleep_hours?: number | null
           streak_resets?: number | null
           today_steps?: number | null
           updated_at?: string
           user_id?: string
-          verified_steps?: number | null
           water_intake?: number | null
           weekly_goal_calories?: number | null
           weekly_goal_duration?: number | null
@@ -930,44 +897,6 @@ export type Database = {
           yearly_steps?: number | null
         }
         Relationships: []
-      }
-      verification_history: {
-        Row: {
-          action: string | null
-          activity_id: string | null
-          created_at: string | null
-          id: string
-          image_url: string | null
-          notes: string | null
-          user_id: string
-        }
-        Insert: {
-          action?: string | null
-          activity_id?: string | null
-          created_at?: string | null
-          id?: string
-          image_url?: string | null
-          notes?: string | null
-          user_id: string
-        }
-        Update: {
-          action?: string | null
-          activity_id?: string | null
-          created_at?: string | null
-          id?: string
-          image_url?: string | null
-          notes?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "verification_history_activity_id_fkey"
-            columns: ["activity_id"]
-            isOneToOne: false
-            referencedRelation: "activities"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       workout_insights: {
         Row: {
@@ -1058,26 +987,10 @@ export type Database = {
         }
         Relationships: []
       }
-      verification_analytics: {
-        Row: {
-          auto_verified_count: number | null
-          avg_verification_time_hours: number | null
-          date: string | null
-          pending_count: number | null
-          rejected_count: number | null
-          total_entries: number | null
-          verified_count: number | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       calculate_user_percentile: {
         Args: { p_user_id: string; p_metric: string; p_timeframe?: string }
-        Returns: number
-      }
-      calculate_user_trust_score: {
-        Args: { p_user_id: string }
         Returns: number
       }
       check_and_award_achievement: {
