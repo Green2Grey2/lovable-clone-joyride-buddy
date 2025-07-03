@@ -3,11 +3,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { activityTrackingService } from '@/utils/activityTrackingService';
+import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 
 export const QuickStepEntry = () => {
   const [steps, setSteps] = useState('');
   const [isLogging, setIsLogging] = useState(false);
+  const { updateUserStats, userStats } = useApp();
   
   const handleLogSteps = async () => {
     const stepCount = Number(steps);
@@ -18,13 +20,23 @@ export const QuickStepEntry = () => {
     
     setIsLogging(true);
     try {
-      await activityTrackingService.recordActivity({
+      const success = await activityTrackingService.recordActivity({
         type: 'walking',
         steps: stepCount,
         duration: Math.round(stepCount / 100), // Rough estimate: 100 steps per minute
         calories: Math.round(stepCount * 0.04) // Rough estimate: 0.04 calories per step
       });
-      setSteps('');
+      
+      if (success) {
+        // Update local stats immediately for better UX
+        await updateUserStats({ 
+          todaySteps: userStats.todaySteps + stepCount,
+          calories: userStats.calories + Math.round(stepCount * 0.04)
+        });
+        
+        setSteps('');
+        toast.success(`Successfully logged ${stepCount.toLocaleString()} steps! 🎉`);
+      }
     } catch (error) {
       toast.error('Failed to log steps');
     } finally {
