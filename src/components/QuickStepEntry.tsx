@@ -34,10 +34,14 @@ export const QuickStepEntry = () => {
           calories: userStats.calories + Math.round(stepCount * 0.04)
         });
         
+        // Force page refresh to update all components with new data
+        window.location.reload();
+        
         setSteps('');
         toast.success(`Successfully logged ${stepCount.toLocaleString()} steps! 🎉`);
       }
     } catch (error) {
+      console.error('Error logging steps:', error);
       toast.error('Failed to log steps');
     } finally {
       setIsLogging(false);
