@@ -15,6 +15,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { FloatingActivityFeed } from '@/components/FloatingActivityFeed';
 import { ResponsiveContainer, ResponsiveGrid, ResponsiveStack } from '@/components/layout/ResponsiveContainer';
 import { useApp } from '@/contexts/AppContext';
+import { useUserStats } from '@/contexts/UserStatsContext';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useChallengeSettings } from '@/hooks/useChallengeSettings';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -26,6 +27,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userProfile, userStats, activeActivity, getDashboardGreeting } = useApp();
+  const { refreshStats } = useUserStats();
   const { playSoftClick, playNavigation, playStartActivity } = useSoundEffects();
   const { challengeSettings } = useChallengeSettings();
   const { role, isAdmin, isManager } = useUserRole();
@@ -256,9 +258,9 @@ const Dashboard = () => {
                   {/* Manual Step Tracker */}
                   <ManualStepTracker 
                     currentSteps={userStats.todaySteps}
-                    onStepsAdded={() => {
-                      // Trigger a refresh of the app context data
-                      window.location.reload();
+                    onStepsAdded={async () => {
+                      // Refresh user stats from the central context
+                      await refreshStats();
                     }}
                   />
                   
