@@ -58,6 +58,8 @@ export const SimpleStepTracker = () => {
           user_id: user.id,
           date: today,
           steps: newTotal
+        }, {
+          onConflict: 'user_id,date'
         });
 
       if (error) {
