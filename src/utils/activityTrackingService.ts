@@ -44,7 +44,9 @@ export class ActivityTrackingService {
           heart_rate_avg: null,
           notes: null,
           is_manual_entry: true,
-          entry_method: 'quick_entry'
+          entry_method: 'quick_entry',
+          verification_status: 'verified',
+          verification_required: false
         });
 
       if (activityError) {
