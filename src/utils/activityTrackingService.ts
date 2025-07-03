@@ -53,6 +53,9 @@ export class ActivityTrackingService {
         return false;
       }
 
+      // Log success for debugging
+      console.log('Activity successfully inserted, updating user stats...');
+      
       // Update all user stats from activities
       await healthDataService.updateUserStatsFromActivities();
 
