@@ -65,6 +65,8 @@ export type Database = {
           steps: number | null
           type: string
           user_id: string
+          verification_required: boolean | null
+          verification_status: string | null
           weather_conditions: Json | null
         }
         Insert: {
@@ -83,6 +85,8 @@ export type Database = {
           steps?: number | null
           type: string
           user_id: string
+          verification_required?: boolean | null
+          verification_status?: string | null
           weather_conditions?: Json | null
         }
         Update: {
@@ -101,6 +105,8 @@ export type Database = {
           steps?: number | null
           type?: string
           user_id?: string
+          verification_required?: boolean | null
+          verification_status?: string | null
           weather_conditions?: Json | null
         }
         Relationships: []
@@ -834,12 +840,14 @@ export type Database = {
           lifetime_steps: number | null
           longest_streak: number | null
           monthly_steps: number | null
+          pending_steps: number | null
           preferred_workout_time: string | null
           sleep_hours: number | null
           streak_resets: number | null
           today_steps: number | null
           updated_at: string
           user_id: string
+          verified_steps: number | null
           water_intake: number | null
           weekly_goal_calories: number | null
           weekly_goal_duration: number | null
@@ -860,12 +868,14 @@ export type Database = {
           lifetime_steps?: number | null
           longest_streak?: number | null
           monthly_steps?: number | null
+          pending_steps?: number | null
           preferred_workout_time?: string | null
           sleep_hours?: number | null
           streak_resets?: number | null
           today_steps?: number | null
           updated_at?: string
           user_id: string
+          verified_steps?: number | null
           water_intake?: number | null
           weekly_goal_calories?: number | null
           weekly_goal_duration?: number | null
@@ -886,12 +896,14 @@ export type Database = {
           lifetime_steps?: number | null
           longest_streak?: number | null
           monthly_steps?: number | null
+          pending_steps?: number | null
           preferred_workout_time?: string | null
           sleep_hours?: number | null
           streak_resets?: number | null
           today_steps?: number | null
           updated_at?: string
           user_id?: string
+          verified_steps?: number | null
           water_intake?: number | null
           weekly_goal_calories?: number | null
           weekly_goal_duration?: number | null

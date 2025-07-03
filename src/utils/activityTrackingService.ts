@@ -33,6 +33,8 @@ export class ActivityTrackingService {
           type: 'walking',
           steps: steps,
           entry_method: 'quick_entry',
+          verification_status: 'pending',
+          verification_required: true,
           date: new Date().toISOString().split('T')[0],
           duration: Math.round(steps / 100), // Rough estimate: 100 steps per minute
           calories_burned: Math.round(steps * 0.04), // Rough estimate: 0.04 calories per step
@@ -44,15 +46,50 @@ export class ActivityTrackingService {
         return false;
       }
 
-      // Update all user stats from activities
-      await healthDataService.updateUserStatsFromActivities();
-
-      toast.success('Steps logged successfully!');
+      // Update pending steps tracking
+      await this.updatePendingSteps(user.id);
+      
+      toast.info('Steps logged! Upload a screenshot to verify.');
       return true;
     } catch (error) {
       console.error('Error recording quick steps:', error);
       toast.error('Failed to log steps');
       return false;
+    }
+  }
+
+  /**
+   * Updates pending and verified steps for today
+   */
+  async updatePendingSteps(userId: string) {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: activities } = await supabase
+        .from('activities')
+        .select('steps, verification_status')
+        .eq('user_id', userId)
+        .eq('date', today);
+
+      const pending = activities
+        ?.filter(a => a.verification_status === 'pending')
+        .reduce((sum, a) => sum + (a.steps || 0), 0) || 0;
+        
+      const verified = activities
+        ?.filter(a => a.verification_status === 'verified')
+        .reduce((sum, a) => sum + (a.steps || 0), 0) || 0;
+
+      await supabase
+        .from('user_stats')
+        .update({
+          pending_steps: pending,
+          verified_steps: verified,
+          today_steps: pending + verified // Total for display
+        })
+        .eq('user_id', userId);
+        
+    } catch (error) {
+      console.error('Error updating pending steps:', error);
     }
   }
 
