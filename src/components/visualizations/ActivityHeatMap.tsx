@@ -667,21 +667,19 @@ export const ActivityHeatMap: React.FC = () => {
       
       {/* Content Area - Only data visualization shows loading */}
       <CardContent className="pt-0">
-        {/* Content with smooth height transitions */}
         <div 
           className={cn(
-            "overflow-hidden transition-all duration-500 ease-in-out",
-            isExpanded ? "animate-in slide-in-from-top-2" : "animate-in slide-in-from-bottom-2"
+            "transition-all duration-300 ease-in-out",
+            isExpanded ? "animate-fade-in" : "animate-fade-in"
           )}
-          style={{
-            minHeight: isExpanded ? '400px' : '280px',
-            maxHeight: isExpanded ? 'none' : '400px'
-          }}
         >
           {!isExpanded ? (
-            /* Compact Week View - Static Elements Always Visible */
-            <div className="space-y-4 select-none">
-              {/* Navigation Header - Always Static */}
+            /* Compact Week View */
+            <div 
+              ref={compactSwipeRef as React.RefObject<HTMLDivElement>}
+              className="space-y-4 select-none"
+            >
+              {/* Navigation Header - Always Visible */}
               <div className="flex items-center justify-between">
                 <button
                   onClick={navigatePrevious}
@@ -702,7 +700,6 @@ export const ActivityHeatMap: React.FC = () => {
                   <div className="text-xs text-muted-foreground">
                     {weekOffset === 0 ? 'This Week' : `${Math.ceil(weekOffset / 7)} week${weekOffset > 7 ? 's' : ''} ago`}
                   </div>
-                  {/* Today button - Always static when applicable */}
                   {weekOffset > 0 && (
                     <button
                       onClick={handleGoToToday}
@@ -729,88 +726,89 @@ export const ActivityHeatMap: React.FC = () => {
                 </button>
               </div>
 
-              {/* Mini Stats - Always visible with animated counters */}
+              {/* Mini Stats - Always Visible with Animated Counters */}
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
-                  <AnimatedCounter value={getCompactStats().activeDays} className="text-lg font-bold text-primary" />
+                  <AnimatedCounter value={loading ? 0 : getCompactStats().activeDays} className="text-lg font-bold text-primary" />
                   <div className="text-xs text-muted-foreground">Active Days</div>
                 </div>
                 <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
-                  <AnimatedCounter value={getCompactStats().todayMinutes} className="text-lg font-bold text-foreground" />
+                  <AnimatedCounter value={loading ? 0 : getCompactStats().todayMinutes} className="text-lg font-bold text-foreground" />
                   <div className="text-xs text-muted-foreground">Today (min)</div>
                 </div>
                 <div className="p-3 glass dark:glass-dark rounded-xl hover-scale">
-                  <AnimatedCounter value={getCompactStats().todayCalories} className="text-lg font-bold text-orange-500" />
+                  <AnimatedCounter value={loading ? 0 : getCompactStats().todayCalories} className="text-lg font-bold text-orange-500" />
                   <div className="text-xs text-muted-foreground">Calories</div>
                 </div>
               </div>
 
-              {/* Instructions - Always static */}
-              <div className="space-y-3">
-                <div className="text-xs text-muted-foreground text-center">
-                  Swipe left/right to navigate • Tap for details
+              {/* Instructions - Always Static */}
+              <div className="text-xs text-muted-foreground text-center">
+                Swipe left/right to navigate • Tap for details
+              </div>
+              
+              {/* Week Row - Only this part shows loading */}
+              {loading ? (
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: 7 }).map((_, j) => (
+                    <Skeleton key={j} className="aspect-square rounded-xl" />
+                  ))}
                 </div>
-                
-                {/* Week Row - Only this shows skeleton */}
-                {loading ? (
-                  <div className="grid grid-cols-7 gap-2">
-                    {[1, 2, 3, 4, 5, 6, 7].map(j => (
-                      <Skeleton key={j} className="aspect-square rounded-xl" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-7 gap-2">
-                    {getWeekData().map((day, index) => {
-                      const intensity = day.activity?.intensity || 0;
-                      const hasActivity = day.activity && intensity > 0;
-                      
-                      return (
-                        <div
-                          key={index}
-                          className={cn(
-                            "aspect-square rounded-xl transition-all duration-300 relative group",
-                            "active:scale-95 select-none",
-                            hasActivity ? "cursor-pointer hover:scale-105" : "cursor-default",
-                            getActivityColor(intensity),
-                            day.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg",
-                            getActivityPattern(intensity)
-                          )}
-                          onClick={() => hasActivity && handleDayInteraction(day.dateStr, day.activity)}
-                        >
-                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-foreground/80">
-                            {format(day.date, 'EEEEE')}
-                          </span>
-                          
-                          {hasActivity && (
-                            <div className="absolute top-1 right-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                            </div>
-                          )}
-                          
-                          {day.activity && !isMobile && (
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none">
-                              <div className="glass dark:glass-dark p-2 rounded-lg shadow-xl text-xs whitespace-nowrap">
-                                <div className="font-semibold text-primary text-center">
-                                  {format(day.date, 'MMM d')}
-                                </div>
-                                <div className="text-center text-muted-foreground">
-                                  {day.activity.minutes}m • {day.activity.calories}cal
-                                </div>
+              ) : (
+                <div className="grid grid-cols-7 gap-2">
+                  {getWeekData().map((day, index) => {
+                    const intensity = day.activity?.intensity || 0;
+                    const hasActivity = day.activity && intensity > 0;
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={cn(
+                          "aspect-square rounded-xl transition-all duration-300 relative group",
+                          "active:scale-95 select-none",
+                          hasActivity ? "cursor-pointer hover:scale-105" : "cursor-default",
+                          getActivityColor(intensity),
+                          day.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg",
+                          getActivityPattern(intensity)
+                        )}
+                        onClick={() => hasActivity && handleDayInteraction(day.dateStr, day.activity)}
+                      >
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-foreground/80">
+                          {format(day.date, 'EEEEE')}
+                        </span>
+                        
+                        {hasActivity && (
+                          <div className="absolute top-1 right-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                          </div>
+                        )}
+                        
+                        {day.activity && !isMobile && (
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none">
+                            <div className="glass dark:glass-dark p-2 rounded-lg shadow-xl text-xs whitespace-nowrap">
+                              <div className="font-semibold text-primary text-center">
+                                {format(day.date, 'MMM d')}
+                              </div>
+                              <div className="text-center text-muted-foreground">
+                                {day.activity.minutes}m • {day.activity.calories}cal
                               </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : (
-            /* Expanded View - Static Elements Always Visible */
-            <div className="space-y-6">
+            /* Expanded View */
+            <div 
+              ref={expandedSwipeRef as React.RefObject<HTMLDivElement>}
+              className="space-y-6 select-none"
+            >
               {/* Month Navigation Header - Always Static */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between">
                 <button
                   onClick={navigatePrevious}
                   className="p-3 rounded-full glass dark:glass-dark hover:bg-primary/10 transition-all duration-200 active:scale-95"
@@ -821,16 +819,11 @@ export const ActivityHeatMap: React.FC = () => {
                 
                 <div className="flex flex-col items-center gap-1">
                   <h3 className="text-lg font-semibold text-foreground">
-                    {loading ? (
-                      <Skeleton className="h-6 w-32" />
-                    ) : (
-                      format(currentDate, 'MMMM yyyy')
-                    )}
+                    {format(currentDate, 'MMMM yyyy')}
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Swipe to navigate months • {isMobile ? 'Tap' : 'Double-click'} for details
                   </p>
-                  {/* Today button - Always static when applicable */}
                   {!isSameMonth(currentDate, new Date()) && (
                     <button
                       onClick={handleGoToToday}
@@ -857,8 +850,8 @@ export const ActivityHeatMap: React.FC = () => {
                 </button>
               </div>
 
-              {/* Day labels - Always static */}
-              <div className="grid grid-cols-7 gap-1 mb-3">
+              {/* Day Labels - Always Static */}
+              <div className="grid grid-cols-7 gap-1">
                 {(isMobile ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map((day, i) => (
                   <div key={i} className="text-xs text-muted-foreground text-center font-semibold py-2">
                     {day}
@@ -866,24 +859,22 @@ export const ActivityHeatMap: React.FC = () => {
                 ))}
               </div>
 
-              {/* Calendar grid - Only this shows skeleton when loading */}
+              {/* Calendar Grid - Only this shows loading */}
               {loading ? (
                 <div className="space-y-1">
-                  {[1, 2, 3, 4, 5].map(i => (
+                  {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="grid grid-cols-7 gap-1">
-                      {[1, 2, 3, 4, 5, 6, 7].map(j => (
+                      {Array.from({ length: 7 }).map((_, j) => (
                         <Skeleton key={j} className="aspect-square rounded-xl" />
                       ))}
                     </div>
                   ))}
                 </div>
               ) : (
-                <>
-                  {viewMode === 'month' ? renderMonthView() : renderYearView()}
-                </>
+                viewMode === 'month' ? renderMonthView() : renderYearView()
               )}
               
-              {/* Legend - Always visible in expanded view */}
+              {/* Legend - Always Visible */}
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Less</span>
                 <div className="flex gap-1">
@@ -900,25 +891,25 @@ export const ActivityHeatMap: React.FC = () => {
                 <span>More</span>
               </div>
               
-              {/* Stats summary - Always visible with animated counters */}
+              {/* Stats Summary - Always Visible with Animated Counters */}
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
                 <div className="text-center">
                   <AnimatedCounter 
-                    value={getExpandedStats().activeDays} 
+                    value={loading ? 0 : getExpandedStats().activeDays} 
                     className="text-2xl font-bold text-foreground"
                   />
                   <div className="text-xs text-muted-foreground">Active Days</div>
                 </div>
                 <div className="text-center">
                   <AnimatedCounter 
-                    value={getExpandedStats().avgIntensity} 
+                    value={loading ? 0 : getExpandedStats().avgIntensity} 
                     className="text-2xl font-bold text-primary"
                   />
                   <div className="text-xs text-muted-foreground">Avg Intensity</div>
                 </div>
                 <div className="text-center">
                   <AnimatedCounter 
-                    value={getExpandedStats().bestDay} 
+                    value={loading ? 0 : getExpandedStats().bestDay} 
                     className="text-2xl font-bold text-foreground"
                   />
                   <div className="text-xs text-muted-foreground">Best Day</div>
