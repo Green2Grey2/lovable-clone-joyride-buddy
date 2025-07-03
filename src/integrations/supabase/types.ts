@@ -1103,10 +1103,6 @@ export type Database = {
         Args: { p_user_id: string; p_metric: string; p_timeframe?: string }
         Returns: number
       }
-      calculate_user_trust_score: {
-        Args: { p_user_id: string }
-        Returns: number
-      }
       check_and_award_achievement: {
         Args: { p_user_id: string; p_achievement_name: string; p_data?: Json }
         Returns: boolean
