@@ -20,6 +20,7 @@ import { useChallengeSettings } from '@/hooks/useChallengeSettings';
 import { useUserRole } from '@/hooks/useUserRole';
 
 import { TestFlagActivity } from '@/components/TestFlagActivity';
+import { ManualStepTracker } from '@/components/ManualStepTracker';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -251,6 +252,15 @@ const Dashboard = () => {
                   <div className="hidden lg:block">
                     <ActivityFeed />
                   </div>
+                  
+                  {/* Manual Step Tracker */}
+                  <ManualStepTracker 
+                    currentSteps={userStats.todaySteps}
+                    onStepsAdded={() => {
+                      // Trigger a refresh of the app context data
+                      window.location.reload();
+                    }}
+                  />
                   
                   {/* Quick Actions for desktop */}
                   <div className="hidden lg:block">
