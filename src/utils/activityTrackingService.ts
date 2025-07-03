@@ -97,12 +97,13 @@ export class ActivityTrackingService {
 
       await supabase
         .from('user_stats')
-        .update({
+        .upsert({
+          user_id: userId,
           pending_steps: pending,
           verified_steps: verified,
-          today_steps: pending + verified // Total for display
-        })
-        .eq('user_id', userId);
+          today_steps: pending + verified,
+          last_updated: new Date().toISOString()
+        });
         
     } catch (error) {
       console.error('Error updating pending steps:', error);
