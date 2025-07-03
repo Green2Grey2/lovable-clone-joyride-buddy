@@ -46,19 +46,27 @@ export const UserStatsProvider: React.FC<UserStatsProviderProps> = ({ children }
   }, [user]);
 
   const fetchStats = async () => {
+    console.log('📊 UserStatsContext: fetchStats called, user:', user?.id);
+    
     if (!user) {
+      console.log('👤 UserStatsContext: No user, setting stats to null');
       setStats(null);
       setLoading(false);
       return;
     }
 
     try {
+      console.log('🔍 UserStatsContext: Calling activityTrackingService.getUserStats');
       // Use the new activity tracking service instead of direct Supabase calls
       const userStats = await activityTrackingService.getUserStats(user.id);
       
+      console.log('📈 UserStatsContext: getUserStats result:', userStats);
+      
       if (userStats) {
+        console.log('✅ UserStatsContext: Setting stats:', userStats);
         setStats(userStats);
       } else {
+        console.log('🆕 UserStatsContext: No stats found, creating initial stats');
         // Create initial stats if none exist
         setStats({
           today_steps: 0,
@@ -73,7 +81,7 @@ export const UserStatsProvider: React.FC<UserStatsProviderProps> = ({ children }
         });
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('❌ UserStatsContext: Error fetching stats:', error);
       toast.error('Failed to load user statistics');
     } finally {
       setLoading(false);
@@ -99,7 +107,9 @@ export const UserStatsProvider: React.FC<UserStatsProviderProps> = ({ children }
   };
 
   const refreshStats = async () => {
+    console.log('🔄 UserStatsContext: refreshStats called');
     await fetchStats();
+    console.log('✅ UserStatsContext: refreshStats completed');
   };
 
   const value: UserStatsContextType = {

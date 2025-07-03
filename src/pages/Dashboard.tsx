@@ -259,8 +259,17 @@ const Dashboard = () => {
                   <ManualStepTracker 
                     currentSteps={userStats.todaySteps}
                     onStepsAdded={async () => {
-                      // Refresh user stats from the central context
-                      await refreshStats();
+                      console.log('🔄 Dashboard: onStepsAdded callback triggered');
+                      console.log('📊 Dashboard: Current steps before refresh:', userStats.todaySteps);
+                      
+                      try {
+                        // Refresh user stats from the central context
+                        console.log('🔄 Dashboard: Calling refreshStats()');
+                        await refreshStats();
+                        console.log('✅ Dashboard: refreshStats() completed');
+                      } catch (error) {
+                        console.error('❌ Dashboard: Error in refreshStats:', error);
+                      }
                     }}
                   />
                   

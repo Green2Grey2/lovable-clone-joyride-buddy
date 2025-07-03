@@ -20,6 +20,8 @@ export const ManualStepTracker = ({ currentSteps, onStepsAdded }: ManualStepTrac
   const quickStepOptions = [500, 1000, 2000, 5000];
 
   const handleAddSteps = async (steps: number) => {
+    console.log('🚀 ManualStepTracker: Starting to add steps:', steps);
+    
     if (steps <= 0) {
       toast.error('Please enter a valid number of steps');
       return;
@@ -27,6 +29,7 @@ export const ManualStepTracker = ({ currentSteps, onStepsAdded }: ManualStepTrac
 
     setIsAdding(true);
     try {
+      console.log('📝 ManualStepTracker: Calling activityTrackingService.recordActivity');
       const success = await activityTrackingService.recordActivity({
         type: 'walking',
         steps: steps,
@@ -35,13 +38,20 @@ export const ManualStepTracker = ({ currentSteps, onStepsAdded }: ManualStepTrac
         notes: 'Manual step entry'
       });
 
+      console.log('✅ ManualStepTracker: recordActivity result:', success);
+
       if (success) {
         setStepInput('');
+        console.log('🔄 ManualStepTracker: Calling onStepsAdded callback');
         onStepsAdded?.();
         toast.success(`Added ${steps.toLocaleString()} steps to your daily total!`);
+        console.log('🎉 ManualStepTracker: Steps added successfully');
+      } else {
+        console.warn('⚠️ ManualStepTracker: recordActivity returned false');
+        toast.error('Failed to record activity');
       }
     } catch (error) {
-      console.error('Error adding steps:', error);
+      console.error('❌ ManualStepTracker: Error adding steps:', error);
       toast.error('Failed to add steps. Please try again.');
     } finally {
       setIsAdding(false);

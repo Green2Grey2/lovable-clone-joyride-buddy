@@ -21,55 +21,91 @@ export class ActivityTrackingService {
    * Records a new activity and updates all user stats
    */
   async recordActivity(activityData: ActivityData): Promise<boolean> {
+    console.log('🎯 ActivityTrackingService: recordActivity called with:', activityData);
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      console.log('👤 ActivityTrackingService: Current user:', user?.id);
+      
+      if (!user) {
+        console.error('❌ ActivityTrackingService: No user found');
+        return false;
+      }
 
       // Healthcare-appropriate validation limits
+      console.log('🔍 ActivityTrackingService: Validating activity limits');
       const validationResult = this.validateActivityLimits(activityData);
+      console.log('✅ ActivityTrackingService: Validation result:', validationResult);
+      
       if (!validationResult.isValid) {
-        console.warn('Activity failed validation:', validationResult.reason);
+        console.warn('⚠️ ActivityTrackingService: Activity failed validation:', validationResult.reason);
         toast.error(`Activity validation failed: ${validationResult.reason}`);
         
         // Flag suspicious activity for admin review
+        console.log('🚩 ActivityTrackingService: Flagging suspicious activity');
         await this.flagSuspiciousActivity(user.id, activityData, validationResult.reason);
         return false;
       }
 
       // Insert activity record
+      console.log('💾 ActivityTrackingService: Inserting activity into database');
+      const activityRecord = {
+        user_id: user.id,
+        type: activityData.type,
+        date: new Date().toISOString().split('T')[0],
+        steps: activityData.steps || 0,
+        duration: activityData.duration || 0,
+        calories_burned: activityData.calories || 0,
+        distance: activityData.distance || null,
+        heart_rate_avg: activityData.heartRate || null,
+        notes: activityData.notes || null,
+        is_manual_entry: true
+      };
+      console.log('📝 ActivityTrackingService: Activity record to insert:', activityRecord);
+      
       const { error: activityError } = await supabase
         .from('activities')
-        .insert({
-          user_id: user.id,
-          type: activityData.type,
-          date: new Date().toISOString().split('T')[0],
-          steps: activityData.steps || 0,
-          duration: activityData.duration || 0,
-          calories_burned: activityData.calories || 0,
-          distance: activityData.distance || null,
-          heart_rate_avg: activityData.heartRate || null,
-          notes: activityData.notes || null,
-          is_manual_entry: true
-        });
+        .insert(activityRecord);
 
       if (activityError) {
-        console.error('Failed to record activity:', activityError);
+        console.error('❌ ActivityTrackingService: Failed to record activity:', activityError);
         return false;
       }
+      
+      console.log('✅ ActivityTrackingService: Activity inserted successfully');
 
       // Update all user stats from activities
-      await healthDataService.updateUserStatsFromActivities();
+      console.log('📊 ActivityTrackingService: Updating user stats from activities');
+      try {
+        await healthDataService.updateUserStatsFromActivities();
+        console.log('✅ ActivityTrackingService: User stats updated successfully');
+      } catch (error) {
+        console.error('❌ ActivityTrackingService: Error updating user stats:', error);
+      }
 
       // Check for new achievements
-      await this.checkAchievements(user.id, activityData);
+      console.log('🏆 ActivityTrackingService: Checking for achievements');
+      try {
+        await this.checkAchievements(user.id, activityData);
+        console.log('✅ ActivityTrackingService: Achievements checked');
+      } catch (error) {
+        console.error('❌ ActivityTrackingService: Error checking achievements:', error);
+      }
 
       // Create social activity
-      await this.createSocialActivity(user.id, activityData);
+      console.log('👥 ActivityTrackingService: Creating social activity');
+      try {
+        await this.createSocialActivity(user.id, activityData);
+        console.log('✅ ActivityTrackingService: Social activity created');
+      } catch (error) {
+        console.error('❌ ActivityTrackingService: Error creating social activity:', error);
+      }
 
       toast.success('Activity recorded successfully!');
+      console.log('🎉 ActivityTrackingService: recordActivity completed successfully');
       return true;
     } catch (error) {
-      console.error('Error recording activity:', error);
+      console.error('❌ ActivityTrackingService: Error recording activity:', error);
       toast.error('Failed to record activity');
       return false;
     }
@@ -105,28 +141,43 @@ export class ActivityTrackingService {
    * Gets comprehensive user statistics
    */
   async getUserStats(userId: string) {
+    console.log('📊 ActivityTrackingService: getUserStats called for user:', userId);
+    
     try {
+      console.log('🔍 ActivityTrackingService: Querying user_stats table');
       const { data: stats, error: statsError } = await supabase
         .from('user_stats')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (statsError) throw statsError;
+      console.log('📈 ActivityTrackingService: Raw stats query result:', { stats, error: statsError });
+
+      if (statsError) {
+        console.error('❌ ActivityTrackingService: Error querying user_stats:', statsError);
+        throw statsError;
+      }
 
       // Get personal records
+      console.log('🏆 ActivityTrackingService: Getting personal records');
       const personalRecords = await this.getPersonalRecords(userId);
+      console.log('📊 ActivityTrackingService: Personal records:', personalRecords);
       
       // Get recent achievements
+      console.log('🎖️ ActivityTrackingService: Getting recent achievements');
       const recentAchievements = await this.getRecentAchievements(userId);
+      console.log('🏅 ActivityTrackingService: Recent achievements:', recentAchievements);
 
-      return {
+      const result = {
         ...stats,
         personalRecords,
         recentAchievements
       };
+      
+      console.log('✅ ActivityTrackingService: Final getUserStats result:', result);
+      return result;
     } catch (error) {
-      console.error('Error getting user stats:', error);
+      console.error('❌ ActivityTrackingService: Error getting user stats:', error);
       return null;
     }
   }
