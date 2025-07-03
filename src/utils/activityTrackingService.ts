@@ -23,51 +23,33 @@ export class ActivityTrackingService {
   async recordQuickSteps(steps: number): Promise<boolean> {
     try {
       console.log('Starting recordQuickSteps with:', steps);
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('User data:', user);
+      
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('User data:', user, 'User error:', userError);
+      
       if (!user) {
         console.log('No user found, returning false');
+        toast.error('Please sign in first');
         return false;
       }
 
-      console.log('Fetching profile for user:', user.id);
-      // Check if user has auto-verify enabled based on trust score
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('auto_verify_enabled, trust_score')
-        .eq('user_id', user.id)
-        .single();
-
-      console.log('Profile data:', profile, 'Profile error:', profileError);
-
-      const verificationStatus = profile?.auto_verify_enabled ? 'verified' : 'pending';
-      const verificationRequired = !profile?.auto_verify_enabled;
-
-      console.log('Verification status:', verificationStatus, 'Required:', verificationRequired);
-
-      // Skip validation for quick entries - healthcare workers can have 20k-30k steps
+      // Simplified activity data - minimal required fields
       const activityData = {
         user_id: user.id,
         type: 'walking',
         steps: steps,
-        entry_method: 'quick_entry',
-        verification_status: verificationStatus,
-        verification_required: verificationRequired,
-        verified_at: verificationStatus === 'verified' ? new Date().toISOString() : null,
-        verified_by: verificationStatus === 'verified' ? user.id : null,
-        date: new Date().toISOString().split('T')[0],
-        duration: Math.round(steps / 100), // Rough estimate: 100 steps per minute
-        calories_burned: Math.round(steps * 0.04), // Rough estimate: 0.04 calories per step
-        is_manual_entry: false // Changed to false to mimic activity monitor
+        date: new Date().toISOString().split('T')[0]
       };
 
-      console.log('Inserting activity data:', activityData);
+      console.log('Inserting simplified activity data:', activityData);
 
-      const { error } = await supabase
+      const { data: insertResult, error } = await supabase
         .from('activities')
-        .insert(activityData);
+        .insert(activityData)
+        .select();
 
-      console.log('Insert result - error:', error);
+      console.log('Insert result:', insertResult, 'Error:', error);
 
       if (error) {
         console.error('Failed to record quick steps:', error);
@@ -75,19 +57,12 @@ export class ActivityTrackingService {
         return false;
       }
 
-      // Update pending steps tracking
-      await this.updatePendingSteps(user.id);
-      
-      if (verificationStatus === 'verified') {
-        toast.success(`Steps logged! (Auto-verified - Trust Score: ${profile?.trust_score || 0})`);
-      } else {
-        toast.info('Steps logged! Upload a screenshot to verify.');
-      }
+      toast.success(`Steps logged successfully! ${steps} steps added.`);
       console.log('Successfully logged steps');
       return true;
     } catch (error) {
       console.error('Error recording quick steps:', error);
-      toast.error('Failed to log steps');
+      toast.error(`Failed to log steps: ${error}`);
       return false;
     }
   }
