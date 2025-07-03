@@ -70,19 +70,38 @@ export const SimpleStepTracker = () => {
       }
 
       // Also update user_stats to sync with existing systems
-      const { error: statsError } = await supabase
+      const { data: existingStats } = await supabase
         .from('user_stats')
-        .upsert({
-          user_id: user.id,
-          today_steps: newTotal,
-          last_updated: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (statsError) {
-        console.error('Error updating user_stats:', statsError);
-        // Don't return error here as daily_steps was successful
+      if (existingStats) {
+        // Update existing record
+        const { error: statsError } = await supabase
+          .from('user_stats')
+          .update({
+            today_steps: newTotal,
+            last_updated: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+
+        if (statsError) {
+          console.error('Error updating user_stats:', statsError);
+        }
+      } else {
+        // Insert new record
+        const { error: statsError } = await supabase
+          .from('user_stats')
+          .insert({
+            user_id: user.id,
+            today_steps: newTotal,
+            last_updated: new Date().toISOString()
+          });
+
+        if (statsError) {
+          console.error('Error inserting user_stats:', statsError);
+        }
       }
 
       // Create an activity record for analytics
