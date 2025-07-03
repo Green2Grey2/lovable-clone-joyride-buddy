@@ -52,7 +52,8 @@ export const SimpleStepTracker = () => {
       const today = new Date().toISOString().split('T')[0];
       const newTotal = todaySteps + stepsToAdd;
 
-      const { error } = await supabase
+      // Update daily_steps table
+      const { error: dailyStepsError } = await supabase
         .from('daily_steps')
         .upsert({
           user_id: user.id,
@@ -62,11 +63,40 @@ export const SimpleStepTracker = () => {
           onConflict: 'user_id,date'
         });
 
-      if (error) {
-        console.error('Error adding steps:', error);
+      if (dailyStepsError) {
+        console.error('Error adding to daily_steps:', dailyStepsError);
         toast.error('Failed to add steps');
         return;
       }
+
+      // Also update user_stats to sync with existing systems
+      const { error: statsError } = await supabase
+        .from('user_stats')
+        .upsert({
+          user_id: user.id,
+          today_steps: newTotal,
+          last_updated: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (statsError) {
+        console.error('Error updating user_stats:', statsError);
+        // Don't return error here as daily_steps was successful
+      }
+
+      // Create an activity record for analytics
+      await supabase
+        .from('activities')
+        .insert({
+          user_id: user.id,
+          type: 'walking',
+          steps: stepsToAdd,
+          date: today,
+          entry_method: 'quick_add',
+          is_manual_entry: true,
+          verification_status: 'verified'
+        });
 
       setTodaySteps(newTotal);
       toast.success(`Added ${stepsToAdd.toLocaleString()} steps! Total: ${newTotal.toLocaleString()}`);
