@@ -20,6 +20,7 @@ import { useChallengeSettings } from '@/hooks/useChallengeSettings';
 import { useUserRole } from '@/hooks/useUserRole';
 
 import { TestFlagActivity } from '@/components/TestFlagActivity';
+import { QuickStepEntry } from '@/components/QuickStepEntry';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -235,6 +236,9 @@ const Dashboard = () => {
                     calories={userStats.calories}
                     onViewMore={handleViewMoreActivity}
                   />
+
+                  {/* Quick Step Entry */}
+                  <QuickStepEntry />
 
                   {/* Collaborative Goals */}
                   <CollaborativeGoals />
