@@ -18,6 +18,64 @@ export interface ActivityData {
 export class ActivityTrackingService {
   
   /**
+   * Records quick steps without validation - for trusted users
+   */
+  async recordQuickSteps(steps: number): Promise<boolean> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      if (!steps || steps <= 0) {
+        toast.error('Please enter valid steps');
+        return false;
+      }
+
+      // Insert activity record without validation
+      const { error: activityError } = await supabase
+        .from('activities')
+        .insert({
+          user_id: user.id,
+          type: 'walking',
+          date: new Date().toISOString().split('T')[0],
+          steps: steps,
+          duration: 0,
+          calories_burned: 0,
+          distance: null,
+          heart_rate_avg: null,
+          notes: null,
+          is_manual_entry: true,
+          entry_method: 'quick_entry'
+        });
+
+      if (activityError) {
+        console.error('Failed to record quick steps:', activityError);
+        toast.error('Failed to log steps');
+        return false;
+      }
+
+      // Update all user stats from activities
+      await healthDataService.updateUserStatsFromActivities();
+
+      // Create social activity for step milestones
+      if (steps >= 10000) {
+        await this.createSocialActivity(user.id, { 
+          type: 'walking', 
+          steps,
+          duration: 0,
+          calories: 0 
+        });
+      }
+
+      toast.success('Steps logged successfully!');
+      return true;
+    } catch (error) {
+      console.error('Error recording quick steps:', error);
+      toast.error('Failed to log steps');
+      return false;
+    }
+  }
+
+  /**
    * Records a new activity and updates all user stats
    */
   async recordActivity(activityData: ActivityData): Promise<boolean> {
@@ -47,10 +105,11 @@ export class ActivityTrackingService {
           duration: activityData.duration || 0,
           calories_burned: activityData.calories || 0,
           distance: activityData.distance || null,
-          heart_rate_avg: activityData.heartRate || null,
-          notes: activityData.notes || null,
-          is_manual_entry: true
-        });
+           heart_rate_avg: activityData.heartRate || null,
+           notes: activityData.notes || null,
+           is_manual_entry: true,
+           entry_method: 'manual'
+         });
 
       if (activityError) {
         console.error('Failed to record activity:', activityError);
