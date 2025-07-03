@@ -65,7 +65,7 @@ export class ActivityTrackingService {
       
       const { error: activityError } = await supabase
         .from('activities')
-        .insert(activityRecord);
+        .insert([activityRecord]);
 
       if (activityError) {
         console.error('❌ ActivityTrackingService: Failed to record activity:', activityError);
