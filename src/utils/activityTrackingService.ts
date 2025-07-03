@@ -58,7 +58,7 @@ export class ActivityTrackingService {
         date: new Date().toISOString().split('T')[0],
         duration: Math.round(steps / 100), // Rough estimate: 100 steps per minute
         calories_burned: Math.round(steps * 0.04), // Rough estimate: 0.04 calories per step
-        is_manual_entry: true
+        is_manual_entry: false // Changed to false to mimic activity monitor
       };
 
       console.log('Inserting activity data:', activityData);
