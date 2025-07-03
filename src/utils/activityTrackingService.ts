@@ -113,14 +113,34 @@ export class ActivityTrackingService {
         ?.filter(a => a.verification_status === 'verified')
         .reduce((sum, a) => sum + (a.steps || 0), 0) || 0;
 
-      await supabase
+      // Check if user stats record exists
+      const { data: existingStats } = await supabase
         .from('user_stats')
-        .upsert({
-          user_id: userId,
-          pending_steps: pending,
-          verified_steps: verified,
-          today_steps: pending + verified // Total for display
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+      if (existingStats) {
+        // Update existing record
+        await supabase
+          .from('user_stats')
+          .update({
+            pending_steps: pending,
+            verified_steps: verified,
+            today_steps: pending + verified
+          })
+          .eq('user_id', userId);
+      } else {
+        // Insert new record
+        await supabase
+          .from('user_stats')
+          .insert({
+            user_id: userId,
+            pending_steps: pending,
+            verified_steps: verified,
+            today_steps: pending + verified
+          });
+      }
         
     } catch (error) {
       console.error('Error updating pending steps:', error);
