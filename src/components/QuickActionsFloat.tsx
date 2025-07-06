@@ -4,17 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Droplets, Coffee, Apple, Plus, X } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { useUserStats } from '@/contexts/UserStatsContext';
 
 export const QuickActionsFloat = React.memo(() => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { updateStats, userStats } = useApp();
+  const { stats: userStats, updateStats } = useUserStats();
 
   const quickActions = [
     {
       icon: Droplets,
       label: 'Water',
       color: 'from-blue-400 to-cyan-500',
-      action: () => updateStats({ water: userStats.water + 1 })
+      action: () => updateStats({ water_intake: (userStats?.water_intake || 0) + 1 })
     },
     {
       icon: Coffee,

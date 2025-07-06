@@ -7,13 +7,15 @@ import { Trophy, Users, Target, MapPin, TrendingUp } from 'lucide-react';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ActiveChallengeView } from './ActiveChallengeView';
 import { useApp } from '@/contexts/AppContext';
+import { useUserStats } from '@/contexts/UserStatsContext';
 
 export const ActiveChallengeWidget = () => {
   const { playSelect } = useSoundEffects();
-  const { userProfile, userStats } = useApp();
+  const { userProfile } = useApp();
+  const { stats: userStats } = useUserStats();
   
   const userDepartment = userProfile.department;
-  const userSteps = userStats.todaySteps;
+  const userSteps = userStats?.today_steps || 0;
 
   const handleOpenChallenge = () => {
     playSelect();

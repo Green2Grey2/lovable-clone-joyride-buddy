@@ -17,19 +17,7 @@ interface UserProfile {
   joinDate: string;
 }
 
-interface UserStats {
-  todaySteps: number;
-  weeklySteps: number;
-  monthlySteps: number;
-  totalSteps: number;
-  currentStreak: number;
-  longestStreak: number;
-  water: number;
-  calories: number;
-  heartRate: number;
-  totalWorkouts: number;
-  activeMinutes: number;
-}
+// Remove redundant UserStats interface - we'll use the one from UserStatsContext
 
 export interface Activity {
   id: string;
@@ -75,20 +63,16 @@ interface ChallengeData {
 
 interface AppContextType {
   userProfile: UserProfile;
-  userStats: UserStats;
   activeActivity: Activity | null;
   achievements: Achievement[];
   challengeData: ChallengeData;
   setActiveActivity: (activity: Activity | null) => void;
   updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
-  updateUserStats: (updates: Partial<UserStats>) => Promise<void>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
-  updateStats: (updates: Partial<UserStats>) => Promise<void>;
   startActivity: (activity: Activity) => void;
   stopActivity: () => void;
-  updateUserSteps: (steps: number) => Promise<void>;
   getDashboardGreeting: () => { message: string; emoji: string };
   getMotivationalMessage: () => { type: string; emoji: string; message: string; color: string; };
+  // Stats are now accessed via useUserStats hook directly
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -103,7 +87,7 @@ export const useApp = () => {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const { stats, updateStats: updateCentralStats } = useUserStats();
+  const { stats } = useUserStats();
   const [userProfile, setUserProfile] = useState<UserProfile>({
     id: '',
     name: 'User',
@@ -180,20 +164,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     totalParticipants: 30
   };
 
-  // Convert centralized stats to app stats format with US metrics
-  const userStats: UserStats = {
-    todaySteps: stats?.today_steps || 0,
-    weeklySteps: stats?.weekly_steps || 0,
-    monthlySteps: (stats?.weekly_steps || 0) * 4,
-    totalSteps: (stats?.weekly_steps || 0) * 12,
-    currentStreak: stats?.current_streak || 0,
-    longestStreak: Math.max(stats?.current_streak || 0, 5),
-    water: stats?.water_intake || 0,
-    calories: stats?.calories_burned || 0,
-    heartRate: stats?.heart_rate || 75,
-    totalWorkouts: Math.floor((stats?.today_steps || 0) / 1000),
-    activeMinutes: Math.floor((stats?.today_steps || 0) / 100)
-  };
+  // Stats are now accessed directly via useUserStats hook
+  // No need for transformation or duplication
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -249,26 +221,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const updateUserStats = async (updates: Partial<UserStats>) => {
-    const centralUpdates = {
-      today_steps: updates.todaySteps,
-      weekly_steps: updates.weeklySteps,
-      current_streak: updates.currentStreak,
-      water_intake: updates.water,
-      calories_burned: updates.calories,
-      heart_rate: updates.heartRate
-    };
-
-    const filteredUpdates = Object.fromEntries(
-      Object.entries(centralUpdates).filter(([_, value]) => value !== undefined)
-    );
-
-    await updateCentralStats(filteredUpdates);
-  };
-
-  const updateUserSteps = async (steps: number) => {
-    await updateCentralStats({ today_steps: steps });
-  };
+  // Stats updates are now handled directly through useUserStats hook
 
   const startActivity = (activity: Activity) => {
     setActiveActivity({
@@ -284,7 +237,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const getDashboardGreeting = () => {
     const hour = new Date().getHours();
-    const streak = userStats.currentStreak;
+    const streak = stats?.current_streak || 0;
     
     if (hour < 12) {
       return { 
@@ -321,18 +274,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider value={{
       userProfile,
-      userStats,
       activeActivity,
       achievements,
       challengeData,
       setActiveActivity,
       updateUserProfile,
-      updateUserStats,
-      updateProfile: updateUserProfile,
-      updateStats: updateUserStats,
       startActivity,
       stopActivity,
-      updateUserSteps,
       getDashboardGreeting,
       getMotivationalMessage
     }}>

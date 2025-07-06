@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { activityTrackingService } from '@/utils/activityTrackingService';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface UserStats {
   today_steps: number;
@@ -40,9 +42,78 @@ export const UserStatsProvider: React.FC<UserStatsProviderProps> = ({ children }
   const { user } = useAuth();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [channel, setChannel] = useState<RealtimeChannel | null>(null);
 
+  // Setup real-time subscription
   useEffect(() => {
+    if (!user) {
+      setStats(null);
+      setLoading(false);
+      return;
+    }
+
     fetchStats();
+
+    // Set up real-time subscription for user_stats changes
+    console.log('🔌 UserStatsContext: Setting up real-time subscription for user:', user.id);
+    
+    const statsChannel = supabase
+      .channel(`user-stats-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'user_stats',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('📡 UserStatsContext: Real-time update received:', payload);
+          
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            // Update stats with the new data
+            const newStats = payload.new as UserStats;
+            setStats(prevStats => ({
+              ...prevStats,
+              ...newStats,
+              last_updated: new Date().toISOString()
+            }));
+            
+            // Show a subtle notification for real-time updates
+            console.log('✨ UserStatsContext: Stats updated in real-time');
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'activities',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('📡 UserStatsContext: Activity change detected:', payload.eventType);
+          // When activities change, refresh stats (trigger will update user_stats)
+          // Add a small delay to ensure database trigger has completed
+          setTimeout(() => {
+            fetchStats();
+          }, 500);
+        }
+      )
+      .subscribe((status) => {
+        console.log('📻 UserStatsContext: Subscription status:', status);
+      });
+
+    setChannel(statsChannel);
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('🔌 UserStatsContext: Cleaning up real-time subscription');
+      if (statsChannel) {
+        supabase.removeChannel(statsChannel);
+      }
+    };
   }, [user]);
 
   const fetchStats = async () => {
@@ -91,6 +162,17 @@ export const UserStatsProvider: React.FC<UserStatsProviderProps> = ({ children }
   const updateStats = async (updates: Partial<UserStats>) => {
     if (!user) return;
 
+    // Optimistic update for immediate UI feedback
+    setStats(prevStats => {
+      if (!prevStats) return prevStats;
+      console.log('⚡ UserStatsContext: Applying optimistic update:', updates);
+      return {
+        ...prevStats,
+        ...updates,
+        last_updated: new Date().toISOString()
+      };
+    });
+
     try {
       // For water intake, use the activity tracking service method
       if ('water_intake' in updates) {
@@ -103,14 +185,18 @@ export const UserStatsProvider: React.FC<UserStatsProviderProps> = ({ children }
     } catch (error) {
       console.error('Error updating stats:', error);
       toast.error('Failed to update statistics');
+      
+      // Revert optimistic update on error
+      console.log('⚠️ UserStatsContext: Reverting optimistic update due to error');
+      await fetchStats();
     }
   };
 
-  const refreshStats = async () => {
+  const refreshStats = useCallback(async () => {
     console.log('🔄 UserStatsContext: refreshStats called');
     await fetchStats();
     console.log('✅ UserStatsContext: refreshStats completed');
-  };
+  }, [user]);
 
   const value: UserStatsContextType = {
     stats,

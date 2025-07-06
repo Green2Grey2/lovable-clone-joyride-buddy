@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Play, Pause, Square, Timer, Target, Zap, Minimize2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
+import { useUserStats } from '@/contexts/UserStatsContext';
 import { calculateCaloriesBurned, calculateCaloriesFromSteps } from '@/utils/calorieCalculator';
 
 const ActiveActivity = () => {
   const navigate = useNavigate();
-  const { activeActivity, stopActivity, updateStats, userStats, userProfile, updateUserSteps } = useApp();
+  const { activeActivity, stopActivity, userProfile } = useApp();
+  const { stats: userStats, updateStats } = useUserStats();
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [sessionStats, setSessionStats] = useState({
@@ -88,15 +90,11 @@ const ActiveActivity = () => {
 
   const handleStopActivity = () => {
     if (activeActivity && sessionStats.steps > 0) {
-      // Update user's total steps (this will trigger challenge data recalculation)
-      const newTotalSteps = userStats.todaySteps + sessionStats.steps;
-      updateUserSteps(newTotalSteps);
-      
-      // Update other user stats
+      // Update user stats with new steps
+      // The database trigger will automatically update all aggregated stats
       updateStats({
-        calories: userStats.calories + sessionStats.calories,
-        currentStreak: userStats.currentStreak + 1,
-        weeklySteps: userStats.weeklySteps + sessionStats.steps
+        today_steps: (userStats?.today_steps || 0) + sessionStats.steps,
+        calories_burned: (userStats?.calories_burned || 0) + sessionStats.calories
       });
     }
     

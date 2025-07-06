@@ -26,8 +26,8 @@ import { ManualStepTracker } from '@/components/ManualStepTracker';
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userProfile, userStats, activeActivity, getDashboardGreeting } = useApp();
-  const { refreshStats } = useUserStats();
+  const { userProfile, activeActivity, getDashboardGreeting } = useApp();
+  const { stats: userStats, refreshStats } = useUserStats();
   const { playSoftClick, playNavigation, playStartActivity } = useSoundEffects();
   const { challengeSettings } = useChallengeSettings();
   const { role, isAdmin, isManager } = useUserRole();
@@ -182,7 +182,7 @@ const Dashboard = () => {
                     {userProfile.name || 'User'}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {userStats.currentStreak} day streak 🔥
+                    {userStats?.current_streak || 0} day streak 🔥
                   </p>
                 </div>
               </div>
@@ -194,9 +194,9 @@ const Dashboard = () => {
         <div className="lg:ml-64">
           <DashboardHeader
             userName={userProfile.name || 'User'}
-            currentStreak={userStats.currentStreak || 0}
+            currentStreak={userStats?.current_streak || 0}
             weeklyGoal={userProfile.weeklyGoal || 10000}
-            currentSteps={userStats.todaySteps || 0}
+            currentSteps={userStats?.today_steps || 0}
           />
 
           <ResponsiveContainer maxWidth="2xl" padding="md" className="py-8">
@@ -225,17 +225,17 @@ const Dashboard = () => {
                   <EnhancedHeroActionCard
                     activeActivity={activeActivity}
                     onPrimaryAction={handlePrimaryAction}
-                    todaySteps={userStats.todaySteps}
+                    todaySteps={userStats?.today_steps || 0}
                     stepGoal={stepGoal}
                   />
 
                   {/* Health Summary - Responsive Grid within */}
                   <ModernHealthSummary 
-                    steps={userStats.todaySteps}
+                    steps={userStats?.today_steps || 0}
                     stepGoal={stepGoal}
-                    water={userStats.water}
-                    heartRate={userStats.heartRate}
-                    calories={userStats.calories}
+                    water={userStats?.water_intake || 0}
+                    heartRate={userStats?.heart_rate || 75}
+                    calories={userStats?.calories_burned || 0}
                     onViewMore={handleViewMoreActivity}
                   />
 
@@ -257,10 +257,10 @@ const Dashboard = () => {
                   
                   {/* Manual Step Tracker */}
                   <ManualStepTracker 
-                    currentSteps={userStats.todaySteps}
+                    currentSteps={userStats?.today_steps || 0}
                     onStepsAdded={async () => {
                       console.log('🔄 Dashboard: onStepsAdded callback triggered');
-                      console.log('📊 Dashboard: Current steps before refresh:', userStats.todaySteps);
+                      console.log('📊 Dashboard: Current steps before refresh:', userStats?.today_steps);
                       
                       try {
                         // Refresh user stats from the central context

@@ -1,0 +1,40 @@
+# Stem Cell Research Summary
+
+This document provides a summary of the information on stem cells from the Learn.Genetics website by the University of Utah.
+Source: https://learn.genetics.utah.edu/content/stemcells/
+
+## What are Stem Cells?
+
+### The Nature of Stem Cells
+Stem cells play many important roles in our bodies from embryonic development through adulthood.
+(Source: Genetic Science Learning Center. (2014, July 10) The Nature of Stem Cells. Retrieved June 18, 2025, from https://learn.genetics.utah.edu/content/stemcells/scintro/)
+
+### Reversing Cell Differentiation
+"Until fairly recently, cell differentiation was seen as final and irreversible. Once a cell became specialized, it was referred to as 'terminally differentiated.' It was considered locked-in and unable to become any other cell type. However, in 2006, scientists reported that they had turned a differentiated cell back into a stem cell with the potential to become any type of cell in the body."
+(Source: Genetic Science Learning Center. (2014, July 10) Reversing Cell Differentiation. Retrieved June 18, 2025, from https://learn.genetics.utah.edu/content/stemcells/ips/)
+
+### Go, Go, Stem Cells
+This interactive was built using Adobe Flash which is no longer supported in modern web browsers.
+(Source: Genetic Science Learning Center. (2014, July 10) Go, Go, Stem Cells. Retrieved June 18, 2025, from https://learn.genetics.utah.edu/content/stemcells/sctypes/)
+
+## Stem Cells in Medicine
+
+### Stem Cell Quick Reference
+- **Somatic Stem Cells (Adult Stem Cells):** Exist naturally in the body and are important for growth, healing, and replacing cells. They are used as a treatment for blood-related diseases.
+- **Embryonic Stem Cells (ES Cells):** Formed as a normal part of embryonic development and have the potential to become any type of cell in the body. Their use is controversial due to the destruction of embryos.
+- **Induced Pluripotent Stem Cells (iPS Cells):** Created artificially in the lab by "reprogramming" a patient's own cells. They can be made from readily available cells like fat, skin, and fibroblasts.
+- **Therapeutic Cloning:** A method for creating patient-specific embryonic stem (ES) cells.
+(Source: Genetic Science Learning Center. (2014, July 10) Stem Cell Quick Reference. Retrieved June 18, 2025, from https://learn.genetics.utah.edu/content/stemcells/quickref/)
+
+### Stem Cells in Use
+"In 1968, doctors performed the first successful bone marrow transplant. Bone marrow contains somatic stem cells that can produce all of the different cell types that make up our blood. It is transplanted routinely to treat a variety of blood and bone marrow diseases, blood cancers, and immune disorders."
+(Source: Genetic Science Learning Center. (2014, July 10) Stem Cells in Use. Retrieved June 18, 2025, from https://learn.genetics.utah.edu/content/stemcells/sctoday/)
+
+### Unlocking Stem Cell Potential
+Researchers are working on new ways to use stem cells to cure diseases and heal injuries. This section appears to be a presentation with photo credits for various images related to stem cell research.
+(Source: Genetic Science Learning Center. (2014, July 10) Unlocking Stem Cell Potential. Retrieved June 18, 2025, from https://learn.genetics.utah.edu/content/stemcells/scfuture/)
+
+### The Stem Cell Debate: Is it Over?
+"Stem cell therapies are not new. Doctors have been performing bone marrow stem cell transplants for decades. But when scientists learned how to remove stem cells from human embryos in 1998, both excitement and controversy ensued."
+The debate centers on the moral implications of destroying human embryos. Newer breakthroughs, like iPS cells, may bring this debate to an end.
+(Source: Genetic Science Learning Center. (2014, July 10) The Stem Cell Debate: Is it Over?. Retrieved June 18, 2025, from https://learn.genetics.utah.edu/content/stemcells/scissues/)

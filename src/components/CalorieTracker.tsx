@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Flame, Target, TrendingUp } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { useUserStats } from '@/contexts/UserStatsContext';
 import { calculateCaloriesFromSteps, calculateDailyCalorieNeeds, calculateCaloriesBurned } from '@/utils/calorieCalculator';
 
 export const CalorieTracker = () => {
-  const { userProfile, userStats } = useApp();
+  const { userProfile } = useApp();
+  const { stats: userStats } = useUserStats();
   const [dailyCalorieGoal, setDailyCalorieGoal] = useState(0);
   const [caloriesBurned, setCaloriesBurned] = useState(0);
   const [stepsCalories, setStepsCalories] = useState(0);
@@ -26,13 +28,13 @@ export const CalorieTracker = () => {
       setDailyCalorieGoal(Math.floor(dailyNeeds * 0.3));
 
       // Calculate calories from today's steps
-      const stepCalories = calculateCaloriesFromSteps(userStats.todaySteps, userData);
+      const stepCalories = calculateCaloriesFromSteps(userStats?.today_steps || 0, userData);
       setStepsCalories(stepCalories);
 
       // Use the actual calories from userStats (which includes activity calories)
-      setCaloriesBurned(userStats.calories);
+      setCaloriesBurned(userStats?.calories_burned || 0);
     }
-  }, [userProfile, userStats.todaySteps, userStats.calories]);
+  }, [userProfile, userStats?.today_steps, userStats?.calories_burned]);
 
   const progress = dailyCalorieGoal > 0 ? (caloriesBurned / dailyCalorieGoal) * 100 : 0;
 
